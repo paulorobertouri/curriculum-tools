@@ -264,3 +264,89 @@ test('hr flow chunks large batches into multiple ranking requests', async ({
   ).toBeVisible();
   expect(rankingRequestCount).toBe(2);
 });
+
+test('hr flow keeps extraction errors visible while processing valid files', async ({
+  page,
+}) => {
+  await page.route('https://api.openai.com/v1/responses', async route => {
+    const body = route.request().postDataJSON() as { input?: string };
+    const prompt = body.input ?? '';
+
+    if (prompt.includes('Reply with only this exact word: hello')) {
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({ output_text: 'hello' }),
+      });
+      return;
+    }
+
+    if (prompt.includes('Rank these CVs against the target role')) {
+      const ids = [...prompt.matchAll(/id:\s*([^\n]+)/g)].map(match =>
+        match[1].trim(),
+      );
+      const filenames = [...prompt.matchAll(/filename:\s*([^\n]+)/g)].map(
+        match => match[1].trim(),
+      );
+
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          output_text: JSON.stringify({
+            candidates: ids.map((id, index) => ({
+              id,
+              filename: filenames[index],
+              detectedName: 'Valid Candidate',
+              score: 8.1,
+              justification: 'Valid file was ranked successfully.',
+              strengths: ['Role-relevant experience'],
+              concerns: [],
+              interviewRecommendation: 'yes',
+            })),
+          }),
+        }),
+      });
+      return;
+    }
+
+    await route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({ output_text: '{}' }),
+    });
+  });
+
+  await setupOpenAi(page);
+  await page.getByRole('button', { name: 'HR' }).click();
+  await page.getByLabel('Job title').fill('Backend Engineer');
+  await page
+    .getByLabel('Job description')
+    .fill('Build reliable backend systems.');
+
+  await page.locator('#hr-files').setInputFiles([
+    {
+      name: 'legacy.doc',
+      mimeType: 'application/msword',
+      buffer: Buffer.from('legacy-doc-content'),
+    },
+    {
+      name: 'valid.txt',
+      mimeType: 'text/plain',
+      buffer: Buffer.from('Valid candidate CV text with backend experience.'),
+    },
+  ]);
+
+  await expect(page.getByText('legacy.doc')).toBeVisible();
+  await expect(
+    page.getByText(
+      /Legacy \.doc files are not reliably supported in the browser/,
+    ),
+  ).toBeVisible();
+  await expect(page.getByText('valid.txt')).toBeVisible();
+  await expect(page.getByText('valid.txt · ready')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Process' }).click();
+
+  await expect(
+    page.getByRole('heading', { name: 'Valid Candidate' }),
+  ).toBeVisible();
+  await expect(page.getByText('Recommendation: yes')).toBeVisible();
+});

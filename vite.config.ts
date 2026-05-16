@@ -11,6 +11,22 @@ export default defineConfig({
   build: {
     outDir: './wwwroot',
     emptyOutDir: true,
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('pdfjs-dist')) {
+            return 'pdfjs';
+          }
+
+          if (id.includes('mammoth')) {
+            return 'mammoth';
+          }
+
+          return undefined;
+        },
+      },
+    },
   },
   resolve: {
     alias: {

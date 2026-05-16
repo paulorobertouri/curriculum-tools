@@ -20,6 +20,7 @@ Create a browser-first AI application for curriculum and recruiting workflows. U
 - [x] Unit/component smoke tests and Playwright setup smoke tests pass.
 - [x] Large HR batches are chunked and merged deterministically.
 - [x] Candidate and HR E2E result-rendering flows have deeper coverage.
+- [x] HR partial extraction failures are covered by E2E while valid files still process.
 
 ## Milestone 1: Project Scaffold
 
