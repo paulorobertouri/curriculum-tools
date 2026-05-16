@@ -17,6 +17,45 @@ describe('provider adapters', () => {
     vi.restoreAllMocks();
   });
 
+  it('normalizes auth errors for OpenAI test connection', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: false,
+      status: 401,
+      json: async () => ({ error: { message: 'Unauthorized' } }),
+    } as Response);
+
+    await expect(openaiProvider.testConnection(config)).rejects.toMatchObject({
+      kind: 'auth',
+      message: 'The API key was rejected by the provider.',
+    });
+  });
+
+  it('normalizes quota errors for Gemini test connection', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: false,
+      status: 429,
+      json: async () => ({ error: { message: 'Rate limited' } }),
+    } as Response);
+
+    await expect(
+      geminiProvider.testConnection({ ...config, provider: 'gemini' }),
+    ).rejects.toMatchObject({
+      kind: 'quota',
+      message: 'The provider reported quota, billing, or rate limit trouble.',
+    });
+  });
+
+  it('normalizes network failures for DeepSeek test connection', async () => {
+    vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('Network down'));
+
+    await expect(
+      deepseekProvider.testConnection({ ...config, provider: 'deepseek' }),
+    ).rejects.toMatchObject({
+      kind: 'network',
+      message: 'Network down',
+    });
+  });
+
   it('calls OpenAI Responses API for connection tests', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
       ok: true,

@@ -96,10 +96,10 @@ Acceptance criteria:
 
 ## Milestone 6: Tests And Quality
 
-- [ ] Add unit tests for localStorage config behavior.
-- [ ] Add unit tests for provider adapters and normalized errors.
-- [ ] Add unit tests for JSON parsing and score validation.
-- [ ] Add unit tests for file extraction success and failure paths.
+- [x] Add unit tests for localStorage config behavior.
+- [x] Add unit tests for provider adapters and normalized errors.
+- [x] Add unit tests for JSON parsing and score validation.
+- [x] Add unit tests for file extraction success and failure paths.
 - [ ] Add component tests for setup gate, Candidate form, and HR form.
 - [x] Add E2E smoke tests using mocked provider responses.
 

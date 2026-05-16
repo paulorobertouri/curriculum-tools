@@ -145,3 +145,89 @@ test('hr flow renders ranked candidates', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Bob' })).toBeVisible();
   await expect(page.getByText('Recommendation: strong yes')).toBeVisible();
 });
+
+test('hr flow chunks large batches into multiple ranking requests', async ({ page }) => {
+  let rankingRequestCount = 0;
+
+  await page.route('https://api.openai.com/v1/responses', async route => {
+    const body = route.request().postDataJSON() as { input?: string };
+    const prompt = body.input ?? '';
+
+    if (prompt.includes('Reply with only this exact word: hello')) {
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({ output_text: 'hello' }),
+      });
+      return;
+    }
+
+    if (prompt.includes('Rank these CVs against the target role')) {
+      rankingRequestCount += 1;
+
+      const ids = [...prompt.matchAll(/id:\s*([^\n]+)/g)].map(match =>
+        match[1].trim(),
+      );
+      const filenames = [...prompt.matchAll(/filename:\s*([^\n]+)/g)].map(
+        match => match[1].trim(),
+      );
+
+      const candidates = ids.map((id, index) => ({
+        id,
+        filename: filenames[index] ?? `${id}.txt`,
+        score: Number((10 - index * 0.3).toFixed(1)),
+        justification: `Ranked in chunk request ${rankingRequestCount}.`,
+        strengths: ['Relevant experience'],
+        concerns: ['Needs deeper evaluation'],
+        interviewRecommendation: 'maybe',
+      }));
+
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          output_text: JSON.stringify({ candidates }),
+        }),
+      });
+      return;
+    }
+
+    if (prompt.includes('Evaluate this CV for the target role')) {
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          output_text: JSON.stringify({
+            score: 7.0,
+            summary: 'ok',
+            strengths: [],
+            gaps: [],
+            recommendations: [],
+            rewrittenBullets: [],
+          }),
+        }),
+      });
+      return;
+    }
+
+    await route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({ output_text: '{}' }),
+    });
+  });
+
+  await setupOpenAi(page);
+  await page.getByRole('button', { name: 'HR' }).click();
+  await page.getByLabel('Job title').fill('Senior Engineer');
+  await page.getByLabel('Job description').fill('Own architecture and delivery.');
+
+  const files = Array.from({ length: 9 }, (_, index) => ({
+    name: `candidate-${index + 1}.txt`,
+    mimeType: 'text/plain',
+    buffer: Buffer.from(`Candidate ${index + 1} has relevant software engineering experience.`),
+  }));
+
+  await page.locator('#hr-files').setInputFiles(files);
+  await page.getByRole('button', { name: 'Process' }).click();
+
+  await expect(page.getByRole('heading', { name: 'candidate-1.txt' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'candidate-9.txt' })).toBeVisible();
+  expect(rankingRequestCount).toBe(2);
+});
