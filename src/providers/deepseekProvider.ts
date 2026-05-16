@@ -5,7 +5,10 @@ import {
   HrRankingResult,
   TestResult,
 } from '@/domain/aiTypes';
-import { normalizeCandidateReview, normalizeHrRanking } from '@/domain/validation';
+import {
+  normalizeCandidateReview,
+  normalizeHrRanking,
+} from '@/domain/validation';
 import { buildCandidatePrompt } from '@/prompts/candidatePrompt';
 import { buildHrPrompt } from '@/prompts/hrPrompt';
 import {
@@ -30,7 +33,10 @@ export const deepseekProvider: AiProviderAdapter = {
   },
 
   async reviewCandidateCv(config, input): Promise<CandidateReview> {
-    const text = await createChatCompletion(config, buildCandidatePrompt(input));
+    const text = await createChatCompletion(
+      config,
+      buildCandidatePrompt(input),
+    );
     return parseJsonResult(text, normalizeCandidateReview);
   },
 

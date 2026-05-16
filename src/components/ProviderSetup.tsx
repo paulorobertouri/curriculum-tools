@@ -1,5 +1,5 @@
-import { FormEvent, useState } from 'react';
 import { KeyRound, Loader2, ShieldCheck } from 'lucide-react';
+import { FormEvent, useState } from 'react';
 
 import {
   AiConfig,

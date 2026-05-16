@@ -5,7 +5,10 @@ import {
   HrRankingResult,
   TestResult,
 } from '@/domain/aiTypes';
-import { normalizeCandidateReview, normalizeHrRanking } from '@/domain/validation';
+import {
+  normalizeCandidateReview,
+  normalizeHrRanking,
+} from '@/domain/validation';
 import { buildCandidatePrompt } from '@/prompts/candidatePrompt';
 import { buildHrPrompt } from '@/prompts/hrPrompt';
 import {
@@ -30,7 +33,11 @@ export const openaiProvider: AiProviderAdapter = {
   },
 
   async reviewCandidateCv(config, input): Promise<CandidateReview> {
-    const text = await createResponse(config, buildCandidatePrompt(input), true);
+    const text = await createResponse(
+      config,
+      buildCandidatePrompt(input),
+      true,
+    );
     return parseJsonResult(text, normalizeCandidateReview);
   },
 

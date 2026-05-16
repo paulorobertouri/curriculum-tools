@@ -51,7 +51,11 @@ export function ProviderStatus({
             <Pencil className='h-4 w-4' />
             Edit
           </button>
-          <button className='status-button text-rose-700' type='button' onClick={onClear}>
+          <button
+            className='status-button text-rose-700'
+            type='button'
+            onClick={onClear}
+          >
             <Trash2 className='h-4 w-4' />
             Clear
           </button>

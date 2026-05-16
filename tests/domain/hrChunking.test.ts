@@ -7,7 +7,11 @@ import {
   shouldChunkHrRequest,
 } from '@/domain/hrChunking';
 
-const createCv = (id: string, filename: string, textLength: number): HrCvInput => ({
+const createCv = (
+  id: string,
+  filename: string,
+  textLength: number,
+): HrCvInput => ({
   id,
   filename,
   text: 'x'.repeat(textLength),
@@ -32,10 +36,7 @@ describe('hrChunking', () => {
   });
 
   it('keeps oversized single CV in its own chunk', () => {
-    const cvs = [
-      createCv('a', 'a.txt', 60),
-      createCv('b', 'b.txt', 10),
-    ];
+    const cvs = [createCv('a', 'a.txt', 60), createCv('b', 'b.txt', 10)];
 
     const chunks = chunkHrCvs(cvs, 8, 50);
     expect(chunks).toHaveLength(2);

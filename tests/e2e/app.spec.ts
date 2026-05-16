@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 
-const routeOpenAiForSetupOnly = async (page: Parameters<typeof test>[0]['page']) => {
+const routeOpenAiForSetupOnly = async (
+  page: Parameters<typeof test>[0]['page'],
+) => {
   await page.route('https://api.openai.com/v1/responses', async route => {
     await route.fulfill({
       contentType: 'application/json',
@@ -9,7 +11,9 @@ const routeOpenAiForSetupOnly = async (page: Parameters<typeof test>[0]['page'])
   });
 };
 
-const routeOpenAiForAllFlows = async (page: Parameters<typeof test>[0]['page']) => {
+const routeOpenAiForAllFlows = async (
+  page: Parameters<typeof test>[0]['page'],
+) => {
   await page.route('https://api.openai.com/v1/responses', async route => {
     const body = route.request().postDataJSON() as { input?: string };
     const prompt = body.input ?? '';
@@ -32,7 +36,9 @@ const routeOpenAiForAllFlows = async (page: Parameters<typeof test>[0]['page']) 
             strengths: ['Strong React and TypeScript delivery'],
             gaps: ['Limited leadership examples'],
             recommendations: ['Quantify outcomes in recent projects'],
-            rewrittenBullets: ['Led React migration improving release cadence by 20%'],
+            rewrittenBullets: [
+              'Led React migration improving release cadence by 20%',
+            ],
           }),
         }),
       });
@@ -60,7 +66,8 @@ const routeOpenAiForAllFlows = async (page: Parameters<typeof test>[0]['page']) 
                 filename: 'bob.txt',
                 detectedName: 'Bob',
                 score: 7.8,
-                justification: 'Solid baseline with a few missing requirements.',
+                justification:
+                  'Solid baseline with a few missing requirements.',
                 strengths: ['React'],
                 concerns: ['Less backend depth'],
                 interviewRecommendation: 'yes',
@@ -93,8 +100,12 @@ const setupOpenAi = async (page: Parameters<typeof test>[0]['page']) => {
 test('first run shows provider setup', async ({ page }) => {
   await page.goto('/');
 
-  await expect(page.getByRole('heading', { name: 'Curriculum Tools' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Test and Save' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Curriculum Tools' }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Test and Save' }),
+  ).toBeVisible();
 });
 
 test('mocked provider setup unlocks the app', async ({ page }) => {
@@ -107,13 +118,21 @@ test('candidate flow renders processed review result', async ({ page }) => {
   await setupOpenAi(page);
 
   await page.getByLabel('Job title').fill('Frontend Engineer');
-  await page.getByLabel('Job description').fill('Build React applications and mentor peers.');
-  await page.getByLabel('CV text').fill('Built large React apps and improved developer workflow.');
+  await page
+    .getByLabel('Job description')
+    .fill('Build React applications and mentor peers.');
+  await page
+    .getByLabel('CV text')
+    .fill('Built large React apps and improved developer workflow.');
   await page.getByRole('button', { name: 'Process' }).click();
 
   await expect(page.getByText('8.7')).toBeVisible();
-  await expect(page.getByText('Good fit for the role with clear impact.')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Recommendations' })).toBeVisible();
+  await expect(
+    page.getByText('Good fit for the role with clear impact.'),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Recommendations' }),
+  ).toBeVisible();
 });
 
 test('hr flow renders ranked candidates', async ({ page }) => {
@@ -130,12 +149,16 @@ test('hr flow renders ranked candidates', async ({ page }) => {
     {
       name: 'alice.txt',
       mimeType: 'text/plain',
-      buffer: Buffer.from('Candidate one CV text with management and architecture experience.'),
+      buffer: Buffer.from(
+        'Candidate one CV text with management and architecture experience.',
+      ),
     },
     {
       name: 'bob.txt',
       mimeType: 'text/plain',
-      buffer: Buffer.from('Candidate two CV text with strong frontend execution.'),
+      buffer: Buffer.from(
+        'Candidate two CV text with strong frontend execution.',
+      ),
     },
   ]);
 
@@ -146,7 +169,9 @@ test('hr flow renders ranked candidates', async ({ page }) => {
   await expect(page.getByText('Recommendation: strong yes')).toBeVisible();
 });
 
-test('hr flow chunks large batches into multiple ranking requests', async ({ page }) => {
+test('hr flow chunks large batches into multiple ranking requests', async ({
+  page,
+}) => {
   let rankingRequestCount = 0;
 
   await page.route('https://api.openai.com/v1/responses', async route => {
@@ -216,18 +241,26 @@ test('hr flow chunks large batches into multiple ranking requests', async ({ pag
   await setupOpenAi(page);
   await page.getByRole('button', { name: 'HR' }).click();
   await page.getByLabel('Job title').fill('Senior Engineer');
-  await page.getByLabel('Job description').fill('Own architecture and delivery.');
+  await page
+    .getByLabel('Job description')
+    .fill('Own architecture and delivery.');
 
   const files = Array.from({ length: 9 }, (_, index) => ({
     name: `candidate-${index + 1}.txt`,
     mimeType: 'text/plain',
-    buffer: Buffer.from(`Candidate ${index + 1} has relevant software engineering experience.`),
+    buffer: Buffer.from(
+      `Candidate ${index + 1} has relevant software engineering experience.`,
+    ),
   }));
 
   await page.locator('#hr-files').setInputFiles(files);
   await page.getByRole('button', { name: 'Process' }).click();
 
-  await expect(page.getByRole('heading', { name: 'candidate-1.txt' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'candidate-9.txt' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'candidate-1.txt' }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'candidate-9.txt' }),
+  ).toBeVisible();
   expect(rankingRequestCount).toBe(2);
 });

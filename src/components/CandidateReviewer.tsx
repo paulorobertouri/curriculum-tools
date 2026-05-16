@@ -1,8 +1,8 @@
-import { ChangeEvent, FormEvent, ReactNode, useState } from 'react';
 import { FileText, Loader2, Sparkles } from 'lucide-react';
+import { ChangeEvent, FormEvent, ReactNode, useState } from 'react';
 
 import { AiConfig, CandidateReview } from '@/domain/aiTypes';
-import { extractTextFromFile, SUPPORTED_FILE_TYPES } from '@/files/extractText';
+import { SUPPORTED_FILE_TYPES, extractTextFromFile } from '@/files/extractText';
 import { getProviderAdapter } from '@/providers';
 
 type CandidateReviewerProps = {
@@ -48,21 +48,22 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
     setResult(null);
 
     if (!jobTitle.trim() || !jobDescription.trim() || !cvText.trim()) {
-      setError('Add job title, job description, and CV text before processing.');
+      setError(
+        'Add job title, job description, and CV text before processing.',
+      );
       return;
     }
 
     setIsProcessing(true);
 
     try {
-      const review = await getProviderAdapter(config.provider).reviewCandidateCv(
-        config,
-        {
-          jobTitle,
-          jobDescription,
-          cvText,
-        },
-      );
+      const review = await getProviderAdapter(
+        config.provider,
+      ).reviewCandidateCv(config, {
+        jobTitle,
+        jobDescription,
+        cvText,
+      });
       setResult(review);
     } catch (processError) {
       setError(
@@ -108,8 +109,16 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
           onChange={setCvText}
           rows={10}
         />
-        {error ? <p role='alert' className='error-message'>{error}</p> : null}
-        <button className='primary-button' type='submit' disabled={isProcessing}>
+        {error ? (
+          <p role='alert' className='error-message'>
+            {error}
+          </p>
+        ) : null}
+        <button
+          className='primary-button'
+          type='submit'
+          disabled={isProcessing}
+        >
           {isProcessing ? (
             <Loader2 className='h-4 w-4 animate-spin' />
           ) : (

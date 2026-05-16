@@ -4,7 +4,10 @@ import {
   HrRankingResult,
   TestResult,
 } from '@/domain/aiTypes';
-import { normalizeCandidateReview, normalizeHrRanking } from '@/domain/validation';
+import {
+  normalizeCandidateReview,
+  normalizeHrRanking,
+} from '@/domain/validation';
 import { buildCandidatePrompt } from '@/prompts/candidatePrompt';
 import { buildHrPrompt } from '@/prompts/hrPrompt';
 import {
@@ -18,7 +21,11 @@ import { parseJsonResult } from '@/providers/responseParsing';
 export const geminiProvider: AiProviderAdapter = {
   async testConnection(config): Promise<TestResult> {
     try {
-      const text = await generateContent(config.apiKey, config.model, TEST_PROMPT);
+      const text = await generateContent(
+        config.apiKey,
+        config.model,
+        TEST_PROMPT,
+      );
       ensureHello(text);
       return { ok: true, message: 'Gemini responded successfully.' };
     } catch (error) {

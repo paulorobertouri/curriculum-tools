@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { normalizeCandidateReview, normalizeHrRanking } from '@/domain/validation';
+import {
+  normalizeCandidateReview,
+  normalizeHrRanking,
+} from '@/domain/validation';
 import { parseJsonResult } from '@/providers/responseParsing';
 
 describe('responseParsing', () => {
@@ -26,7 +29,10 @@ describe('responseParsing', () => {
       normalizeHrRanking,
     );
 
-    expect(result.candidates.map(candidate => candidate.id)).toEqual(['a', 'b']);
+    expect(result.candidates.map(candidate => candidate.id)).toEqual([
+      'a',
+      'b',
+    ]);
   });
 
   it('throws a friendly parse error for malformed JSON', () => {

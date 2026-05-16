@@ -30,6 +30,7 @@ Create a browser-first AI application for curriculum and recruiting workflows. U
 - [x] Add a minimal responsive shell with setup gate, provider status, and tool tabs.
 
 Acceptance criteria:
+
 - App builds with TypeScript.
 - Unit test command runs successfully.
 - First screen is the provider setup when no valid config exists in `localStorage`.
@@ -44,6 +45,7 @@ Acceptance criteria:
 - [x] Display privacy copy explaining that API keys and CV content are handled in the browser and sent to the selected provider.
 
 Acceptance criteria:
+
 - Invalid keys do not unlock the app.
 - Valid provider responses unlock the Candidate and HR tools.
 - Reloading the app with a saved valid config bypasses setup.
@@ -62,6 +64,7 @@ Acceptance criteria:
 - [x] Add robust response parsing for JSON wrapped in Markdown fences, plain JSON, and malformed/missing fields.
 
 Acceptance criteria:
+
 - Each adapter maps requests and responses through a shared application contract.
 - Provider-specific HTTP details do not leak into UI components.
 - Tests mock `fetch` and verify endpoints, headers, payloads, success, and failure handling.
@@ -75,6 +78,7 @@ Acceptance criteria:
 - [x] Render score, summary, strengths, gaps, recommended changes, and rewritten bullet suggestions.
 
 Acceptance criteria:
+
 - Required fields are validated before processing.
 - Loading and error states are clear.
 - Score is constrained to `0.0` through `10.0`.
@@ -89,6 +93,7 @@ Acceptance criteria:
 - [x] Render a ranked list with filename/name, score, justification, strengths, concerns, and interview recommendation.
 
 Acceptance criteria:
+
 - Multiple files can be selected and reviewed before processing.
 - Per-file extraction failures do not block valid files.
 - Results are sorted from highest score to lowest score.
@@ -100,20 +105,22 @@ Acceptance criteria:
 - [x] Add unit tests for provider adapters and normalized errors.
 - [x] Add unit tests for JSON parsing and score validation.
 - [x] Add unit tests for file extraction success and failure paths.
-- [ ] Add component tests for setup gate, Candidate form, and HR form.
+- [x] Add component tests for setup gate, Candidate form, and HR form.
 - [x] Add E2E smoke tests using mocked provider responses.
 
 Acceptance criteria:
+
 - `test`, `build`, and `lint` pass.
 - E2E smoke verifies first-run setup, successful provider test, Candidate result rendering, and HR result rendering.
 
 ## Milestone 7: Documentation
 
-- [ ] Keep `docs/PRODUCT_PLAN.md` updated when scope changes.
-- [ ] Keep `docs/ARCHITECTURE.md` updated when implementation choices change.
-- [ ] Add a short README after the app is scaffolded.
-- [ ] Document browser-only limitations, especially API key storage and legacy `.doc` parsing.
+- [x] Keep `docs/PRODUCT_PLAN.md` updated when scope changes.
+- [x] Keep `docs/ARCHITECTURE.md` updated when implementation choices change.
+- [x] Add a short README after the app is scaffolded.
+- [x] Document browser-only limitations, especially API key storage and legacy `.doc` parsing.
 
 Acceptance criteria:
+
 - A new engineer can implement from the docs without needing product decisions.
 - Provider API references are rechecked before coding.

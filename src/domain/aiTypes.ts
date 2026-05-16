@@ -80,10 +80,7 @@ export type AiProviderAdapter = {
     config: AiConfig,
     input: CandidateReviewInput,
   ): Promise<CandidateReview>;
-  rankHrCvs(
-    config: AiConfig,
-    input: HrRankingInput,
-  ): Promise<HrRankingResult>;
+  rankHrCvs(config: AiConfig, input: HrRankingInput): Promise<HrRankingResult>;
 };
 
 export const PROVIDER_LABELS: Record<AiProviderId, string> = {

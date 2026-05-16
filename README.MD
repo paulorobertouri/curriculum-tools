@@ -24,6 +24,12 @@ Browser-first AI tools for candidates and HR teams. Users bring their own Gemini
 
 API keys are stored in this browser's `localStorage`. CV content is sent directly from the browser to the selected AI provider only when the user clicks `Process`.
 
+## Browser-Only Limitations
+
+- API keys are stored in plain browser storage (`localStorage`) for this origin.
+- There is no backend proxy in v1, so provider calls are made directly from the browser.
+- Legacy `.doc` parsing is not reliably supported. Convert files to `.docx` or `.pdf`, or paste CV text.
+
 ## Documentation
 
 - [Product Plan](docs/PRODUCT_PLAN.md)

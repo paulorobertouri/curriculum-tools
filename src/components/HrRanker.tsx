@@ -1,14 +1,6 @@
-import { ChangeEvent, FormEvent, useState } from 'react';
 import { Loader2, Sparkles } from 'lucide-react';
+import { ChangeEvent, FormEvent, useState } from 'react';
 
-import { AiConfig, HrRankingResult, HrCvInput } from '@/domain/aiTypes';
-import {
-  chunkHrCvs,
-  mergeHrRankingResults,
-  shouldChunkHrRequest,
-} from '@/domain/hrChunking';
-import { extractTextFromFile, SUPPORTED_FILE_TYPES } from '@/files/extractText';
-import { getProviderAdapter } from '@/providers';
 import {
   List,
   ResultPanel,
@@ -16,6 +8,14 @@ import {
   TextArea,
   TextField,
 } from '@/components/CandidateReviewer';
+import { AiConfig, HrCvInput, HrRankingResult } from '@/domain/aiTypes';
+import {
+  chunkHrCvs,
+  mergeHrRankingResults,
+  shouldChunkHrRequest,
+} from '@/domain/hrChunking';
+import { SUPPORTED_FILE_TYPES, extractTextFromFile } from '@/files/extractText';
+import { getProviderAdapter } from '@/providers';
 
 type HrRankerProps = {
   config: AiConfig;
@@ -81,7 +81,9 @@ export function HrRanker({ config }: HrRankerProps) {
     setError(null);
     setResult(null);
 
-    const validFiles = files.filter(file => file.status === 'ready' && file.text);
+    const validFiles = files.filter(
+      file => file.status === 'ready' && file.text,
+    );
 
     if (!jobTitle.trim() || !jobDescription.trim() || validFiles.length === 0) {
       setError('Add job title, job description, and at least one valid CV.');
@@ -102,7 +104,9 @@ export function HrRanker({ config }: HrRankerProps) {
         const partialResults: HrRankingResult[] = [];
 
         for (let index = 0; index < chunks.length; index += 1) {
-          setProcessingLabel(`Processing batch ${index + 1} of ${chunks.length}...`);
+          setProcessingLabel(
+            `Processing batch ${index + 1} of ${chunks.length}...`,
+          );
 
           const partial = await provider.rankHrCvs(config, {
             jobTitle,
@@ -242,7 +246,8 @@ function RankingResult({ result }: { result: HrRankingResult }) {
             <List title='Concerns' items={candidate.concerns} />
           </div>
           <p className='mt-4 rounded-md bg-slate-100 px-3 py-2 text-sm font-bold text-slate-800'>
-            Recommendation: {candidate.interviewRecommendation.replace('_', ' ')}
+            Recommendation:{' '}
+            {candidate.interviewRecommendation.replace('_', ' ')}
           </p>
         </article>
       ))}

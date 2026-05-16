@@ -10,7 +10,11 @@ export const parseJsonResult = <T>(
   try {
     const parsed = JSON.parse(jsonText);
 
-    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    if (
+      typeof parsed !== 'object' ||
+      parsed === null ||
+      Array.isArray(parsed)
+    ) {
       throw new Error('Result was not an object.');
     }
 

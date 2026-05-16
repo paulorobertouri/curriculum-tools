@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
 import { BriefcaseBusiness, UserRound } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
 import { CandidateReviewer } from '@/components/CandidateReviewer';
 import { HrRanker } from '@/components/HrRanker';
@@ -122,9 +122,8 @@ function App() {
         </header>
 
         <section className='rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900'>
-          API keys are saved in localStorage on this browser. CV content is
-          sent from this browser to {config.provider} only after Process is
-          clicked.
+          API keys are saved in localStorage on this browser. CV content is sent
+          from this browser to {config.provider} only after Process is clicked.
         </section>
 
         {activeContent}

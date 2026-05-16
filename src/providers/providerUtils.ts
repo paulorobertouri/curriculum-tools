@@ -22,7 +22,10 @@ export const assertSuccessfulResponse = async (response: Response) => {
   }
 
   if (response.status === 401 || response.status === 403) {
-    throw new ProviderError('auth', 'The API key was rejected by the provider.');
+    throw new ProviderError(
+      'auth',
+      'The API key was rejected by the provider.',
+    );
   }
 
   if (response.status === 402 || response.status === 429) {
