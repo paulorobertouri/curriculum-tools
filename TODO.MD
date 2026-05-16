@@ -147,7 +147,7 @@ Acceptance criteria:
 
 - [x] Add initial in-app score bars for Candidate and HR metrics dashboards.
 - [x] Add recommendation distribution graph for HR (`strong_yes`, `yes`, `maybe`, `no`).
-- [ ] Add trend/comparison view between batch average and top candidate score.
+- [x] Add trend/comparison view between batch average and top candidate score.
 - [ ] Add export-ready metrics summary model for future CSV/JSON reporting.
 
 ### Prompt And Metrics Quality Plan

@@ -291,6 +291,7 @@ function HrMetricsDashboard({ result }: { result: HrRankingResult }) {
         <HrMetricBar label={t('hr.dashboard.max')} value={max} />
         <HrMetricBar label={t('hr.dashboard.min')} value={min} />
       </div>
+      <HrComparisonBar average={average} top={max} />
     </section>
   );
 }
@@ -317,6 +318,54 @@ function HrMetricBar({ label, value }: { label: string; value: number }) {
           className='h-2 rounded-full bg-emerald-600 transition-all duration-300'
           style={{ width: `${safeValue * 10}%` }}
         />
+      </div>
+    </div>
+  );
+}
+
+function HrComparisonBar({ average, top }: { average: number; top: number }) {
+  const { locale, t } = useI18n();
+  const safeAverage = Math.max(0, Math.min(10, average));
+  const safeTop = Math.max(0, Math.min(10, top));
+  const formatter = new Intl.NumberFormat(locale, {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
+  const spread = Math.max(0, safeTop - safeAverage);
+
+  return (
+    <div className='mt-4 rounded-md border border-dashed border-slate-300 bg-white p-3'>
+      <h3 className='text-xs font-bold uppercase tracking-wide text-slate-700'>
+        {t('hr.dashboard.comparison')}
+      </h3>
+      <div className='mt-3 space-y-3'>
+        <div>
+          <div className='mb-1 flex items-center justify-between text-xs font-semibold text-slate-700'>
+            <span>{t('hr.dashboard.average')}</span>
+            <span>{formatter.format(safeAverage)}/10</span>
+          </div>
+          <div className='h-2 rounded-full bg-slate-200'>
+            <div
+              className='h-2 rounded-full bg-cyan-600 transition-all duration-300'
+              style={{ width: `${safeAverage * 10}%` }}
+            />
+          </div>
+        </div>
+        <div>
+          <div className='mb-1 flex items-center justify-between text-xs font-semibold text-slate-700'>
+            <span>{t('hr.dashboard.max')}</span>
+            <span>{formatter.format(safeTop)}/10</span>
+          </div>
+          <div className='h-2 rounded-full bg-slate-200'>
+            <div
+              className='h-2 rounded-full bg-emerald-600 transition-all duration-300'
+              style={{ width: `${safeTop * 10}%` }}
+            />
+          </div>
+        </div>
+        <p className='text-xs font-semibold text-slate-600'>
+          {t('hr.dashboard.spread')}: {formatter.format(spread)}
+        </p>
       </div>
     </div>
   );
