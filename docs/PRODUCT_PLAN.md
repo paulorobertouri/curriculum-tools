@@ -163,6 +163,7 @@ Out of scope for v1:
 - Candidate and HR tools should be reachable through tabs or segmented navigation.
 - Buttons should be disabled during async work.
 - Errors should be concise and actionable.
+- Main actions should expose visible keyboard focus and result/status regions should announce loading and completion updates.
 - Empty, loading, and completed result states should be visually distinct so users can tell when work is still running versus finished.
 - Results should be scannable, with the score prominent and explanations grouped.
 - Use icons for provider status and actions when available through `lucide-react`.

@@ -149,7 +149,7 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
             ) : null}
 
             <button
-              className='inline-flex items-center justify-center gap-2 rounded-md bg-slate-950 px-4 py-3 text-sm font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400'
+              className='inline-flex items-center justify-center gap-2 rounded-md bg-slate-950 px-4 py-3 text-sm font-bold text-white transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-200 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-400'
               type='submit'
               disabled={isTesting}
             >

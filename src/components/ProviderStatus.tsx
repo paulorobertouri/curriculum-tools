@@ -38,7 +38,9 @@ export function ProviderStatus({
               {config.model} · {maskApiKey(config.apiKey)}
             </p>
             {message ? (
-              <p className='mt-1 text-sm text-slate-700'>{message}</p>
+              <p className='mt-1 text-sm text-slate-700' aria-live='polite'>
+                {message}
+              </p>
             ) : null}
           </div>
         </div>

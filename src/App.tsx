@@ -138,7 +138,7 @@ function App() {
 
 const toolButtonClass = (active: boolean) =>
   [
-    'inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-bold transition',
+    'inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-200 focus-visible:ring-offset-2',
     active
       ? 'bg-slate-950 text-white'
       : 'text-slate-700 hover:bg-slate-100 hover:text-slate-950',
