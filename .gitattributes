@@ -1,0 +1,99 @@
+###############################################################################
+# Set default behavior to automatically normalize line endings.
+###############################################################################
+
+* text=auto
+
+###############################################################################
+# Git
+###############################################################################
+
+.gitignore encoding=utf-8 text eol=lf
+.gitattributes encoding=utf-8 text eol=lf
+
+###############################################################################
+# Web
+###############################################################################
+
+*.htm encoding=utf-8 text eol=lf
+*.html encoding=utf-8 text eol=lf
+*.json encoding=utf-8 text eol=lf
+*.js encoding=utf-8 text eol=lf
+*.ts encoding=utf-8 text eol=lf
+*.jsx encoding=utf-8 text eol=lf
+*.tsx encoding=utf-8 text eol=lf
+*.map encoding=utf-8 text eol=lf
+*.css encoding=utf-8 text eol=lf
+
+###############################################################################
+# Shell
+###############################################################################
+
+*.ps1 encoding=utf-8 text eol=crlf
+*.sh encoding=utf-8 text eol=lf
+*.yml encoding=utf-8 text eol=lf
+*.yaml encoding=utf-8 text eol=lf
+*.env encoding=utf-8 text eol=lf
+*.conf encoding=utf-8 text eol=lf
+Makefile encoding=utf-8 text eol=lf
+
+###############################################################################
+# Markdown
+###############################################################################
+
+*.md encoding=utf-8 text eol=lf
+
+###############################################################################
+# SQL
+###############################################################################
+
+*.sql encoding=utf-8 text eol=crlf diff=sql
+
+###############################################################################
+# CSharp
+###############################################################################
+
+*.tt encoding=utf-8 text eol=crlf
+*.t4 encoding=utf-8 text eol=crlf
+*.cs encoding=utf-8 text eol=crlf diff=sharp
+*.cshtml encoding=utf-8 text eol=crlf
+*.aspx encoding=utf-8 text eol=crlf
+*.asmx encoding=utf-8 text eol=crlf
+*.asax encoding=utf-8 text eol=crlf
+*.resx encoding=utf-8 text eol=crlf
+
+###############################################################################
+# Python
+###############################################################################
+
+*.py encoding=utf-8 text eol=lf
+*.pyi encoding=utf-8 text eol=lf
+*.toml encoding=utf-8 text eol=lf
+
+###############################################################################
+# Docker
+###############################################################################
+
+.env encoding=utf-8 text eol=lf
+*.env encoding=utf-8 text eol=lf
+Dockerfile encoding=utf-8 text eol=lf
+Dockerfile.* encoding=utf-8 text eol=lf
+*.Dockerfile encoding=utf-8 text eol=lf
+.dockerignore encoding=utf-8 text eol=lf
+*.dockerignore encoding=utf-8 text eol=lf
+
+###############################################################################
+# Visual Studio
+###############################################################################
+
+.editorconfig encoding=utf-8 text eol=lf
+*.editorconfig encoding=utf-8 text eol=lf
+
+###############################################################################
+# Images
+###############################################################################
+
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary

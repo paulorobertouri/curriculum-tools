@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Build output
+.husky/
+dist/
+*.tsbuildinfo
+
+# Test output
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Caches
+.cache/
+.temp/
+.vite/
+.eslintcache/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Output directories
+wwwroot/
