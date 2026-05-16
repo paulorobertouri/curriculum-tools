@@ -326,6 +326,7 @@ Provider responses can vary. Add a single parser that:
 - Coerces scores to numbers.
 - Clamps scores to `0.0` through `10.0`.
 - Converts missing arrays to empty arrays.
+- Uses deterministic fallback IDs for HR candidates when providers omit IDs.
 - Returns actionable errors when parsing fails.
 
 Do not render raw JSON parser errors directly to users. Show a message such as:

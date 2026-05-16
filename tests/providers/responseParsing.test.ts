@@ -35,6 +35,25 @@ describe('responseParsing', () => {
     ]);
   });
 
+  it('applies deterministic fallback IDs and tie-break sorting', () => {
+    const result = parseJsonResult(
+      JSON.stringify({
+        candidates: [
+          { filename: 'zeta.txt', score: 7 },
+          { filename: 'alpha.txt', score: 7 },
+        ],
+      }),
+      normalizeHrRanking,
+    );
+
+    expect(result.candidates.map(candidate => candidate.filename)).toEqual([
+      'alpha.txt',
+      'zeta.txt',
+    ]);
+    expect(result.candidates[0].id).toBe('candidate-2-alpha.txt');
+    expect(result.candidates[1].id).toBe('candidate-1-zeta.txt');
+  });
+
   it('throws a friendly parse error for malformed JSON', () => {
     expect(() => parseJsonResult('not json', normalizeCandidateReview)).toThrow(
       'expected format',

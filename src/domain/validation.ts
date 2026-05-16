@@ -47,24 +47,40 @@ export const normalizeHrRanking = (
         (candidate): candidate is Record<string, unknown> =>
           typeof candidate === 'object' && candidate !== null,
       )
-      .map(candidate => ({
-        id: String(candidate.id ?? candidate.filename ?? crypto.randomUUID()),
-        filename: String(candidate.filename ?? 'Unknown file'),
-        detectedName:
-          typeof candidate.detectedName === 'string'
-            ? candidate.detectedName
-            : undefined,
-        score: normalizeScore(candidate.score),
-        justification: String(
-          candidate.justification ?? 'No justification provided.',
-        ),
-        strengths: asStringArray(candidate.strengths),
-        concerns: asStringArray(candidate.concerns),
-        interviewRecommendation: normalizeRecommendation(
-          candidate.interviewRecommendation,
-        ),
-      }))
-      .sort((left, right) => right.score - left.score),
+      .map((candidate, index) => {
+        const filename = String(candidate.filename ?? 'Unknown file');
+        const fallbackId = `candidate-${index + 1}-${filename.toLowerCase()}`;
+
+        return {
+          id: String(candidate.id ?? fallbackId),
+          filename,
+          detectedName:
+            typeof candidate.detectedName === 'string'
+              ? candidate.detectedName
+              : undefined,
+          score: normalizeScore(candidate.score),
+          justification: String(
+            candidate.justification ?? 'No justification provided.',
+          ),
+          strengths: asStringArray(candidate.strengths),
+          concerns: asStringArray(candidate.concerns),
+          interviewRecommendation: normalizeRecommendation(
+            candidate.interviewRecommendation,
+          ),
+        };
+      })
+      .sort((left, right) => {
+        if (right.score !== left.score) {
+          return right.score - left.score;
+        }
+
+        const byFilename = left.filename.localeCompare(right.filename);
+        if (byFilename !== 0) {
+          return byFilename;
+        }
+
+        return left.id.localeCompare(right.id);
+      }),
   };
 };
 
