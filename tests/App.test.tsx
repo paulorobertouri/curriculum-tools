@@ -204,6 +204,7 @@ describe('App', () => {
       expect(screen.getByRole('heading', { name: 'Alice' })).toBeVisible();
     });
 
+    expect(screen.getByText('Candidates ranked')).toBeVisible();
     expect(
       screen.getByRole('heading', { name: 'Average vs top candidate' }),
     ).toBeVisible();

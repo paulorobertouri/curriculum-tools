@@ -48,5 +48,6 @@ describe('hrMetricsSummary', () => {
       no: 0,
     });
     expect(summary.topCandidate?.id).toBe('2');
+    expect(summary.topCandidateLabel).toBe('bravo.txt');
   });
 });

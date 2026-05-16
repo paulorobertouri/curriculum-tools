@@ -281,6 +281,20 @@ function HrMetricsDashboard({ result }: { result: HrRankingResult }) {
       <p className='text-sm font-bold text-slate-900'>
         {t('hr.dashboard.title')}
       </p>
+      <div className='mt-3 grid gap-3 sm:grid-cols-3'>
+        <HrSummaryStat
+          label={t('hr.dashboard.count')}
+          value={summary.totalCandidates.toString()}
+        />
+        <HrSummaryStat
+          label={t('hr.dashboard.average')}
+          value={`${summary.averageScore.toFixed(1)}/10`}
+        />
+        <HrSummaryStat
+          label={t('hr.dashboard.topCandidate')}
+          value={summary.topCandidateLabel}
+        />
+      </div>
       <div className='mt-3 space-y-3'>
         <HrMetricBar
           label={t('hr.dashboard.average')}
@@ -294,6 +308,17 @@ function HrMetricsDashboard({ result }: { result: HrRankingResult }) {
       </div>
       <HrComparisonBar average={summary.averageScore} top={summary.topScore} />
     </section>
+  );
+}
+
+function HrSummaryStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className='rounded-md border border-slate-200 bg-white px-3 py-2'>
+      <p className='text-[11px] font-bold uppercase tracking-wide text-slate-500'>
+        {label}
+      </p>
+      <p className='mt-1 truncate text-sm font-bold text-slate-950'>{value}</p>
+    </div>
   );
 }
 

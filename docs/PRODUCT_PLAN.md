@@ -119,6 +119,7 @@ Output:
 - Ranked candidate list.
 - Candidate name if detected by the model, otherwise filename.
 - Score from `0.0` to `10.0`.
+- A compact summary row showing candidate count, average score, and the top candidate before the detailed metrics.
 - Batch metrics showing average score, top score, lowest score, and a comparison view between the average and top candidate.
 - Score justification.
 - Strengths.

@@ -12,6 +12,7 @@ export type HrMetricsSummary = {
   scoreSpread: number;
   recommendationCounts: Record<InterviewRecommendation, number>;
   topCandidate: RankedCandidate | null;
+  topCandidateLabel: string;
 };
 
 const createRecommendationCounts = () => ({
@@ -48,5 +49,9 @@ export const buildHrMetricsSummary = (
     scoreSpread: Math.max(0, topScore - averageScore),
     recommendationCounts,
     topCandidate: result.candidates[0] ?? null,
+    topCandidateLabel:
+      result.candidates[0]?.detectedName ??
+      result.candidates[0]?.filename ??
+      'N/A',
   };
 };

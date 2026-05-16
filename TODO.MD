@@ -131,7 +131,7 @@ Acceptance criteria:
 ### UI/UX/Layout Improvement Plan
 
 - [x] Add first metrics visualization blocks in Candidate and HR result panels.
-- [ ] Improve spacing hierarchy and responsive density for large HR result lists.
+- [x] Improve spacing hierarchy and responsive density for large HR result lists.
 - [ ] Add empty/loading/success visual states with stronger visual differentiation.
 - [ ] Add accessibility pass for keyboard navigation, focus visibility, and ARIA updates.
 
