@@ -147,6 +147,12 @@ HR chunking behavior in the current implementation:
 - Merge ordering is score descending, then filename ascending, then candidate ID ascending.
 - If a provider response omits a candidate, include a fallback entry with score `0.0` and a clear justification.
 
+Reusable HR metrics summary:
+
+- Build a plain data summary from `HrRankingResult` for future CSV or JSON export.
+- Include candidate count, average score, top score, lowest score, score spread, top candidate, and recommendation counts.
+- Keep the summary free of presentation details so the same data can feed UI, exports, or tests.
+
 ## Storage
 
 Store provider config in `localStorage` using:

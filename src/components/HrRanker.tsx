@@ -14,6 +14,7 @@ import {
   mergeHrRankingResults,
   shouldChunkHrRequest,
 } from '@/domain/hrChunking';
+import { buildHrMetricsSummary } from '@/domain/hrMetricsSummary';
 import { SUPPORTED_FILE_TYPES, extractTextFromFile } from '@/files/extractText';
 import { useI18n } from '@/i18n/i18n';
 import { getProviderAdapter } from '@/providers';
@@ -273,13 +274,7 @@ function RankingResult({ result }: { result: HrRankingResult }) {
 
 function HrMetricsDashboard({ result }: { result: HrRankingResult }) {
   const { t } = useI18n();
-  const scores = result.candidates.map(candidate => candidate.score);
-  const average =
-    scores.length > 0
-      ? scores.reduce((sum, score) => sum + score, 0) / scores.length
-      : 0;
-  const max = scores.length > 0 ? Math.max(...scores) : 0;
-  const min = scores.length > 0 ? Math.min(...scores) : 0;
+  const summary = buildHrMetricsSummary(result);
 
   return (
     <section className='rounded-lg border border-slate-200 bg-slate-50 p-4'>
@@ -287,11 +282,17 @@ function HrMetricsDashboard({ result }: { result: HrRankingResult }) {
         {t('hr.dashboard.title')}
       </p>
       <div className='mt-3 space-y-3'>
-        <HrMetricBar label={t('hr.dashboard.average')} value={average} />
-        <HrMetricBar label={t('hr.dashboard.max')} value={max} />
-        <HrMetricBar label={t('hr.dashboard.min')} value={min} />
+        <HrMetricBar
+          label={t('hr.dashboard.average')}
+          value={summary.averageScore}
+        />
+        <HrMetricBar label={t('hr.dashboard.max')} value={summary.topScore} />
+        <HrMetricBar
+          label={t('hr.dashboard.min')}
+          value={summary.lowestScore}
+        />
       </div>
-      <HrComparisonBar average={average} top={max} />
+      <HrComparisonBar average={summary.averageScore} top={summary.topScore} />
     </section>
   );
 }

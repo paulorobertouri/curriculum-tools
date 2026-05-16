@@ -1,0 +1,52 @@
+import {
+  HrRankingResult,
+  InterviewRecommendation,
+  RankedCandidate,
+} from '@/domain/aiTypes';
+
+export type HrMetricsSummary = {
+  totalCandidates: number;
+  averageScore: number;
+  topScore: number;
+  lowestScore: number;
+  scoreSpread: number;
+  recommendationCounts: Record<InterviewRecommendation, number>;
+  topCandidate: RankedCandidate | null;
+};
+
+const createRecommendationCounts = () => ({
+  strong_yes: 0,
+  yes: 0,
+  maybe: 0,
+  no: 0,
+});
+
+export const buildHrMetricsSummary = (
+  result: HrRankingResult,
+): HrMetricsSummary => {
+  const totalCandidates = result.candidates.length;
+  const scores = result.candidates.map(candidate => candidate.score);
+  const averageScore =
+    scores.length > 0
+      ? scores.reduce((sum, score) => sum + score, 0) / scores.length
+      : 0;
+  const topScore = scores.length > 0 ? Math.max(...scores) : 0;
+  const lowestScore = scores.length > 0 ? Math.min(...scores) : 0;
+  const recommendationCounts = result.candidates.reduce(
+    (accumulator, candidate) => {
+      accumulator[candidate.interviewRecommendation] += 1;
+      return accumulator;
+    },
+    createRecommendationCounts(),
+  );
+
+  return {
+    totalCandidates,
+    averageScore,
+    topScore,
+    lowestScore,
+    scoreSpread: Math.max(0, topScore - averageScore),
+    recommendationCounts,
+    topCandidate: result.candidates[0] ?? null,
+  };
+};
