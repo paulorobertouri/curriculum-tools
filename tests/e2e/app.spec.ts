@@ -135,6 +135,35 @@ test('candidate flow renders processed review result', async ({ page }) => {
   ).toBeVisible();
 });
 
+test('candidate flow extracts uploaded CV files', async ({ page }) => {
+  await routeOpenAiForAllFlows(page);
+  await setupOpenAi(page);
+
+  await page.getByRole('button', { name: 'Candidate' }).click();
+  await page.getByLabel('Job title').fill('Frontend Engineer');
+  await page
+    .getByLabel('Job description')
+    .fill('Build React applications and mentor peers.');
+
+  await page.locator('#candidate-file').setInputFiles({
+    name: 'alice.txt',
+    mimeType: 'text/plain',
+    buffer: Buffer.from(
+      'Built large React apps and improved developer workflow.',
+    ),
+  });
+
+  await expect(page.getByText('alice.txt')).toBeVisible();
+  await expect(page.getByText('alice.txt is ready')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Process' }).click();
+
+  await expect(page.getByText('8.7', { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Recommendations' }),
+  ).toBeVisible();
+});
+
 test('hr flow renders ranked candidates', async ({ page }) => {
   await routeOpenAiForAllFlows(page);
   await setupOpenAi(page);

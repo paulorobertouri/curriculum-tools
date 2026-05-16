@@ -221,7 +221,16 @@ export function HrRanker({ config }: HrRankerProps) {
         </button>
       </form>
 
-      <ResultPanel title={t('hr.resultTitle')} empty={t('hr.resultEmpty')}>
+      <ResultPanel
+        title={t('hr.resultTitle')}
+        empty={t('hr.resultEmpty')}
+        status={isProcessing ? 'loading' : result ? 'ready' : 'empty'}
+        statusMessage={
+          isProcessing
+            ? (processingLabel ?? t('hr.processing'))
+            : t('result.ready')
+        }
+      >
         {result ? <RankingResult result={result} /> : null}
       </ResultPanel>
     </section>

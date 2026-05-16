@@ -135,6 +135,10 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
       <ResultPanel
         title={t('candidate.resultTitle')}
         empty={t('candidate.resultEmpty')}
+        status={isProcessing ? 'loading' : result ? 'ready' : 'empty'}
+        statusMessage={
+          isProcessing ? t('candidate.processing') : t('result.ready')
+        }
       >
         {result ? <CandidateResult result={result} /> : null}
       </ResultPanel>
@@ -271,19 +275,49 @@ export function TextArea({
 export function ResultPanel({
   title,
   empty,
+  status = 'empty',
+  statusMessage,
   children,
 }: {
   title: string;
   empty: string;
+  status?: 'empty' | 'loading' | 'ready';
+  statusMessage?: string;
   children: ReactNode;
 }) {
+  const { t } = useI18n();
+  const isReady = Boolean(children) && status === 'ready';
+
   return (
-    <aside className='tool-panel'>
+    <aside
+      className='tool-panel'
+      aria-busy={status === 'loading'}
+      aria-live='polite'
+    >
       <div className='flex items-center gap-2'>
         <FileText className='h-5 w-5 text-cyan-700' />
         <h2 className='panel-title'>{title}</h2>
       </div>
-      {children || <p className='text-sm leading-6 text-slate-600'>{empty}</p>}
+      {status === 'loading' ? (
+        <div className='rounded-lg border border-dashed border-cyan-200 bg-cyan-50 p-4 text-sm leading-6 text-cyan-900'>
+          <div className='flex items-center gap-2 font-bold'>
+            <Loader2 className='h-4 w-4 animate-spin' />
+            <span>{statusMessage ?? t('result.loading')}</span>
+          </div>
+          <p className='mt-2 text-cyan-800/80'>{empty}</p>
+        </div>
+      ) : isReady ? (
+        <div className='space-y-3'>
+          <div className='inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold uppercase tracking-wide text-emerald-800'>
+            {statusMessage ?? t('result.ready')}
+          </div>
+          {children}
+        </div>
+      ) : (
+        <div className='rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4'>
+          <p className='text-sm leading-6 text-slate-600'>{empty}</p>
+        </div>
+      )}
     </aside>
   );
 }
