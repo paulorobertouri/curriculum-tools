@@ -1,12 +1,14 @@
 import { KeyRound, Loader2, ShieldCheck } from 'lucide-react';
 import { FormEvent, useState } from 'react';
 
+import { LanguageSelector } from '@/components/LanguageSelector';
 import {
   AiConfig,
   AiProviderId,
   DEFAULT_MODELS,
   PROVIDER_LABELS,
 } from '@/domain/aiTypes';
+import { useI18n } from '@/i18n/i18n';
 import { getProviderAdapter } from '@/providers';
 
 type ProviderSetupProps = {
@@ -15,6 +17,7 @@ type ProviderSetupProps = {
 };
 
 export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
+  const { t } = useI18n();
   const [provider, setProvider] = useState<AiProviderId>(
     initialConfig?.provider ?? 'gemini',
   );
@@ -36,7 +39,7 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
     setStatus(null);
 
     if (!apiKey.trim() || !model.trim()) {
-      setStatus('Enter an API key and model before testing.');
+      setStatus(t('provider.setup.validation'));
       return;
     }
 
@@ -54,9 +57,7 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
       onSave(config);
     } catch (error) {
       setStatus(
-        error instanceof Error
-          ? error.message
-          : 'The provider test failed. Check the key and try again.',
+        error instanceof Error ? error.message : t('provider.status.failed'),
       );
     } finally {
       setIsTesting(false);
@@ -68,23 +69,23 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
       <div className='mx-auto grid min-h-screen max-w-5xl content-center gap-8 px-4 py-10 sm:px-6 lg:px-8'>
         <section className='grid gap-6 rounded-lg border border-white/10 bg-white/[0.06] p-6 shadow-2xl sm:p-8 lg:grid-cols-[1fr_0.9fr]'>
           <div className='space-y-5'>
+            <div className='flex justify-end'>
+              <LanguageSelector compact />
+            </div>
             <span className='inline-flex items-center gap-2 rounded-full border border-cyan-300/40 px-3 py-1 text-sm font-semibold text-cyan-100'>
               <ShieldCheck className='h-4 w-4' />
-              Browser-first AI setup
+              {t('provider.setup.badge')}
             </span>
             <div className='space-y-3'>
               <h1 className='text-4xl font-black tracking-tight sm:text-5xl'>
-                Curriculum Tools
+                {t('provider.setup.title')}
               </h1>
               <p className='max-w-2xl text-base leading-7 text-slate-300'>
-                Connect Gemini, OpenAI, or DeepSeek with your own API key before
-                reviewing CVs or ranking candidates.
+                {t('provider.setup.subtitle')}
               </p>
             </div>
             <div className='rounded-lg border border-amber-300/30 bg-amber-300/10 p-4 text-sm leading-6 text-amber-50'>
-              Your API key is stored in this browser&apos;s localStorage. CV
-              text is sent directly from this browser to the selected AI
-              provider only when you click Process.
+              {t('provider.setup.privacy')}
             </div>
           </div>
 
@@ -94,7 +95,7 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
           >
             <div className='space-y-2'>
               <label className='text-sm font-bold' htmlFor='provider'>
-                Provider
+                {t('provider.setup.provider')}
               </label>
               <select
                 id='provider'
@@ -114,7 +115,7 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
 
             <div className='space-y-2'>
               <label className='text-sm font-bold' htmlFor='api-key'>
-                API key
+                {t('provider.setup.key')}
               </label>
               <input
                 id='api-key'
@@ -122,13 +123,13 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
                 type='password'
                 value={apiKey}
                 onChange={event => setApiKey(event.target.value)}
-                placeholder='Paste your provider key'
+                placeholder={t('provider.setup.placeholder')}
               />
             </div>
 
             <div className='space-y-2'>
               <label className='text-sm font-bold' htmlFor='model'>
-                Model
+                {t('provider.setup.model')}
               </label>
               <input
                 id='model'
@@ -157,7 +158,9 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
               ) : (
                 <KeyRound className='h-4 w-4' />
               )}
-              {isTesting ? 'Testing provider' : 'Test and Save'}
+              {isTesting
+                ? t('provider.setup.testing')
+                : t('provider.setup.submit')}
             </button>
           </form>
         </section>

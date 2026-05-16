@@ -1,22 +1,29 @@
 # Dependencies
 node_modules/
-.pnpm-store/
-
-# Logs
-npm-debug.log*
-yarn-debug.log*
-pnpm-debug.log*
+pnpm-debug.log
+pnpm-error.log
+npm-debug.log
+yarn-error.log
 
 # Build output
 .husky/
 dist/
+build/
+out/
+.next/
+.output/
+.wxt/
+.angular/
 *.tsbuildinfo
+*.js.map
+*.css.map
 
 # Test output
 coverage/
 .nyc_output/
-playwright-report/
+htmlcov/
 test-results/
+playwright-report/
 
 # Environment variables
 .env
@@ -26,8 +33,8 @@ test-results/
 # Caches
 .cache/
 .temp/
-.vite/
-.eslintcache/
+.eslintcache
+.stylelintcache
 
 # IDE
 .idea/
@@ -37,10 +44,25 @@ test-results/
 *.swo
 *.sublime-project
 *.sublime-workspace
+*.code-workspace
 
 # OS
 .DS_Store
 Thumbs.db
+.AppleDouble
 
 # Output directories
 wwwroot/
+
+# Python (for cross-platform support)
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+
+# Misc
+.turbo/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml

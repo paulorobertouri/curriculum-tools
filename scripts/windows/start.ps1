@@ -5,3 +5,5 @@ $ProjectRoot = Split-Path -Parent (Split-Path -Parent $ScriptDir)
 
 Set-Location $ProjectRoot
 
+Write-Output "Starting frontend dev server..."
+pnpm start

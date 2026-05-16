@@ -15,6 +15,7 @@ import {
   shouldChunkHrRequest,
 } from '@/domain/hrChunking';
 import { SUPPORTED_FILE_TYPES, extractTextFromFile } from '@/files/extractText';
+import { useI18n } from '@/i18n/i18n';
 import { getProviderAdapter } from '@/providers';
 
 type HrRankerProps = {
@@ -27,6 +28,7 @@ type FileStatus = HrCvInput & {
 };
 
 export function HrRanker({ config }: HrRankerProps) {
+  const { t } = useI18n();
   const [jobTitle, setJobTitle] = useState('');
   const [jobDescription, setJobDescription] = useState('');
   const [files, setFiles] = useState<FileStatus[]>([]);
@@ -86,12 +88,12 @@ export function HrRanker({ config }: HrRankerProps) {
     );
 
     if (!jobTitle.trim() || !jobDescription.trim() || validFiles.length === 0) {
-      setError('Add job title, job description, and at least one valid CV.');
+      setError(t('hr.validation'));
       return;
     }
 
     setIsProcessing(true);
-    setProcessingLabel('Processing...');
+    setProcessingLabel(t('hr.processing'));
 
     try {
       const provider = getProviderAdapter(config.provider);
@@ -105,7 +107,10 @@ export function HrRanker({ config }: HrRankerProps) {
 
         for (let index = 0; index < chunks.length; index += 1) {
           setProcessingLabel(
-            `Processing batch ${index + 1} of ${chunks.length}...`,
+            t('hr.batchProcessing', {
+              index: index + 1,
+              total: chunks.length,
+            }),
           );
 
           const partial = await provider.rankHrCvs(config, {
@@ -131,7 +136,7 @@ export function HrRanker({ config }: HrRankerProps) {
       setError(
         processError instanceof Error
           ? processError.message
-          : 'Could not rank these CVs.',
+          : t('hr.processError'),
       );
     } finally {
       setIsProcessing(false);
@@ -143,18 +148,22 @@ export function HrRanker({ config }: HrRankerProps) {
     <section className='tool-grid'>
       <form className='tool-panel' onSubmit={handleSubmit}>
         <div>
-          <p className='eyebrow'>HR</p>
-          <h2 className='panel-title'>CV Ranking</h2>
+          <p className='eyebrow'>{t('hr.eyebrow')}</p>
+          <h2 className='panel-title'>{t('hr.title')}</h2>
         </div>
-        <TextField label='Job title' value={jobTitle} onChange={setJobTitle} />
+        <TextField
+          label={t('candidate.jobTitle')}
+          value={jobTitle}
+          onChange={setJobTitle}
+        />
         <TextArea
-          label='Job description'
+          label={t('candidate.jobDescription')}
           value={jobDescription}
           onChange={setJobDescription}
           rows={8}
         />
         <label className='field-label' htmlFor='hr-files'>
-          CV files
+          {t('hr.upload')}
         </label>
         <input
           id='hr-files'
@@ -165,7 +174,7 @@ export function HrRanker({ config }: HrRankerProps) {
           onChange={handleFiles}
         />
         {isExtracting ? (
-          <p className='text-sm text-cyan-700'>Extracting files...</p>
+          <p className='text-sm text-cyan-700'>{t('hr.extracting')}</p>
         ) : null}
         {isProcessing && processingLabel ? (
           <p className='text-sm text-cyan-700'>{processingLabel}</p>
@@ -186,7 +195,7 @@ export function HrRanker({ config }: HrRankerProps) {
                   }
                 >
                   {' '}
-                  · {file.status === 'ready' ? 'ready' : file.error}
+                  · {file.status === 'ready' ? t('hr.ready') : file.error}
                 </span>
               </li>
             ))}
@@ -207,14 +216,11 @@ export function HrRanker({ config }: HrRankerProps) {
           ) : (
             <Sparkles className='h-4 w-4' />
           )}
-          {isProcessing ? 'Processing...' : 'Process'}
+          {isProcessing ? t('hr.processing') : t('hr.process')}
         </button>
       </form>
 
-      <ResultPanel
-        title='Ranking Result'
-        empty='Upload CVs and process them to see a ranked shortlist.'
-      >
+      <ResultPanel title={t('hr.resultTitle')} empty={t('hr.resultEmpty')}>
         {result ? <RankingResult result={result} /> : null}
       </ResultPanel>
     </section>
@@ -222,8 +228,11 @@ export function HrRanker({ config }: HrRankerProps) {
 }
 
 function RankingResult({ result }: { result: HrRankingResult }) {
+  const { t } = useI18n();
+
   return (
     <div className='space-y-4'>
+      <HrMetricsDashboard result={result} />
       {result.candidates.map(candidate => (
         <article
           className='rounded-lg border border-slate-200 p-4'
@@ -242,15 +251,67 @@ function RankingResult({ result }: { result: HrRankingResult }) {
             {candidate.justification}
           </p>
           <div className='mt-4 grid gap-4 md:grid-cols-2'>
-            <List title='Strengths' items={candidate.strengths} />
-            <List title='Concerns' items={candidate.concerns} />
+            <List
+              title={t('candidate.list.strengths')}
+              items={candidate.strengths}
+            />
+            <List
+              title={t('candidate.list.concerns')}
+              items={candidate.concerns}
+            />
           </div>
           <p className='mt-4 rounded-md bg-slate-100 px-3 py-2 text-sm font-bold text-slate-800'>
-            Recommendation:{' '}
+            {t('hr.recommendation')}:{' '}
             {candidate.interviewRecommendation.replace('_', ' ')}
           </p>
         </article>
       ))}
+    </div>
+  );
+}
+
+function HrMetricsDashboard({ result }: { result: HrRankingResult }) {
+  const { t } = useI18n();
+  const scores = result.candidates.map(candidate => candidate.score);
+  const average =
+    scores.length > 0
+      ? scores.reduce((sum, score) => sum + score, 0) / scores.length
+      : 0;
+  const max = scores.length > 0 ? Math.max(...scores) : 0;
+  const min = scores.length > 0 ? Math.min(...scores) : 0;
+
+  return (
+    <section className='rounded-lg border border-slate-200 bg-slate-50 p-4'>
+      <p className='text-sm font-bold text-slate-900'>
+        {t('hr.dashboard.title')}
+      </p>
+      <div className='mt-3 space-y-3'>
+        <HrMetricBar label={t('hr.dashboard.average')} value={average} />
+        <HrMetricBar label={t('hr.dashboard.max')} value={max} />
+        <HrMetricBar label={t('hr.dashboard.min')} value={min} />
+      </div>
+    </section>
+  );
+}
+
+function HrMetricBar({ label, value }: { label: string; value: number }) {
+  const safeValue = Math.max(
+    0,
+    Math.min(10, Number.isFinite(value) ? value : 0),
+  );
+
+  return (
+    <div>
+      <div className='mb-1 flex items-center justify-between text-xs font-semibold text-slate-700'>
+        <span>{label}</span>
+        <span>{safeValue.toFixed(1)}/10</span>
+      </div>
+      <div className='h-2 rounded-full bg-slate-200'>
+        <div
+          className='h-2 rounded-full bg-emerald-600 transition-all duration-300'
+          style={{ width: `${safeValue * 10}%` }}
+        />
+      </div>
     </div>
   );
 }

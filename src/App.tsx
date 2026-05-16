@@ -3,9 +3,11 @@ import { useMemo, useState } from 'react';
 
 import { CandidateReviewer } from '@/components/CandidateReviewer';
 import { HrRanker } from '@/components/HrRanker';
+import { LanguageSelector } from '@/components/LanguageSelector';
 import { ProviderSetup } from '@/components/ProviderSetup';
 import { ProviderStatus } from '@/components/ProviderStatus';
 import { AiConfig } from '@/domain/aiTypes';
+import { useI18n } from '@/i18n/i18n';
 import { getProviderAdapter } from '@/providers';
 import {
   clearAiConfig,
@@ -16,6 +18,7 @@ import {
 type ActiveTool = 'candidate' | 'hr';
 
 function App() {
+  const { t } = useI18n();
   const [config, setConfig] = useState<AiConfig | null>(() => readAiConfig());
   const [editingConfig, setEditingConfig] = useState(false);
   const [activeTool, setActiveTool] = useState<ActiveTool>('candidate');
@@ -40,7 +43,7 @@ function App() {
     saveAiConfig(nextConfig);
     setConfig(nextConfig);
     setEditingConfig(false);
-    setStatusMessage('Provider tested and saved.');
+    setStatusMessage(t('provider.status.saved'));
   };
 
   const handleClear = () => {
@@ -65,7 +68,7 @@ function App() {
       setStatusMessage(result.message);
     } catch (error) {
       setStatusMessage(
-        error instanceof Error ? error.message : 'Provider retest failed.',
+        error instanceof Error ? error.message : t('provider.status.failed'),
       );
     } finally {
       setIsRetesting(false);
@@ -89,15 +92,17 @@ function App() {
 
       <div className='mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:px-8'>
         <header className='grid gap-4'>
-          <p className='eyebrow'>Curriculum Tools</p>
+          <div className='flex items-center justify-between gap-3'>
+            <p className='eyebrow'>{t('app.kicker')}</p>
+            <LanguageSelector compact />
+          </div>
           <div className='flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between'>
             <div>
               <h1 className='text-3xl font-black tracking-tight sm:text-4xl'>
-                AI tools for candidates and HR
+                {t('app.title')}
               </h1>
               <p className='mt-2 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base'>
-                Review one CV against a role, or rank many CVs against one job
-                description. Content is sent only when you click Process.
+                {t('app.subtitle')}
               </p>
             </div>
             <nav className='inline-flex rounded-lg border border-slate-300 bg-white p-1'>
@@ -107,7 +112,7 @@ function App() {
                 onClick={() => setActiveTool('candidate')}
               >
                 <UserRound className='h-4 w-4' />
-                Candidate
+                {t('app.tab.candidate')}
               </button>
               <button
                 className={toolButtonClass(activeTool === 'hr')}
@@ -115,15 +120,14 @@ function App() {
                 onClick={() => setActiveTool('hr')}
               >
                 <BriefcaseBusiness className='h-4 w-4' />
-                HR
+                {t('app.tab.hr')}
               </button>
             </nav>
           </div>
         </header>
 
         <section className='rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900'>
-          API keys are saved in localStorage on this browser. CV content is sent
-          from this browser to {config.provider} only after Process is clicked.
+          {t('app.privacy', { provider: config.provider })}
         </section>
 
         {activeContent}

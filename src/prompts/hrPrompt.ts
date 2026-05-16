@@ -17,7 +17,25 @@ Rank these CVs against the target role. Return only valid JSON with this shape:
   ]
 }
 
-Scoring uses 0.0 to 10.0. Rank from strongest to weakest. Do not infer protected characteristics.
+Strict requirements:
+- Output must be valid JSON only, with no Markdown code fences.
+- Keep the input id and filename for each candidate in the output.
+- Use score range 0.0 to 10.0 with one decimal place.
+- Rank from strongest to weakest.
+- Do not infer protected characteristics or personal sensitive attributes.
+- Do not invent experience that is not in the CV text.
+
+Scoring rubric:
+- 9.0-10.0: exceptional fit with clear evidence in core requirements.
+- 7.0-8.9: strong fit with manageable concerns.
+- 5.0-6.9: moderate fit with important missing evidence.
+- below 5.0: low fit for role requirements.
+
+Quality rules:
+- justification must reference concrete role criteria and CV evidence.
+- strengths and concerns must be specific, not generic.
+- interviewRecommendation must be one of: strong_yes, yes, maybe, no.
+- keep relative score calibration consistent across all candidates in this batch.
 
 Job title:
 ${input.jobTitle}

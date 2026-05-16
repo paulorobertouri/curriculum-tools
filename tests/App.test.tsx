@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import App from '@/App';
 import { AI_CONFIG_STORAGE_KEY } from '@/domain/aiTypes';
+import { I18nProvider } from '@/i18n/i18n';
 
 const successfulOpenAiResponse = {
   ok: true,
@@ -27,8 +28,16 @@ describe('App', () => {
     localStorage.setItem(AI_CONFIG_STORAGE_KEY, JSON.stringify(savedConfig));
   };
 
+  const renderApp = () => {
+    return render(
+      <I18nProvider>
+        <App />
+      </I18nProvider>,
+    );
+  };
+
   it('shows provider setup when no saved config exists', () => {
-    render(<App />);
+    renderApp();
 
     expect(
       screen.getByRole('heading', { name: 'Curriculum Tools' }),
@@ -40,7 +49,7 @@ describe('App', () => {
     const user = userEvent.setup();
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(successfulOpenAiResponse);
 
-    render(<App />);
+    renderApp();
 
     await user.selectOptions(screen.getByLabelText('Provider'), 'openai');
     await user.type(screen.getByLabelText('API key'), 'sk-test-key');
@@ -65,7 +74,7 @@ describe('App', () => {
       json: async () => ({ error: { message: 'Nope' } }),
     } as Response);
 
-    render(<App />);
+    renderApp();
 
     await user.type(screen.getByLabelText('API key'), 'bad-key');
     await user.click(screen.getByRole('button', { name: 'Test and Save' }));
@@ -94,7 +103,7 @@ describe('App', () => {
       }),
     } as Response);
 
-    render(<App />);
+    renderApp();
 
     await user.click(screen.getByRole('button', { name: 'Process' }));
     expect(
@@ -148,7 +157,7 @@ describe('App', () => {
       }),
     } as Response);
 
-    render(<App />);
+    renderApp();
 
     await user.click(screen.getByRole('button', { name: 'HR' }));
     await user.click(screen.getByRole('button', { name: 'Process' }));

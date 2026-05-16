@@ -125,3 +125,41 @@ Acceptance criteria:
 
 - A new engineer can implement from the docs without needing product decisions.
 - Provider API references are rechecked before coding.
+
+## Milestone 8: UI/UX, Localization, Metrics, Prompt Quality
+
+### UI/UX/Layout Improvement Plan
+
+- [x] Add first metrics visualization blocks in Candidate and HR result panels.
+- [ ] Improve spacing hierarchy and responsive density for large HR result lists.
+- [ ] Add empty/loading/success visual states with stronger visual differentiation.
+- [ ] Add accessibility pass for keyboard navigation, focus visibility, and ARIA updates.
+
+### Localization Plan (en-US, pt-BR, es-ES)
+
+- [x] Add i18n foundation with locale persistence and runtime language switcher.
+- [x] Start localizing setup, status, candidate, and HR core UI copy.
+- [ ] Complete localization for remaining static strings and error-state variants.
+- [ ] Add locale-aware formatting for scores/dates where applicable.
+- [ ] Add tests for language switching and key translated flows.
+
+### Metrics Graphs Plan
+
+- [x] Add initial in-app score bars for Candidate and HR metrics dashboards.
+- [ ] Add recommendation distribution graph for HR (`strong_yes`, `yes`, `maybe`, `no`).
+- [ ] Add trend/comparison view between batch average and top candidate score.
+- [ ] Add export-ready metrics summary model for future CSV/JSON reporting.
+
+### Prompt And Metrics Quality Plan
+
+- [x] Improve candidate and HR prompts with stricter rubric and evidence constraints.
+- [ ] Add prompt versioning constants to track changes over time.
+- [ ] Add evaluation harness with mocked CV fixtures to compare prompt quality deltas.
+- [ ] Add calibration checks to reduce score drift across providers/models.
+
+Acceptance criteria:
+
+- UI remains clear on desktop and mobile with higher signal-to-noise for results.
+- User can switch language between en-US, pt-BR, and es-ES from the app UI.
+- Result panels include meaningful visual metrics, not only text blocks.
+- Prompt outputs become more consistent, evidence-grounded, and auditable.

@@ -3,6 +3,7 @@ import { ChangeEvent, FormEvent, ReactNode, useState } from 'react';
 
 import { AiConfig, CandidateReview } from '@/domain/aiTypes';
 import { SUPPORTED_FILE_TYPES, extractTextFromFile } from '@/files/extractText';
+import { useI18n } from '@/i18n/i18n';
 import { getProviderAdapter } from '@/providers';
 
 type CandidateReviewerProps = {
@@ -10,6 +11,7 @@ type CandidateReviewerProps = {
 };
 
 export function CandidateReviewer({ config }: CandidateReviewerProps) {
+  const { t } = useI18n();
   const [jobTitle, setJobTitle] = useState('');
   const [jobDescription, setJobDescription] = useState('');
   const [cvText, setCvText] = useState('');
@@ -26,18 +28,18 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
     }
 
     setError(null);
-    setFileStatus(`Extracting ${file.name}`);
+    setFileStatus(t('candidate.extracting', { filename: file.name }));
 
     try {
       const text = await extractTextFromFile(file);
       setCvText(text);
-      setFileStatus(`${file.name} is ready`);
+      setFileStatus(t('candidate.ready', { filename: file.name }));
     } catch (extractError) {
       setFileStatus(null);
       setError(
         extractError instanceof Error
           ? extractError.message
-          : 'Could not extract text from this file.',
+          : t('candidate.extractError'),
       );
     }
   };
@@ -48,9 +50,7 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
     setResult(null);
 
     if (!jobTitle.trim() || !jobDescription.trim() || !cvText.trim()) {
-      setError(
-        'Add job title, job description, and CV text before processing.',
-      );
+      setError(t('candidate.validation'));
       return;
     }
 
@@ -69,7 +69,7 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
       setError(
         processError instanceof Error
           ? processError.message
-          : 'Could not process this CV.',
+          : t('candidate.processError'),
       );
     } finally {
       setIsProcessing(false);
@@ -80,18 +80,22 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
     <section className='tool-grid'>
       <form className='tool-panel' onSubmit={handleSubmit}>
         <div>
-          <p className='eyebrow'>Candidate</p>
-          <h2 className='panel-title'>CV Reviewer</h2>
+          <p className='eyebrow'>{t('candidate.eyebrow')}</p>
+          <h2 className='panel-title'>{t('candidate.title')}</h2>
         </div>
-        <TextField label='Job title' value={jobTitle} onChange={setJobTitle} />
+        <TextField
+          label={t('candidate.jobTitle')}
+          value={jobTitle}
+          onChange={setJobTitle}
+        />
         <TextArea
-          label='Job description'
+          label={t('candidate.jobDescription')}
           value={jobDescription}
           onChange={setJobDescription}
           rows={6}
         />
         <label className='field-label' htmlFor='candidate-file'>
-          Upload CV
+          {t('candidate.upload')}
         </label>
         <input
           id='candidate-file'
@@ -104,7 +108,7 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
           <p className='text-sm text-emerald-700'>{fileStatus}</p>
         ) : null}
         <TextArea
-          label='CV text'
+          label={t('candidate.cvText')}
           value={cvText}
           onChange={setCvText}
           rows={10}
@@ -124,13 +128,13 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
           ) : (
             <Sparkles className='h-4 w-4' />
           )}
-          {isProcessing ? 'Processing' : 'Process'}
+          {isProcessing ? t('candidate.processing') : t('candidate.process')}
         </button>
       </form>
 
       <ResultPanel
-        title='Review Result'
-        empty='Run a CV review to see score, gaps, and concrete recommendations.'
+        title={t('candidate.resultTitle')}
+        empty={t('candidate.resultEmpty')}
       >
         {result ? <CandidateResult result={result} /> : null}
       </ResultPanel>
@@ -139,14 +143,72 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
 }
 
 function CandidateResult({ result }: { result: CandidateReview }) {
+  const { t } = useI18n();
+
   return (
     <div className='space-y-5'>
       <Score value={result.score} />
+      <CandidateMetricsChart result={result} />
       <p className='text-sm leading-6 text-slate-700'>{result.summary}</p>
-      <List title='Strengths' items={result.strengths} />
-      <List title='Gaps' items={result.gaps} />
-      <List title='Recommendations' items={result.recommendations} />
-      <List title='Rewritten bullets' items={result.rewrittenBullets} />
+      <List title={t('candidate.list.strengths')} items={result.strengths} />
+      <List title={t('candidate.list.gaps')} items={result.gaps} />
+      <List
+        title={t('candidate.list.recommendations')}
+        items={result.recommendations}
+      />
+      <List
+        title={t('candidate.list.rewritten')}
+        items={result.rewrittenBullets}
+      />
+    </div>
+  );
+}
+
+function CandidateMetricsChart({ result }: { result: CandidateReview }) {
+  const { t } = useI18n();
+  const strengthsScore = Math.min(10, result.strengths.length * 2);
+  const gapsScore = Math.max(0, 10 - Math.min(10, result.gaps.length * 2));
+  const recommendationScore = Math.min(10, result.recommendations.length * 2);
+
+  return (
+    <div className='rounded-lg border border-slate-200 bg-slate-50 p-4'>
+      <p className='text-sm font-bold text-slate-900'>
+        {t('candidate.summaryChart')}
+      </p>
+      <div className='mt-3 space-y-3'>
+        <MetricBar label={t('candidate.metric.overall')} value={result.score} />
+        <MetricBar
+          label={t('candidate.metric.strengths')}
+          value={strengthsScore}
+        />
+        <MetricBar label={t('candidate.metric.gaps')} value={gapsScore} />
+        <MetricBar
+          label={t('candidate.metric.recommendations')}
+          value={recommendationScore}
+        />
+      </div>
+    </div>
+  );
+}
+
+function MetricBar({ label, value }: { label: string; value: number }) {
+  const safeValue = Math.max(
+    0,
+    Math.min(10, Number.isFinite(value) ? value : 0),
+  );
+
+  return (
+    <div>
+      <div className='mb-1 flex items-center justify-between text-xs font-semibold text-slate-700'>
+        <span>{label}</span>
+        <span>{safeValue.toFixed(1)}/10</span>
+      </div>
+      <div className='h-2 rounded-full bg-slate-200'>
+        <div
+          className='h-2 rounded-full bg-cyan-600 transition-all duration-300'
+          style={{ width: `${safeValue * 10}%` }}
+        />
+      </div>
     </div>
   );
 }
@@ -227,15 +289,21 @@ export function ResultPanel({
 }
 
 export function Score({ value }: { value: number }) {
+  const { t } = useI18n();
+
   return (
     <div className='rounded-lg border border-cyan-200 bg-cyan-50 p-4'>
-      <p className='text-sm font-bold uppercase text-cyan-800'>Score</p>
+      <p className='text-sm font-bold uppercase text-cyan-800'>
+        {t('result.score')}
+      </p>
       <p className='text-4xl font-black text-slate-950'>{value.toFixed(1)}</p>
     </div>
   );
 }
 
 export function List({ title, items }: { title: string; items: string[] }) {
+  const { t } = useI18n();
+
   return (
     <div>
       <h3 className='text-sm font-bold text-slate-950'>{title}</h3>
@@ -246,7 +314,7 @@ export function List({ title, items }: { title: string; items: string[] }) {
           ))}
         </ul>
       ) : (
-        <p className='mt-2 text-sm text-slate-500'>No items returned.</p>
+        <p className='mt-2 text-sm text-slate-500'>{t('result.noItems')}</p>
       )}
     </div>
   );
