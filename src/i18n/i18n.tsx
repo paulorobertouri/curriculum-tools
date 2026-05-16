@@ -92,6 +92,8 @@ const dictionaries: Record<Locale, Dictionary> = {
     'hr.dashboard.average': 'Average score',
     'hr.dashboard.max': 'Top score',
     'hr.dashboard.min': 'Lowest score',
+    'hr.dashboard.comparison': 'Average vs top candidate',
+    'hr.dashboard.spread': 'Score spread',
   },
   'pt-BR': {
     'language.label': 'Idioma',
@@ -176,6 +178,8 @@ const dictionaries: Record<Locale, Dictionary> = {
     'hr.dashboard.average': 'Nota media',
     'hr.dashboard.max': 'Maior nota',
     'hr.dashboard.min': 'Menor nota',
+    'hr.dashboard.comparison': 'Media vs melhor candidato',
+    'hr.dashboard.spread': 'Diferença de notas',
   },
   'es-ES': {
     'language.label': 'Idioma',
@@ -260,6 +264,8 @@ const dictionaries: Record<Locale, Dictionary> = {
     'hr.dashboard.average': 'Puntuacion promedio',
     'hr.dashboard.max': 'Puntuacion maxima',
     'hr.dashboard.min': 'Puntuacion minima',
+    'hr.dashboard.comparison': 'Promedio vs mejor candidato',
+    'hr.dashboard.spread': 'Diferencia de puntuacion',
   },
 };
 
