@@ -24,7 +24,7 @@ const OPENAI_RESPONSES_URL = 'https://api.openai.com/v1/responses';
 export const openaiProvider: AiProviderAdapter = {
   async testConnection(config): Promise<TestResult> {
     try {
-      const text = await createResponse(config, TEST_PROMPT, false);
+      const text = await createResponse(config, TEST_PROMPT, null);
       ensureHello(text);
       return { ok: true, message: 'OpenAI responded successfully.' };
     } catch (error) {
@@ -36,13 +36,13 @@ export const openaiProvider: AiProviderAdapter = {
     const text = await createResponse(
       config,
       buildCandidatePrompt(input),
-      true,
+      candidateReviewSchema,
     );
     return parseJsonResult(text, normalizeCandidateReview);
   },
 
   async rankHrCvs(config, input): Promise<HrRankingResult> {
-    const text = await createResponse(config, buildHrPrompt(input), true);
+    const text = await createResponse(config, buildHrPrompt(input), hrRankingSchema);
     return parseJsonResult(text, normalizeHrRanking);
   },
 };
@@ -50,7 +50,7 @@ export const openaiProvider: AiProviderAdapter = {
 const createResponse = async (
   config: AiConfig,
   prompt: string,
-  wantsJson: boolean,
+  schema: JsonSchema | null,
 ) => {
   const response = await fetch(OPENAI_RESPONSES_URL, {
     method: 'POST',
@@ -61,17 +61,13 @@ const createResponse = async (
     body: JSON.stringify({
       model: config.model,
       input: prompt,
-      ...(wantsJson
+      ...(schema
         ? {
             text: {
               format: {
                 type: 'json_schema',
                 name: 'curriculum_tools_result',
-                schema: {
-                  type: 'object',
-                  properties: {},
-                  additionalProperties: false,
-                },
+                schema,
               },
             },
           }
@@ -102,4 +98,72 @@ const extractOpenAiText = (body: unknown): string => {
     .join('\n');
 
   return text ?? '';
+};
+
+type JsonSchema = Record<string, unknown>;
+
+const stringArraySchema = {
+  type: 'array',
+  items: { type: 'string' },
+} as const;
+
+const candidateReviewSchema: JsonSchema = {
+  type: 'object',
+  properties: {
+    score: { type: 'number' },
+    summary: { type: 'string' },
+    strengths: stringArraySchema,
+    gaps: stringArraySchema,
+    recommendations: stringArraySchema,
+    rewrittenBullets: stringArraySchema,
+  },
+  required: [
+    'score',
+    'summary',
+    'strengths',
+    'gaps',
+    'recommendations',
+    'rewrittenBullets',
+  ],
+  additionalProperties: false,
+};
+
+const hrCandidateSchema = {
+  type: 'object',
+  properties: {
+    id: { type: 'string' },
+    filename: { type: 'string' },
+    detectedName: { type: 'string' },
+    score: { type: 'number' },
+    justification: { type: 'string' },
+    strengths: stringArraySchema,
+    concerns: stringArraySchema,
+    interviewRecommendation: {
+      type: 'string',
+      enum: ['strong_yes', 'yes', 'maybe', 'no'],
+    },
+  },
+  required: [
+    'id',
+    'filename',
+    'detectedName',
+    'score',
+    'justification',
+    'strengths',
+    'concerns',
+    'interviewRecommendation',
+  ],
+  additionalProperties: false,
+} as const;
+
+const hrRankingSchema: JsonSchema = {
+  type: 'object',
+  properties: {
+    candidates: {
+      type: 'array',
+      items: hrCandidateSchema,
+    },
+  },
+  required: ['candidates'],
+  additionalProperties: false,
 };

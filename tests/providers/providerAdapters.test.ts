@@ -100,7 +100,85 @@ describe('provider adapters', () => {
 
     expect(body.text.format.schema).toEqual({
       type: 'object',
-      properties: {},
+      properties: {
+        score: { type: 'number' },
+        summary: { type: 'string' },
+        strengths: { type: 'array', items: { type: 'string' } },
+        gaps: { type: 'array', items: { type: 'string' } },
+        recommendations: { type: 'array', items: { type: 'string' } },
+        rewrittenBullets: { type: 'array', items: { type: 'string' } },
+      },
+      required: [
+        'score',
+        'summary',
+        'strengths',
+        'gaps',
+        'recommendations',
+        'rewrittenBullets',
+      ],
+      additionalProperties: false,
+    });
+  });
+
+  it('sends a valid structured-output schema for OpenAI HR ranking', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        output_text: JSON.stringify({
+          candidates: [
+            {
+              id: 'candidate-1',
+              filename: 'alice.txt',
+              detectedName: 'Alice',
+              score: 9.2,
+              justification: 'Strong leadership and delivery evidence.',
+              strengths: ['Team leadership'],
+              concerns: ['Limited domain depth'],
+              interviewRecommendation: 'strong_yes',
+            },
+          ],
+        }),
+      }),
+    } as Response);
+
+    await openaiProvider.rankHrCvs({ ...config }, {
+      jobTitle: 'Engineering Manager',
+      jobDescription: 'Lead engineering teams and execute roadmap.',
+      cvs: [
+        { id: 'candidate-1', filename: 'alice.txt', text: 'Alice CV text' },
+      ],
+    });
+
+    const requestInit = fetchMock.mock.calls[0]?.[1];
+    expect(requestInit).toBeDefined();
+
+    const body = JSON.parse(String((requestInit as RequestInit).body));
+
+    expect(body.text.format.schema.properties.candidates.items).toEqual({
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+        filename: { type: 'string' },
+        detectedName: { type: 'string' },
+        score: { type: 'number' },
+        justification: { type: 'string' },
+        strengths: { type: 'array', items: { type: 'string' } },
+        concerns: { type: 'array', items: { type: 'string' } },
+        interviewRecommendation: {
+          type: 'string',
+          enum: ['strong_yes', 'yes', 'maybe', 'no'],
+        },
+      },
+      required: [
+        'id',
+        'filename',
+        'detectedName',
+        'score',
+        'justification',
+        'strengths',
+        'concerns',
+        'interviewRecommendation',
+      ],
       additionalProperties: false,
     });
   });
