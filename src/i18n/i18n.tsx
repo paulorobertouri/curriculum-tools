@@ -48,6 +48,7 @@ const dictionaries: Record<Locale, Dictionary> = {
     'candidate.extracting': 'Extracting {filename}',
     'candidate.ready': '{filename} is ready',
     'candidate.extractError': 'Could not extract text from this file.',
+    'hr.extractError': 'Could not extract text from this file.',
     'candidate.validation':
       'Add job title, job description, and CV text before processing.',
     'candidate.processError': 'Could not process this CV.',
@@ -127,6 +128,7 @@ const dictionaries: Record<Locale, Dictionary> = {
     'candidate.extracting': 'Extraindo {filename}',
     'candidate.ready': '{filename} pronto',
     'candidate.extractError': 'Nao foi possivel extrair o texto do arquivo.',
+    'hr.extractError': 'Nao foi possivel extrair o texto do arquivo.',
     'candidate.validation':
       'Informe titulo, descricao da vaga e texto do CV antes de processar.',
     'candidate.processError': 'Nao foi possivel processar este CV.',
@@ -205,6 +207,7 @@ const dictionaries: Record<Locale, Dictionary> = {
     'candidate.extracting': 'Extrayendo {filename}',
     'candidate.ready': '{filename} listo',
     'candidate.extractError': 'No se pudo extraer el texto de este archivo.',
+    'hr.extractError': 'No se pudo extraer el texto de este archivo.',
     'candidate.validation':
       'Agrega titulo, descripcion del puesto y texto del CV antes de procesar.',
     'candidate.processError': 'No se pudo procesar este CV.',

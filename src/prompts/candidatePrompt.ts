@@ -1,6 +1,9 @@
 import { CandidateReviewInput } from '@/domain/aiTypes';
+import { PROMPT_VERSIONS } from '@/prompts/promptVersions';
 
 export const buildCandidatePrompt = (input: CandidateReviewInput) => `
+Prompt version: ${PROMPT_VERSIONS.candidate}
+
 Evaluate this CV for the target role. Return only valid JSON with this shape:
 {
   "score": number,

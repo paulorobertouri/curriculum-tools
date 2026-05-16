@@ -1,6 +1,9 @@
 import { HrRankingInput } from '@/domain/aiTypes';
+import { PROMPT_VERSIONS } from '@/prompts/promptVersions';
 
 export const buildHrPrompt = (input: HrRankingInput) => `
+Prompt version: ${PROMPT_VERSIONS.hr}
+
 Rank these CVs against the target role. Return only valid JSON with this shape:
 {
   "candidates": [

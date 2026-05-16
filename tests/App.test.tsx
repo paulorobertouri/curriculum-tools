@@ -45,6 +45,25 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: 'Test and Save' })).toBeVisible();
   });
 
+  it('switches setup copy when language changes', async () => {
+    const user = userEvent.setup();
+    renderApp();
+
+    await user.selectOptions(screen.getByLabelText('Language'), 'pt-BR');
+
+    expect(
+      screen.getByRole('heading', { name: 'Curriculum Tools' }),
+    ).toBeVisible();
+    expect(
+      screen.getByText(
+        'Conecte Gemini, OpenAI ou DeepSeek com sua propria chave antes de revisar ou classificar CVs.',
+      ),
+    ).toBeVisible();
+    expect(
+      screen.getByRole('button', { name: 'Testar e Salvar' }),
+    ).toBeVisible();
+  });
+
   it('tests and saves a valid provider config before unlocking tools', async () => {
     const user = userEvent.setup();
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(successfulOpenAiResponse);

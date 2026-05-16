@@ -68,7 +68,7 @@ export function HrRanker({ config }: HrRankerProps) {
             error:
               extractError instanceof Error
                 ? extractError.message
-                : 'Could not extract this CV.',
+                : t('hr.extractError'),
           };
         }
       }),
