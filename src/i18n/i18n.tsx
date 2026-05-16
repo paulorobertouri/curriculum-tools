@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { ReactNode, createContext, useContext, useMemo, useState } from 'react';
 
 export type Locale = 'en-US' | 'pt-BR' | 'es-ES';

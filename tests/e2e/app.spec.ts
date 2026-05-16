@@ -126,7 +126,7 @@ test('candidate flow renders processed review result', async ({ page }) => {
     .fill('Built large React apps and improved developer workflow.');
   await page.getByRole('button', { name: 'Process' }).click();
 
-  await expect(page.getByText('8.7')).toBeVisible();
+  await expect(page.getByText('8.7', { exact: true })).toBeVisible();
   await expect(
     page.getByText('Good fit for the role with clear impact.'),
   ).toBeVisible();
