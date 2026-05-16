@@ -80,7 +80,12 @@ function App() {
   }
 
   return (
-    <main className='min-h-screen bg-slate-100 text-slate-950'>
+    <main className='app-shell text-slate-950'>
+      <div className='pointer-events-none absolute inset-0 overflow-hidden'>
+        <div className='absolute -left-24 top-24 h-72 w-72 rounded-full bg-cyan-300/20 blur-3xl' />
+        <div className='absolute right-0 top-40 h-80 w-80 rounded-full bg-emerald-300/20 blur-3xl' />
+      </div>
+
       <ProviderStatus
         config={config}
         isTesting={isRetesting}
@@ -90,29 +95,39 @@ function App() {
         onClear={handleClear}
       />
 
-      <div className='mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:px-8'>
-        <header className='grid gap-4'>
-          <div className='flex items-center justify-between gap-3'>
-            <p className='eyebrow'>{t('app.kicker')}</p>
-            <LanguageSelector compact />
-          </div>
-          <div className='flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between'>
-            <div>
-              <h1 className='text-3xl font-black tracking-tight sm:text-4xl'>
-                {t('app.title')}
-              </h1>
-              <p className='mt-2 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base'>
-                {t('app.subtitle')}
-              </p>
+      <div className='relative mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8'>
+        <header className='rounded-4xl border border-white/70 bg-white/85 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8'>
+          <div className='flex flex-col gap-6'>
+            <div className='flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between'>
+              <div className='max-w-3xl space-y-4'>
+                <div className='flex flex-wrap items-center gap-3'>
+                  <p className='eyebrow'>{t('app.kicker')}</p>
+                  <span className='rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-bold text-slate-600'>
+                    Browser-first workflow
+                  </span>
+                </div>
+                <div className='space-y-3'>
+                  <h1 className='text-3xl font-black tracking-tight text-slate-950 sm:text-4xl lg:text-5xl'>
+                    {t('app.title')}
+                  </h1>
+                  <p className='max-w-3xl text-sm leading-7 text-slate-600 sm:text-base'>
+                    {t('app.subtitle')}
+                  </p>
+                </div>
+              </div>
+              <div className='flex flex-col items-start gap-3 sm:items-end'>
+                <LanguageSelector compact />
+              </div>
             </div>
-            <nav className='inline-flex rounded-lg border border-slate-300 bg-white p-1'>
+
+            <nav className='grid gap-2 rounded-3xl border border-slate-200 bg-slate-50 p-2 sm:grid-cols-2'>
               <button
                 className={toolButtonClass(activeTool === 'candidate')}
                 type='button'
                 onClick={() => setActiveTool('candidate')}
               >
                 <UserRound className='h-4 w-4' />
-                {t('app.tab.candidate')}
+                <span>{t('app.tab.candidate')}</span>
               </button>
               <button
                 className={toolButtonClass(activeTool === 'hr')}
@@ -120,17 +135,19 @@ function App() {
                 onClick={() => setActiveTool('hr')}
               >
                 <BriefcaseBusiness className='h-4 w-4' />
-                {t('app.tab.hr')}
+                <span>{t('app.tab.hr')}</span>
               </button>
             </nav>
           </div>
         </header>
 
-        <section className='rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900'>
+        <section className='mt-6 rounded-3xl border border-amber-200/70 bg-amber-50/90 p-4 text-sm leading-6 text-amber-900 shadow-sm'>
           {t('app.privacy', { provider: config.provider })}
         </section>
 
-        {activeContent}
+        <div className='mt-6'>
+          {activeContent}
+        </div>
       </div>
     </main>
   );
@@ -138,10 +155,10 @@ function App() {
 
 const toolButtonClass = (active: boolean) =>
   [
-    'inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-200 focus-visible:ring-offset-2',
+    'inline-flex w-full items-center justify-center gap-2 rounded-[1.1rem] px-4 py-3 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-200 focus-visible:ring-offset-2 sm:px-5',
     active
-      ? 'bg-slate-950 text-white'
-      : 'text-slate-700 hover:bg-slate-100 hover:text-slate-950',
+      ? 'bg-slate-950 text-white shadow-lg shadow-slate-950/10'
+      : 'text-slate-700 hover:bg-white hover:text-slate-950',
   ].join(' ');
 
 export default App;

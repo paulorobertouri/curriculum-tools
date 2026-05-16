@@ -31,12 +31,9 @@ src/
     ProviderStatus.tsx
     CandidateReviewer.tsx
     HrRanker.tsx
-    ResultScore.tsx
-    FilePicker.tsx
   domain/
     aiTypes.ts
-    candidateReview.ts
-    hrRanking.ts
+    hrMetricsSummary.ts
     validation.ts
   providers/
     index.ts
@@ -357,8 +354,8 @@ Legacy `.doc`:
 Extraction behavior:
 
 - Store extracted text in component state only.
-- Track status per file: `idle`, `extracting`, `ready`, `error`.
-- Display filename, detected type, and extraction status.
+- Candidate shows a single file status message while extraction runs and then shows the ready filename.
+- HR shows a per-file ready/error list and a separate processing banner while the ranking request is in flight.
 - Do not send extracted text to a provider until the user clicks `Process`.
 
 ## Error Handling
@@ -427,6 +424,7 @@ Component tests:
 - Failed provider test shows error and does not save.
 - Candidate form validates required fields.
 - Candidate result renders score and recommendations.
+- Shared result panel renders empty, loading, and ready states.
 - HR form accepts multiple files and renders per-file statuses.
 - HR ranking renders sorted results.
 
@@ -435,7 +433,18 @@ E2E tests:
 - First-run setup screen.
 - Mocked provider test unlocks app.
 - Candidate mocked review renders score and recommendation sections.
+- Candidate uploaded file flow shows extraction status before processing.
 - HR mocked ranking renders sorted candidate cards.
+- HR uploaded file flow keeps extraction errors visible while valid files still process.
+- Playwright journey screenshots are saved in `tests/e2e/evidence/` to document the current user paths.
+
+Current validation commands:
+
+- `pnpm test`
+- `pnpm test:coverage`
+- `pnpm run test:e2e`
+- `pnpm run build`
+- `pnpm run lint`
 
 Mocking approach:
 

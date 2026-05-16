@@ -24,8 +24,8 @@ export function ProviderStatus({
   const { t } = useI18n();
 
   return (
-    <section className='flex flex-col gap-4 border-b border-slate-200 bg-white px-4 py-4 sm:px-6 lg:px-8'>
-      <div className='mx-auto flex w-full max-w-7xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
+    <section className='sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 px-4 py-3 shadow-sm backdrop-blur sm:px-6 lg:px-8'>
+      <div className='mx-auto flex w-full max-w-7xl flex-col gap-4 rounded-3xl border border-slate-200 bg-white/90 px-4 py-4 shadow-sm sm:flex-row sm:items-center sm:justify-between'>
         <div className='flex items-start gap-3'>
           <CheckCircle2 className='mt-1 h-5 w-5 text-emerald-600' />
           <div>

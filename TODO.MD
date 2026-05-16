@@ -21,6 +21,10 @@ Create a browser-first AI application for curriculum and recruiting workflows. U
 - [x] Large HR batches are chunked and merged deterministically.
 - [x] Candidate and HR E2E result-rendering flows have deeper coverage.
 - [x] HR partial extraction failures are covered by E2E while valid files still process.
+- [x] Playwright journey screenshots are captured for setup, candidate, and HR flows.
+- [x] Result panels now expose explicit empty, loading, and ready states with keyboard focus and live-region feedback.
+- [x] MIT license added and referenced from the README.
+- [x] Docs aligned with the current source layout and test commands.
 
 ## Milestone 1: Project Scaffold
 

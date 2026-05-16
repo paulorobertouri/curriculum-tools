@@ -11,6 +11,9 @@ const DEFAULT_LOCALE: Locale = 'en-US';
 const dictionaries: Record<Locale, Dictionary> = {
   'en-US': {
     'language.label': 'Language',
+    'language.option.en': 'English (US)',
+    'language.option.pt': 'Portuguese (Brazil)',
+    'language.option.es': 'Spanish (Spain)',
     'app.kicker': 'Curriculum Tools',
     'app.title': 'AI tools for candidates and HR',
     'app.subtitle':
@@ -32,6 +35,12 @@ const dictionaries: Record<Locale, Dictionary> = {
     'provider.setup.validation': 'Enter an API key and model before testing.',
     'provider.setup.testing': 'Testing provider',
     'provider.setup.submit': 'Test and Save',
+    'provider.setup.feature.browser': 'Browser-first',
+    'provider.setup.feature.browserValue': 'No backend',
+    'provider.setup.feature.storage': 'Stored locally',
+    'provider.setup.feature.storageValue': 'localStorage only',
+    'provider.setup.feature.direct': 'Direct provider calls',
+    'provider.setup.feature.directValue': 'Triggered on Process',
     'provider.status.connected': '{provider} connected',
     'provider.status.saved': 'Provider tested and saved.',
     'provider.status.testing': 'Testing',
@@ -101,6 +110,9 @@ const dictionaries: Record<Locale, Dictionary> = {
   },
   'pt-BR': {
     'language.label': 'Idioma',
+    'language.option.en': 'Ingles (EUA)',
+    'language.option.pt': 'Portugues (Brasil)',
+    'language.option.es': 'Espanhol (Espanha)',
     'app.kicker': 'Curriculum Tools',
     'app.title': 'Ferramentas de IA para candidatos e RH',
     'app.subtitle':
@@ -123,6 +135,12 @@ const dictionaries: Record<Locale, Dictionary> = {
       'Informe uma chave de API e um modelo antes de testar.',
     'provider.setup.testing': 'Testando provedor',
     'provider.setup.submit': 'Testar e Salvar',
+    'provider.setup.feature.browser': 'Primeiro no navegador',
+    'provider.setup.feature.browserValue': 'Sem backend',
+    'provider.setup.feature.storage': 'Armazenado localmente',
+    'provider.setup.feature.storageValue': 'Somente localStorage',
+    'provider.setup.feature.direct': 'Chamadas diretas',
+    'provider.setup.feature.directValue': 'Disparadas em Processar',
     'provider.status.connected': '{provider} conectado',
     'provider.status.saved': 'Provedor testado e salvo.',
     'provider.status.testing': 'Testando',
@@ -191,6 +209,9 @@ const dictionaries: Record<Locale, Dictionary> = {
   },
   'es-ES': {
     'language.label': 'Idioma',
+    'language.option.en': 'Ingles (EE. UU.)',
+    'language.option.pt': 'Portugues (Brasil)',
+    'language.option.es': 'Espanol (Espana)',
     'app.kicker': 'Curriculum Tools',
     'app.title': 'Herramientas de IA para candidatos y RRHH',
     'app.subtitle':
@@ -213,6 +234,12 @@ const dictionaries: Record<Locale, Dictionary> = {
       'Introduce una clave API y un modelo antes de probar.',
     'provider.setup.testing': 'Probando proveedor',
     'provider.setup.submit': 'Probar y Guardar',
+    'provider.setup.feature.browser': 'Primero en el navegador',
+    'provider.setup.feature.browserValue': 'Sin backend',
+    'provider.setup.feature.storage': 'Guardado localmente',
+    'provider.setup.feature.storageValue': 'Solo localStorage',
+    'provider.setup.feature.direct': 'Llamadas directas',
+    'provider.setup.feature.directValue': 'Se activan al procesar',
     'provider.status.connected': '{provider} conectado',
     'provider.status.saved': 'Proveedor probado y guardado.',
     'provider.status.testing': 'Probando',

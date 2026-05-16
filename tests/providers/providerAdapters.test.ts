@@ -72,6 +72,39 @@ describe('provider adapters', () => {
     );
   });
 
+  it('sends a valid structured-output schema for OpenAI result parsing', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        output_text: JSON.stringify({
+          score: 8.4,
+          summary: 'Strong fit for the role.',
+          strengths: ['React delivery'],
+          gaps: ['Leadership examples'],
+          recommendations: ['Quantify impact'],
+          rewrittenBullets: ['Improved page performance by 30% in React app.'],
+        }),
+      }),
+    } as Response);
+
+    await openaiProvider.reviewCandidateCv({ ...config }, {
+      jobTitle: 'Frontend Engineer',
+      jobDescription: 'Build React apps.',
+      cvText: 'Built React apps.',
+    });
+
+    const requestInit = fetchMock.mock.calls[0]?.[1];
+    expect(requestInit).toBeDefined();
+
+    const body = JSON.parse(String((requestInit as RequestInit).body));
+
+    expect(body.text.format.schema).toEqual({
+      type: 'object',
+      properties: {},
+      additionalProperties: false,
+    });
+  });
+
   it('calls Gemini generateContent for connection tests', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
       ok: true,

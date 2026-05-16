@@ -69,7 +69,8 @@ const createResponse = async (
                 name: 'curriculum_tools_result',
                 schema: {
                   type: 'object',
-                  additionalProperties: true,
+                  properties: {},
+                  additionalProperties: false,
                 },
               },
             },

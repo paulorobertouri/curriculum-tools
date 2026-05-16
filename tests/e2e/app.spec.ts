@@ -1,7 +1,17 @@
-import { expect, test } from '@playwright/test';
+import { expect, Page, Route, test } from '@playwright/test';
+
+const captureJourneyScreenshot = async (
+  page: Page,
+  name: string,
+) => {
+  await page.screenshot({
+    path: `tests/e2e/evidence/${name}.png`,
+    fullPage: true,
+  });
+};
 
 const routeOpenAiForSetupOnly = async (
-  page: Parameters<typeof test>[0]['page'],
+  page: Page,
 ) => {
   await page.route('https://api.openai.com/v1/responses', async route => {
     await route.fulfill({
@@ -12,9 +22,9 @@ const routeOpenAiForSetupOnly = async (
 };
 
 const routeOpenAiForAllFlows = async (
-  page: Parameters<typeof test>[0]['page'],
+  page: Page,
 ) => {
-  await page.route('https://api.openai.com/v1/responses', async route => {
+  await page.route('https://api.openai.com/v1/responses', async (route: Route) => {
     const body = route.request().postDataJSON() as { input?: string };
     const prompt = body.input ?? '';
 
@@ -86,7 +96,7 @@ const routeOpenAiForAllFlows = async (
   });
 };
 
-const setupOpenAi = async (page: Parameters<typeof test>[0]['page']) => {
+const setupOpenAi = async (page: Page) => {
   await page.goto('/');
   await page.getByLabel('Provider').selectOption('openai');
   await page.getByLabel('API key').fill('sk-test-key');
@@ -106,6 +116,8 @@ test('first run shows provider setup', async ({ page }) => {
   await expect(
     page.getByRole('button', { name: 'Test and Save' }),
   ).toBeVisible();
+
+  await captureJourneyScreenshot(page, 'setup-00-first-run');
 });
 
 test('mocked provider setup unlocks the app', async ({ page }) => {
@@ -133,6 +145,8 @@ test('candidate flow renders processed review result', async ({ page }) => {
   await expect(
     page.getByRole('heading', { name: 'Recommendations' }),
   ).toBeVisible();
+
+  await captureJourneyScreenshot(page, 'candidate-00-review-result');
 });
 
 test('candidate flow extracts uploaded CV files', async ({ page }) => {
@@ -156,12 +170,16 @@ test('candidate flow extracts uploaded CV files', async ({ page }) => {
   await expect(page.getByText('alice.txt')).toBeVisible();
   await expect(page.getByText('alice.txt is ready')).toBeVisible();
 
+  await captureJourneyScreenshot(page, 'candidate-01-upload-ready');
+
   await page.getByRole('button', { name: 'Process' }).click();
 
   await expect(page.getByText('8.7', { exact: true })).toBeVisible();
   await expect(
     page.getByRole('heading', { name: 'Recommendations' }),
   ).toBeVisible();
+
+  await captureJourneyScreenshot(page, 'candidate-02-upload-result');
 });
 
 test('hr flow renders ranked candidates', async ({ page }) => {
@@ -199,6 +217,8 @@ test('hr flow renders ranked candidates', async ({ page }) => {
     page.getByRole('heading', { name: 'Average vs top candidate' }),
   ).toBeVisible();
   await expect(page.getByText('Recommendation: strong yes')).toBeVisible();
+
+  await captureJourneyScreenshot(page, 'hr-00-ranking-result');
 });
 
 test('hr flow chunks large batches into multiple ranking requests', async ({
@@ -295,6 +315,8 @@ test('hr flow chunks large batches into multiple ranking requests', async ({
     page.getByRole('heading', { name: 'candidate-9.txt' }),
   ).toBeVisible();
   expect(rankingRequestCount).toBe(2);
+
+  await captureJourneyScreenshot(page, 'hr-01-chunked-batch-result');
 });
 
 test('hr flow keeps extraction errors visible while processing valid files', async ({
@@ -375,10 +397,14 @@ test('hr flow keeps extraction errors visible while processing valid files', asy
   await expect(page.getByText('valid.txt')).toBeVisible();
   await expect(page.getByText('valid.txt · ready')).toBeVisible();
 
+  await captureJourneyScreenshot(page, 'hr-02-partial-extraction-ready');
+
   await page.getByRole('button', { name: 'Process' }).click();
 
   await expect(
     page.getByRole('heading', { name: 'Valid Candidate' }),
   ).toBeVisible();
   await expect(page.getByText('Recommendation: yes')).toBeVisible();
+
+  await captureJourneyScreenshot(page, 'hr-03-partial-extraction-result');
 });

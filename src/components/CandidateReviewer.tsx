@@ -105,7 +105,9 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
           onChange={handleFile}
         />
         {fileStatus ? (
-          <p className='text-sm text-emerald-700'>{fileStatus}</p>
+          <p className='rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-800'>
+            {fileStatus}
+          </p>
         ) : null}
         <TextArea
           label={t('candidate.cvText')}
@@ -135,6 +137,7 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
       <ResultPanel
         title={t('candidate.resultTitle')}
         empty={t('candidate.resultEmpty')}
+        className='lg:sticky lg:top-32'
         status={isProcessing ? 'loading' : result ? 'ready' : 'empty'}
         statusMessage={
           isProcessing ? t('candidate.processing') : t('result.ready')
@@ -175,7 +178,7 @@ function CandidateMetricsChart({ result }: { result: CandidateReview }) {
   const recommendationScore = Math.min(10, result.recommendations.length * 2);
 
   return (
-    <div className='rounded-lg border border-slate-200 bg-slate-50 p-4'>
+    <div className='rounded-3xl border border-slate-200 bg-slate-50 p-4 shadow-sm'>
       <p className='text-sm font-bold text-slate-900'>
         {t('candidate.summaryChart')}
       </p>
@@ -278,19 +281,21 @@ export function ResultPanel({
   status = 'empty',
   statusMessage,
   children,
+  className = '',
 }: {
   title: string;
   empty: string;
   status?: 'empty' | 'loading' | 'ready';
   statusMessage?: string;
   children: ReactNode;
+  className?: string;
 }) {
   const { t } = useI18n();
   const isReady = Boolean(children) && status === 'ready';
 
   return (
     <aside
-      className='tool-panel'
+      className={['tool-panel', className].filter(Boolean).join(' ')}
       aria-busy={status === 'loading'}
       aria-live='polite'
     >
@@ -299,7 +304,7 @@ export function ResultPanel({
         <h2 className='panel-title'>{title}</h2>
       </div>
       {status === 'loading' ? (
-        <div className='rounded-lg border border-dashed border-cyan-200 bg-cyan-50 p-4 text-sm leading-6 text-cyan-900'>
+        <div className='rounded-3xl border border-dashed border-cyan-200 bg-cyan-50 p-4 text-sm leading-6 text-cyan-900'>
           <div className='flex items-center gap-2 font-bold'>
             <Loader2 className='h-4 w-4 animate-spin' />
             <span>{statusMessage ?? t('result.loading')}</span>
@@ -314,7 +319,7 @@ export function ResultPanel({
           {children}
         </div>
       ) : (
-        <div className='rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4'>
+        <div className='rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-4'>
           <p className='text-sm leading-6 text-slate-600'>{empty}</p>
         </div>
       )}
