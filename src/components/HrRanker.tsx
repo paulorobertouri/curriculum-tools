@@ -233,6 +233,7 @@ function RankingResult({ result }: { result: HrRankingResult }) {
   return (
     <div className='space-y-4'>
       <HrMetricsDashboard result={result} />
+      <HrRecommendationDistribution result={result} />
       {result.candidates.map(candidate => (
         <article
           className='rounded-lg border border-slate-200 p-4'
@@ -295,16 +296,21 @@ function HrMetricsDashboard({ result }: { result: HrRankingResult }) {
 }
 
 function HrMetricBar({ label, value }: { label: string; value: number }) {
+  const { locale } = useI18n();
   const safeValue = Math.max(
     0,
     Math.min(10, Number.isFinite(value) ? value : 0),
   );
+  const formatter = new Intl.NumberFormat(locale, {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
 
   return (
     <div>
       <div className='mb-1 flex items-center justify-between text-xs font-semibold text-slate-700'>
         <span>{label}</span>
-        <span>{safeValue.toFixed(1)}/10</span>
+        <span>{formatter.format(safeValue)}/10</span>
       </div>
       <div className='h-2 rounded-full bg-slate-200'>
         <div
@@ -313,5 +319,64 @@ function HrMetricBar({ label, value }: { label: string; value: number }) {
         />
       </div>
     </div>
+  );
+}
+
+function HrRecommendationDistribution({ result }: { result: HrRankingResult }) {
+  const { locale, t } = useI18n();
+  const counts = result.candidates.reduce(
+    (accumulator, candidate) => {
+      accumulator[candidate.interviewRecommendation] += 1;
+      return accumulator;
+    },
+    {
+      strong_yes: 0,
+      yes: 0,
+      maybe: 0,
+      no: 0,
+    },
+  );
+  const total = result.candidates.length || 1;
+  const formatter = new Intl.NumberFormat(locale, {
+    maximumFractionDigits: 0,
+  });
+
+  const entries = [
+    ['strong_yes', 'bg-emerald-600'],
+    ['yes', 'bg-cyan-600'],
+    ['maybe', 'bg-amber-500'],
+    ['no', 'bg-rose-600'],
+  ] as const;
+
+  return (
+    <section className='rounded-lg border border-slate-200 bg-slate-50 p-4'>
+      <p className='text-sm font-bold text-slate-900'>
+        {t('hr.recommendationDistribution')}
+      </p>
+      <div className='mt-3 grid gap-3 sm:grid-cols-2'>
+        {entries.map(([key, barClass]) => {
+          const count = counts[key];
+          const percentage = (count / total) * 100;
+
+          return (
+            <div
+              key={key}
+              className='rounded-md border border-slate-200 bg-white p-3'
+            >
+              <div className='mb-2 flex items-center justify-between text-xs font-semibold text-slate-700'>
+                <span>{t(`hr.recommendation.${key}`)}</span>
+                <span>{formatter.format(count)}</span>
+              </div>
+              <div className='h-2 rounded-full bg-slate-200'>
+                <div
+                  className={`h-2 rounded-full transition-all duration-300 ${barClass}`}
+                  style={{ width: `${percentage}%` }}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }

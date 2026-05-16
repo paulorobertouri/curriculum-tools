@@ -139,21 +139,22 @@ Acceptance criteria:
 
 - [x] Add i18n foundation with locale persistence and runtime language switcher.
 - [x] Start localizing setup, status, candidate, and HR core UI copy.
-- [ ] Complete localization for remaining static strings and error-state variants.
-- [ ] Add locale-aware formatting for scores/dates where applicable.
-- [ ] Add tests for language switching and key translated flows.
+- [x] Complete localization for remaining static strings and error-state variants.
+- [x] Add locale-aware formatting for scores/dates where applicable.
+- [x] Add tests for language switching and key translated flows.
 
 ### Metrics Graphs Plan
 
 - [x] Add initial in-app score bars for Candidate and HR metrics dashboards.
-- [ ] Add recommendation distribution graph for HR (`strong_yes`, `yes`, `maybe`, `no`).
+- [x] Add recommendation distribution graph for HR (`strong_yes`, `yes`, `maybe`, `no`).
 - [ ] Add trend/comparison view between batch average and top candidate score.
 - [ ] Add export-ready metrics summary model for future CSV/JSON reporting.
 
 ### Prompt And Metrics Quality Plan
 
 - [x] Improve candidate and HR prompts with stricter rubric and evidence constraints.
-- [ ] Add prompt versioning constants to track changes over time.
+- [x] Add prompt versioning constants to track changes over time.
+- [x] Add first prompt quality evaluation fixture tests.
 - [ ] Add evaluation harness with mocked CV fixtures to compare prompt quality deltas.
 - [ ] Add calibration checks to reduce score drift across providers/models.
 
