@@ -1,10 +1,12 @@
-.PHONY: help install install-dev build dev preview test test-unit test-e2e lint format clean
+.PHONY: help install install-dev build build-pages publish dev preview test test-unit test-e2e lint format clean
 
 help:
 	@echo "Available commands:"
 	@echo "  install      Install production dependencies"
 	@echo "  install-dev  Install development dependencies"
 	@echo "  build        Build the application"
+	@echo "  build-pages  Build the application for GitHub Pages"
+	@echo "  publish      Build and copy to ../paulorobertouri.github.io/curriculum-tools"
 	@echo "  dev          Start the development server"
 	@echo "  preview      Preview the built application"
 	@echo "  test         Run all tests"
@@ -23,6 +25,12 @@ install-dev:
 
 build:
 	pnpm run build
+
+build-pages:
+	pnpm run build:pages
+
+publish:
+	pnpm run publish
 
 dev:
 	pnpm run dev

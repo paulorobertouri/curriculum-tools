@@ -19,6 +19,8 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE).
 - `pnpm install` - install dependencies.
 - `pnpm run dev` - start the Vite dev server.
 - `pnpm run build` - typecheck and build production assets.
+- `pnpm run build:pages` - build production assets for GitHub Pages at `/curriculum-tools/`.
+- `pnpm run publish` - build and copy the site to `../paulorobertouri.github.io/curriculum-tools`.
 - `pnpm test` - run unit and component tests once.
 - `pnpm test:coverage` - run unit and component tests with coverage.
 - `pnpm run lint` - run ESLint.
