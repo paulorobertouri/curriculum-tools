@@ -1,4 +1,4 @@
-import { BriefcaseBusiness, UserRound } from 'lucide-react';
+import { BriefcaseBusiness, FlaskConical, UserRound } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { CandidateReviewer } from '@/components/CandidateReviewer';
@@ -16,7 +16,7 @@ import {
   saveAiConfig,
 } from '@/storage/aiConfigStorage';
 
-type ActiveTool = 'candidate' | 'hr';
+type ActiveTool = 'candidate' | 'hr' | 'quality';
 
 function App() {
   const { t } = useI18n();
@@ -28,16 +28,44 @@ function App() {
 
   const shouldShowSetup = !config || editingConfig;
 
+  const activeToolGuide = useMemo(() => {
+    if (activeTool === 'candidate') {
+      return {
+        title: t('app.toolIntro.candidateTitle'),
+        description: t('app.toolIntro.candidateDescription'),
+        steps: t('app.toolIntro.candidateSteps'),
+      };
+    }
+
+    if (activeTool === 'hr') {
+      return {
+        title: t('app.toolIntro.hrTitle'),
+        description: t('app.toolIntro.hrDescription'),
+        steps: t('app.toolIntro.hrSteps'),
+      };
+    }
+
+    return {
+      title: t('app.toolIntro.qualityTitle'),
+      description: t('app.toolIntro.qualityDescription'),
+      steps: t('app.toolIntro.qualitySteps'),
+    };
+  }, [activeTool, t]);
+
   const activeContent = useMemo(() => {
     if (!config) {
       return null;
     }
 
-    return activeTool === 'candidate' ? (
-      <CandidateReviewer config={config} />
-    ) : (
-      <HrRanker config={config} />
-    );
+    if (activeTool === 'candidate') {
+      return <CandidateReviewer config={config} />;
+    }
+
+    if (activeTool === 'hr') {
+      return <HrRanker config={config} />;
+    }
+
+    return <QualityHarness config={config} />;
   }, [activeTool, config]);
 
   const handleSave = (nextConfig: AiConfig) => {
@@ -122,7 +150,7 @@ function App() {
             </div>
 
             <nav
-              className='grid gap-2 rounded-3xl border border-slate-200 bg-slate-50 p-2 sm:grid-cols-2'
+              className='grid gap-2 rounded-3xl border border-slate-200 bg-slate-50 p-2 sm:grid-cols-3'
               role='tablist'
               aria-label='Main tools'
             >
@@ -150,6 +178,18 @@ function App() {
                 <BriefcaseBusiness className='h-4 w-4' />
                 <span>{t('app.tab.hr')}</span>
               </button>
+              <button
+                className={toolButtonClass(activeTool === 'quality')}
+                type='button'
+                onClick={() => setActiveTool('quality')}
+                role='tab'
+                id='tab-quality'
+                aria-selected={activeTool === 'quality'}
+                aria-controls='panel-quality'
+              >
+                <FlaskConical className='h-4 w-4' />
+                <span>{t('app.tab.quality')}</span>
+              </button>
             </nav>
           </div>
         </header>
@@ -158,18 +198,29 @@ function App() {
           {t('app.privacy', { provider: config.provider })}
         </section>
 
+        <section className='mt-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm'>
+          <p className='text-xs font-bold uppercase tracking-wide text-slate-500'>
+            {t('app.toolIntro.title')}
+          </p>
+          <h2 className='mt-1 text-xl font-black text-slate-950'>
+            {activeToolGuide.title}
+          </h2>
+          <p className='mt-2 text-sm leading-6 text-slate-700'>
+            {activeToolGuide.description}
+          </p>
+          <p className='mt-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700'>
+            {activeToolGuide.steps}
+          </p>
+        </section>
+
         <div
           className='mt-6'
           role='tabpanel'
-          id={activeTool === 'candidate' ? 'panel-candidate' : 'panel-hr'}
-          aria-labelledby={
-            activeTool === 'candidate' ? 'tab-candidate' : 'tab-hr'
-          }
+          id={`panel-${activeTool}`}
+          aria-labelledby={`tab-${activeTool}`}
         >
           {activeContent}
         </div>
-
-        <QualityHarness config={config} />
       </div>
     </main>
   );

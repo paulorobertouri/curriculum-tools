@@ -1,4 +1,5 @@
 import { HrRankingInput } from '@/domain/aiTypes';
+import { getPromptLocaleGuidance } from '@/prompts/promptLocale';
 import { PROMPT_VERSIONS } from '@/prompts/promptVersions';
 
 export const buildHrPrompt = (input: HrRankingInput) => `
@@ -23,6 +24,7 @@ Evaluate each CV against the target role. Return only valid JSON with this shape
 
 Strict requirements:
 - Output must be valid JSON only, with no Markdown code fences.
+- ${getPromptLocaleGuidance(input.outputLocale)}
 - Keep the input id and filename for each candidate in the output.
 - Use score range 0.0 to 10.0 with one decimal place.
 - Rank from strongest to weakest.

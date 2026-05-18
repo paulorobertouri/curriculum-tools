@@ -19,4 +19,26 @@ describe('candidatePrompt', () => {
     expect(prompt).toContain('Frontend Engineer');
     expect(prompt).toContain('Built React apps and improved release cadence.');
   });
+
+  it('includes output locale guidance for pt-BR', () => {
+    const prompt = buildCandidatePrompt({
+      jobTitle: 'Engenheiro Frontend',
+      jobDescription: 'Construir interfaces React.',
+      cvText: 'Experiencia com React e TypeScript.',
+      outputLocale: 'pt-BR',
+    });
+
+    expect(prompt).toContain('must be written in Portuguese (pt-BR)');
+  });
+
+  it('includes output locale guidance for en-US', () => {
+    const prompt = buildCandidatePrompt({
+      jobTitle: 'Frontend Engineer',
+      jobDescription: 'Build React interfaces.',
+      cvText: 'Experience with React and TypeScript.',
+      outputLocale: 'en-US',
+    });
+
+    expect(prompt).toContain('must be written in English (en-US)');
+  });
 });

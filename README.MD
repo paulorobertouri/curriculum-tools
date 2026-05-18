@@ -42,4 +42,5 @@ API keys are stored in this browser's `localStorage`. CV content is sent directl
 
 - [Product Plan](docs/PRODUCT_PLAN.md)
 - [Architecture](docs/ARCHITECTURE.md)
+- [Engineering Standards](docs/ENGINEERING_STANDARDS.md)
 - [TODO](TODO.MD)

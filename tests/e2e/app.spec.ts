@@ -233,12 +233,12 @@ test('hr flow renders ranked candidates', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Process' }).click();
 
-  await expect(page.getByRole('heading', { name: 'Alice' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Bob' })).toBeVisible();
+  await expect(page.getByText('alice.txt').first()).toBeVisible();
+  await expect(page.getByText('bob.txt').first()).toBeVisible();
   await expect(
     page.getByRole('heading', { name: 'Average vs top candidate' }),
   ).toBeVisible();
-  await expect(page.getByText('Recommendation: strong yes')).toBeVisible();
+  await expect(page.getByText('Recommendation: strong yes').first()).toBeVisible();
 
   await captureJourneyScreenshot(page, 'hr-00-ranking-result');
 });

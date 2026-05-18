@@ -139,16 +139,28 @@ export function QualityHarness({ config }: QualityHarnessProps) {
   };
 
   return (
-    <section className='tool-panel mt-6' aria-live='polite'>
+    <section className='tool-panel' aria-live='polite'>
       <div className='flex items-center justify-between gap-3'>
         <div>
           <p className='eyebrow'>Quality</p>
           <h2 className='panel-title'>Evaluation Harness</h2>
+          <p className='mt-2 text-sm leading-6 text-slate-600'>
+            Validate prompt quality and ranking stability using fixed benchmark fixtures. This helps detect score drift and ranking volatility after prompt or model changes.
+          </p>
         </div>
         <button className='primary-button' type='button' onClick={runHarness} disabled={isRunning}>
           {isRunning ? <Loader2 className='h-4 w-4 animate-spin' /> : <Play className='h-4 w-4' />}
           {isRunning ? 'Running fixtures' : 'Run fixture pack'}
         </button>
+      </div>
+
+      <div className='rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700'>
+        <p className='font-bold text-slate-900'>How to use this tool</p>
+        <p className='mt-1'>
+          1) Run fixtures after changing prompts/models.
+        </p>
+        <p>2) Review average deltas and rank swaps.</p>
+        <p>3) Investigate warnings before relying on outputs in production hiring flows.</p>
       </div>
 
       {error ? <p className='error-message'>{error}</p> : null}

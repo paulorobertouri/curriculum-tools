@@ -8,6 +8,7 @@ import {
   useState,
 } from 'react';
 
+import { runCandidateReviewUseCase } from '@/application/candidate/runCandidateReviewUseCase';
 import { AiConfig, CandidateReview } from '@/domain/aiTypes';
 import { buildCandidateQualitySummary } from '@/domain/reviewQuality';
 import { SUPPORTED_FILE_TYPES, extractTextFromFile } from '@/files/extractText';
@@ -16,14 +17,13 @@ import {
   downloadJsonFile,
 } from '@/files/exportResults';
 import { useI18n } from '@/i18n/i18n';
-import { getProviderAdapter } from '@/providers';
 
 type CandidateReviewerProps = {
   config: AiConfig;
 };
 
 export function CandidateReviewer({ config }: CandidateReviewerProps) {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const [jobTitle, setJobTitle] = useState('');
   const [jobDescription, setJobDescription] = useState('');
   const [cvText, setCvText] = useState('');
@@ -71,12 +71,11 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
     setIsProcessing(true);
 
     try {
-      const review = await getProviderAdapter(
-        config.provider,
-      ).reviewCandidateCv(config, {
+      const review = await runCandidateReviewUseCase(config, {
         jobTitle,
         jobDescription,
         cvText,
+        outputLocale: locale,
       });
       setPreviousResult(result);
       setResult(review);
@@ -97,6 +96,9 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
         <div>
           <p className='eyebrow'>{t('candidate.eyebrow')}</p>
           <h2 className='panel-title'>{t('candidate.title')}</h2>
+          <p className='mt-2 text-sm leading-6 text-slate-600'>
+            {t('candidate.description')}
+          </p>
         </div>
         <TextField
           label={t('candidate.jobTitle')}
@@ -119,6 +121,9 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
           accept={SUPPORTED_FILE_TYPES}
           onChange={handleFile}
         />
+        <p className='text-xs leading-5 text-slate-500'>
+          {t('candidate.uploadHint')}
+        </p>
         {fileStatus ? (
           <p className='rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-800'>
             {fileStatus}
@@ -147,6 +152,9 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
           )}
           {isProcessing ? t('candidate.processing') : t('candidate.process')}
         </button>
+        <p className='text-xs leading-5 text-slate-500'>
+          {t('candidate.processHint')}
+        </p>
       </form>
 
       <ResultPanel

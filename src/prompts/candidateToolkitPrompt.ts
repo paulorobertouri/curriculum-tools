@@ -1,4 +1,5 @@
 import { CandidateReviewInput } from '@/domain/aiTypes';
+import { getPromptLocaleGuidance } from '@/prompts/promptLocale';
 import { PROMPT_VERSIONS } from '@/prompts/promptVersions';
 
 export const buildCandidateToolkitPrompt = (input: CandidateReviewInput) => `
@@ -18,6 +19,7 @@ Create a practical candidate toolkit for this role and CV. Return only valid JSO
 
 Strict requirements:
 - Output must be valid JSON only, with no Markdown code fences.
+- ${getPromptLocaleGuidance(input.outputLocale)}
 - Keep all content grounded in evidence from the provided CV and job description.
 - Do not invent employers, degrees, dates, projects, or certifications.
 - If evidence is missing, suggested answers must acknowledge the gap and propose an honest response strategy.

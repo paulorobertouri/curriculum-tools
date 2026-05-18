@@ -1,4 +1,5 @@
 import { CandidateReviewInput } from '@/domain/aiTypes';
+import { getPromptLocaleGuidance } from '@/prompts/promptLocale';
 import { PROMPT_VERSIONS } from '@/prompts/promptVersions';
 
 export const buildCandidatePrompt = (input: CandidateReviewInput) => `
@@ -16,6 +17,7 @@ Evaluate this CV for the target role. Return only valid JSON with this shape:
 
 Strict requirements:
 - Output must be valid JSON only, with no Markdown code fences.
+- ${getPromptLocaleGuidance(input.outputLocale)}
 - Scoring uses 0.0 to 10.0 and one decimal place.
 - Base every claim on explicit evidence from the CV text.
 - Do not invent employers, dates, achievements, or skills.

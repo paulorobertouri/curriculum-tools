@@ -67,7 +67,7 @@ export const buildHrMetricsSummary = (
     standardDeviation,
     topScore,
     lowestScore,
-    scoreSpread: Math.max(0, topScore - averageScore),
+    scoreSpread: Math.max(0, topScore - lowestScore),
     yesOrBetterRate:
       totalCandidates > 0
         ?

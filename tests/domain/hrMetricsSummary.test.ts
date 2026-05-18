@@ -45,7 +45,7 @@ describe('hrMetricsSummary', () => {
     expect(summary.lowestScore).toBe(6.0);
     expect(summary.medianScore).toBe(7.5);
     expect(summary.standardDeviation).toBeCloseTo(1.2, 1);
-    expect(summary.scoreSpread).toBeCloseTo(1.5, 1);
+    expect(summary.scoreSpread).toBeCloseTo(3.0, 1);
     expect(summary.yesOrBetterRate).toBeCloseTo(66.7, 1);
     expect(summary.recommendationCounts).toEqual({
       strong_yes: 1,

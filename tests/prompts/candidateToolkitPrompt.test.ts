@@ -18,4 +18,15 @@ describe('candidateToolkitPrompt', () => {
     expect(prompt).toContain('interviewQa');
     expect(prompt).toContain('Frontend Engineer');
   });
+
+  it('includes output locale guidance for pt-BR', () => {
+    const prompt = buildCandidateToolkitPrompt({
+      jobTitle: 'Engenheiro Frontend',
+      jobDescription: 'Construir interfaces React.',
+      cvText: 'Experiencia com React e TypeScript.',
+      outputLocale: 'pt-BR',
+    });
+
+    expect(prompt).toContain('must be written in Portuguese (pt-BR)');
+  });
 });

@@ -16,6 +16,7 @@ export type CandidateReviewInput = {
   jobTitle: string;
   jobDescription: string;
   cvText: string;
+  outputLocale?: 'en-US' | 'pt-BR' | 'es-ES';
 };
 
 export type CandidateInterviewQuestion = {
@@ -51,6 +52,7 @@ export type HrRankingInput = {
   jobTitle: string;
   jobDescription: string;
   cvs: HrCvInput[];
+  outputLocale?: 'en-US' | 'pt-BR' | 'es-ES';
 };
 
 export type InterviewRecommendation = 'strong_yes' | 'yes' | 'maybe' | 'no';

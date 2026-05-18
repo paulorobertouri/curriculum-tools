@@ -1,6 +1,7 @@
 import { Download, Loader2, Sparkles } from 'lucide-react';
 import { ChangeEvent, FormEvent, useMemo, useState } from 'react';
 
+import { runHrRankingUseCase } from '@/application/hr/runHrRankingUseCase';
 import {
   List,
   ResultPanel,
@@ -21,7 +22,6 @@ import {
   downloadJsonFile,
 } from '@/files/exportResults';
 import { useI18n } from '@/i18n/i18n';
-import { getProviderAdapter } from '@/providers';
 import {
   HrDecision,
   HrDecisionMap,
@@ -40,7 +40,7 @@ type FileStatus = HrCvInput & {
 };
 
 export function HrRanker({ config }: HrRankerProps) {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const [jobTitle, setJobTitle] = useState('');
   const [jobDescription, setJobDescription] = useState('');
   const [files, setFiles] = useState<FileStatus[]>([]);
@@ -138,70 +138,38 @@ export function HrRanker({ config }: HrRankerProps) {
     setProcessingLabel(t('hr.processing'));
 
     try {
-      const provider = getProviderAdapter(config.provider);
-      const rankedCandidates = [] as HrRankingResult['candidates'];
+      const ranking = await runHrRankingUseCase({
+        config,
+        jobTitle,
+        jobDescription,
+        cvs: validFiles,
+        outputLocale: locale,
+        onProgress(index, total) {
+          setProcessingLabel(
+            t('hr.batchProcessing', {
+              index,
+              total,
+            }),
+          );
+        },
+      });
 
-      for (let index = 0; index < validFiles.length; index += 1) {
-        const cv = validFiles[index];
+      const nextRawCvById = validFiles.reduce<Record<string, string>>(
+        (accumulator, cv) => {
+          accumulator[cv.id] = cv.text;
+          return accumulator;
+        },
+        {},
+      );
 
-        setProcessingLabel(
-          t('hr.batchProcessing', {
-            index: index + 1,
-            total: validFiles.length,
-          }),
-        );
-
-        const partial = await provider.rankHrCvs(config, {
-          jobTitle,
-          jobDescription,
-          cvs: [cv],
-        });
-
-        const partialCandidate =
-          partial.candidates.find(candidate => candidate.id === cv.id) ??
-          partial.candidates[0];
-
-        if (partialCandidate) {
-          rankedCandidates.push(partialCandidate);
-          continue;
-        }
-
-        rankedCandidates.push({
-          id: cv.id,
-          filename: cv.filename,
-          score: 0,
-          justification:
-            'No candidate entry was returned for this file. Review manually.',
-          strengths: [],
-          concerns: ['No ranking response was returned for this candidate.'],
-          interviewRecommendation: 'maybe',
-          interviewQuestions: [],
-        });
-      }
-
-      const ranking: HrRankingResult = {
-        candidates: [...rankedCandidates].sort((left, right) => {
-          if (right.score !== left.score) {
-            return right.score - left.score;
-          }
-
-          const byFilename = left.filename.localeCompare(right.filename);
-          if (byFilename !== 0) {
-            return byFilename;
-          }
-
-          return left.id.localeCompare(right.id);
-        }),
+      const mergedRawCvById = {
+        ...rawCvById,
+        ...nextRawCvById,
       };
 
       setPreviousResult(result);
       setResult(ranking);
-      setRawCvById(
-        validFiles.reduce<Record<string, string>>((accumulator, cv) => {
-          accumulator[cv.id] = cv.text;
-          return accumulator;
-        }, {}),
-      );
+      setRawCvById(mergedRawCvById);
     } catch (processError) {
       setError(
         processError instanceof Error
@@ -220,6 +188,9 @@ export function HrRanker({ config }: HrRankerProps) {
         <div>
           <p className='eyebrow'>{t('hr.eyebrow')}</p>
           <h2 className='panel-title'>{t('hr.title')}</h2>
+          <p className='mt-2 text-sm leading-6 text-slate-600'>
+            {t('hr.description')}
+          </p>
         </div>
         <TextField
           label={t('candidate.jobTitle')}
@@ -243,6 +214,7 @@ export function HrRanker({ config }: HrRankerProps) {
           multiple
           onChange={handleFiles}
         />
+        <p className='text-xs leading-5 text-slate-500'>{t('hr.uploadHint')}</p>
         {isExtracting ? (
           <p className='text-sm text-cyan-700'>{t('hr.extracting')}</p>
         ) : null}
@@ -288,6 +260,7 @@ export function HrRanker({ config }: HrRankerProps) {
           )}
           {isProcessing ? t('hr.processing') : t('hr.process')}
         </button>
+        <p className='text-xs leading-5 text-slate-500'>{t('hr.processHint')}</p>
       </form>
 
       <ResultPanel
@@ -531,7 +504,12 @@ function HrDecisionPanel({
   onNoteChange(note: string): void;
   onTagChange(tags: string[]): void;
 }) {
-  const statuses: HrDecisionStatus[] = ['shortlist', 'hold', 'reject', 'interview'];
+  const statuses: Array<{ value: HrDecisionStatus; label: string }> = [
+    { value: 'shortlist', label: 'Shortlist' },
+    { value: 'hold', label: 'Hold' },
+    { value: 'reject', label: 'Reject' },
+    { value: 'interview', label: 'Interview' },
+  ];
 
   return (
     <section className='mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3'>
@@ -539,15 +517,15 @@ function HrDecisionPanel({
       <div className='mt-2 flex flex-wrap gap-2'>
         {statuses.map(status => (
           <button
-            key={status}
+            key={status.value}
             className={[
               'status-button text-xs',
-              decision?.status === status ? 'border-cyan-600 text-cyan-700' : '',
+              decision?.status === status.value ? 'border-cyan-600 text-cyan-700' : '',
             ].join(' ')}
             type='button'
-            onClick={() => onStatusChange(status)}
+            onClick={() => onStatusChange(status.value)}
           >
-            {status}
+            {status.label}
           </button>
         ))}
       </div>
@@ -712,7 +690,11 @@ function HrMetricsDashboard({ result }: { result: HrRankingResult }) {
           value={summary.lowestScore}
         />
       </div>
-      <HrComparisonBar average={summary.averageScore} top={summary.topScore} />
+      <HrComparisonBar
+        average={summary.averageScore}
+        top={summary.topScore}
+        lowest={summary.lowestScore}
+      />
     </section>
   );
 }
@@ -755,15 +737,24 @@ function HrMetricBar({ label, value }: { label: string; value: number }) {
   );
 }
 
-function HrComparisonBar({ average, top }: { average: number; top: number }) {
+function HrComparisonBar({
+  average,
+  top,
+  lowest,
+}: {
+  average: number;
+  top: number;
+  lowest: number;
+}) {
   const { locale, t } = useI18n();
   const safeAverage = Math.max(0, Math.min(10, average));
   const safeTop = Math.max(0, Math.min(10, top));
+  const safeLowest = Math.max(0, Math.min(10, lowest));
   const formatter = new Intl.NumberFormat(locale, {
     minimumFractionDigits: 1,
     maximumFractionDigits: 1,
   });
-  const spread = Math.max(0, safeTop - safeAverage);
+  const spread = Math.max(0, safeTop - safeLowest);
 
   return (
     <div className='mt-4 rounded-3xl border border-dashed border-slate-300 bg-white p-3 shadow-sm'>

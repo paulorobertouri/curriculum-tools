@@ -20,6 +20,23 @@ const dictionaries: Record<Locale, Dictionary> = {
       'Review one CV against a role, or rank many CVs against one job description. Content is sent only when you click Process.',
     'app.tab.candidate': 'Candidate',
     'app.tab.hr': 'HR',
+    'app.tab.quality': 'Quality',
+    'app.toolIntro.title': 'Tool guide',
+    'app.toolIntro.candidateTitle': 'Candidate CV Reviewer',
+    'app.toolIntro.candidateDescription':
+      'Analyze one CV against one role and get practical improvements, rewritten content, and interview preparation guidance.',
+    'app.toolIntro.candidateSteps':
+      'Step 1: add role context. Step 2: upload or paste CV text. Step 3: process and review score, gaps, and toolkit outputs.',
+    'app.toolIntro.hrTitle': 'HR CV Ranking',
+    'app.toolIntro.hrDescription':
+      'Evaluate multiple CVs for one role, compare ranked candidates, and capture hiring decisions with notes and tags.',
+    'app.toolIntro.hrSteps':
+      'Step 1: add role context. Step 2: upload several CV files. Step 3: process ranking, compare candidates, and export results.',
+    'app.toolIntro.qualityTitle': 'Quality Evaluation Harness',
+    'app.toolIntro.qualityDescription':
+      'Run fixed fixture packs to track prompt quality, score drift, and ranking stability across runs.',
+    'app.toolIntro.qualitySteps':
+      'Run fixture packs after prompt or model changes and monitor score spread, average deltas, and rank swaps.',
     'app.privacy':
       'API keys are saved in localStorage on this browser. CV content is sent from this browser to {provider} only after Process is clicked.',
     'provider.setup.badge': 'Browser-first AI setup',
@@ -50,9 +67,13 @@ const dictionaries: Record<Locale, Dictionary> = {
     'provider.status.failed': 'Provider retest failed.',
     'candidate.eyebrow': 'Candidate',
     'candidate.title': 'CV Reviewer',
+    'candidate.description':
+      'Review one CV against a target role and receive clear strengths, gaps, and rewrite suggestions.',
     'candidate.jobTitle': 'Job title',
     'candidate.jobDescription': 'Job description',
     'candidate.upload': 'Upload CV',
+    'candidate.uploadHint':
+      'Supported files: .txt, .pdf, and .docx. You can also paste CV text directly below.',
     'candidate.cvText': 'CV text',
     'candidate.extracting': 'Extracting {filename}',
     'candidate.ready': '{filename} is ready',
@@ -63,6 +84,8 @@ const dictionaries: Record<Locale, Dictionary> = {
     'candidate.processError': 'Could not process this CV.',
     'candidate.processing': 'Processing',
     'candidate.process': 'Process',
+    'candidate.processHint':
+      'Content is sent only when you click Process. Review result quality before using it externally.',
     'candidate.resultTitle': 'Review Result',
     'candidate.resultEmpty':
       'Run a CV review to see score, gaps, and concrete recommendations.',
@@ -91,7 +114,11 @@ const dictionaries: Record<Locale, Dictionary> = {
     'candidate.interview.suggestedAnswer': 'Suggested answer',
     'hr.eyebrow': 'HR',
     'hr.title': 'CV Ranking',
+    'hr.description':
+      'Rank multiple CVs for one role, review evidence and concerns, and keep decision notes for each candidate.',
     'hr.upload': 'CV files',
+    'hr.uploadHint':
+      'Upload several CVs to build a shortlist. Invalid files are skipped but valid files still run.',
     'hr.extracting': 'Extracting files...',
     'hr.ready': 'ready',
     'hr.validation':
@@ -100,6 +127,8 @@ const dictionaries: Record<Locale, Dictionary> = {
     'hr.processing': 'Processing...',
     'hr.batchProcessing': 'Processing batch {index} of {total}...',
     'hr.process': 'Process',
+    'hr.processHint':
+      'Each candidate is evaluated separately to reduce context collisions and improve ranking consistency.',
     'hr.resultTitle': 'Ranking Result',
     'hr.resultEmpty': 'Upload CVs and process them to see a ranked shortlist.',
     'hr.recommendation': 'Recommendation',
@@ -132,6 +161,23 @@ const dictionaries: Record<Locale, Dictionary> = {
       'Analise um CV para uma vaga ou classifique varios CVs para uma descricao de trabalho. O conteudo so e enviado quando voce clica em Processar.',
     'app.tab.candidate': 'Candidato',
     'app.tab.hr': 'RH',
+    'app.tab.quality': 'Qualidade',
+    'app.toolIntro.title': 'Guia da ferramenta',
+    'app.toolIntro.candidateTitle': 'Revisor de CV do Candidato',
+    'app.toolIntro.candidateDescription':
+      'Analise um CV para uma vaga e receba melhorias praticas, conteudo reescrito e orientacao para entrevista.',
+    'app.toolIntro.candidateSteps':
+      'Passo 1: informe contexto da vaga. Passo 2: envie ou cole o texto do CV. Passo 3: processe e revise nota, lacunas e toolkit.',
+    'app.toolIntro.hrTitle': 'Ranking de CVs para RH',
+    'app.toolIntro.hrDescription':
+      'Avalie varios CVs para uma vaga, compare candidatos ranqueados e registre decisoes com notas e tags.',
+    'app.toolIntro.hrSteps':
+      'Passo 1: informe contexto da vaga. Passo 2: envie varios CVs. Passo 3: processe ranking, compare candidatos e exporte resultados.',
+    'app.toolIntro.qualityTitle': 'Harness de Avaliacao de Qualidade',
+    'app.toolIntro.qualityDescription':
+      'Execute pacotes fixos para acompanhar qualidade de prompt, desvio de nota e estabilidade de ranking.',
+    'app.toolIntro.qualitySteps':
+      'Execute os fixtures apos mudar prompt ou modelo e acompanhe spread de notas, deltas medios e trocas de ranking.',
     'app.privacy':
       'As chaves de API sao salvas no localStorage deste navegador. O conteudo do CV e enviado para {provider} somente apos clicar em Processar.',
     'provider.setup.badge': 'Configuracao de IA no navegador',
@@ -163,9 +209,13 @@ const dictionaries: Record<Locale, Dictionary> = {
     'provider.status.failed': 'Falha ao retestar o provedor.',
     'candidate.eyebrow': 'Candidato',
     'candidate.title': 'Revisor de CV',
+    'candidate.description':
+      'Revise um CV para uma vaga-alvo e receba forcas, lacunas e sugestoes de reescrita.',
     'candidate.jobTitle': 'Titulo da vaga',
     'candidate.jobDescription': 'Descricao da vaga',
     'candidate.upload': 'Enviar CV',
+    'candidate.uploadHint':
+      'Arquivos suportados: .txt, .pdf e .docx. Voce tambem pode colar o texto do CV abaixo.',
     'candidate.cvText': 'Texto do CV',
     'candidate.extracting': 'Extraindo {filename}',
     'candidate.ready': '{filename} pronto',
@@ -176,6 +226,8 @@ const dictionaries: Record<Locale, Dictionary> = {
     'candidate.processError': 'Nao foi possivel processar este CV.',
     'candidate.processing': 'Processando',
     'candidate.process': 'Processar',
+    'candidate.processHint':
+      'O conteudo so e enviado quando voce clica em Processar. Revise a qualidade antes de usar externamente.',
     'candidate.resultTitle': 'Resultado da Revisao',
     'candidate.resultEmpty':
       'Execute a revisao para ver nota, lacunas e recomendacoes.',
@@ -205,7 +257,11 @@ const dictionaries: Record<Locale, Dictionary> = {
     'candidate.interview.suggestedAnswer': 'Resposta sugerida',
     'hr.eyebrow': 'RH',
     'hr.title': 'Ranking de CVs',
+    'hr.description':
+      'Classifique varios CVs para uma vaga, revise evidencias e riscos, e mantenha notas de decisao por candidato.',
     'hr.upload': 'Arquivos de CV',
+    'hr.uploadHint':
+      'Envie varios CVs para montar uma shortlist. Arquivos invalidos sao ignorados, mas os validos continuam.',
     'hr.extracting': 'Extraindo arquivos...',
     'hr.ready': 'pronto',
     'hr.validation': 'Informe titulo, descricao e ao menos um CV valido.',
@@ -213,6 +269,8 @@ const dictionaries: Record<Locale, Dictionary> = {
     'hr.processing': 'Processando...',
     'hr.batchProcessing': 'Processando lote {index} de {total}...',
     'hr.process': 'Processar',
+    'hr.processHint':
+      'Cada candidato e avaliado separadamente para reduzir colisoes de contexto e melhorar consistencia.',
     'hr.resultTitle': 'Resultado do Ranking',
     'hr.resultEmpty': 'Envie CVs e processe para ver a lista classificada.',
     'hr.recommendation': 'Recomendacao',
@@ -245,6 +303,23 @@ const dictionaries: Record<Locale, Dictionary> = {
       'Revisa un CV para un puesto o clasifica varios CVs para una descripcion de trabajo. El contenido solo se envia cuando haces clic en Procesar.',
     'app.tab.candidate': 'Candidato',
     'app.tab.hr': 'RRHH',
+    'app.tab.quality': 'Calidad',
+    'app.toolIntro.title': 'Guia de herramienta',
+    'app.toolIntro.candidateTitle': 'Revisor de CV para Candidato',
+    'app.toolIntro.candidateDescription':
+      'Analiza un CV para un puesto y recibe mejoras practicas, contenido reescrito y orientacion de entrevista.',
+    'app.toolIntro.candidateSteps':
+      'Paso 1: agrega contexto del puesto. Paso 2: sube o pega el texto del CV. Paso 3: procesa y revisa puntuacion, brechas y toolkit.',
+    'app.toolIntro.hrTitle': 'Ranking de CVs para RRHH',
+    'app.toolIntro.hrDescription':
+      'Evalua varios CVs para un puesto, compara candidatos ordenados y guarda decisiones con notas y etiquetas.',
+    'app.toolIntro.hrSteps':
+      'Paso 1: agrega contexto del puesto. Paso 2: sube varios CVs. Paso 3: procesa ranking, compara candidatos y exporta resultados.',
+    'app.toolIntro.qualityTitle': 'Harness de Evaluacion de Calidad',
+    'app.toolIntro.qualityDescription':
+      'Ejecuta paquetes de fixtures para seguir calidad de prompts, deriva de puntuaciones y estabilidad de ranking.',
+    'app.toolIntro.qualitySteps':
+      'Ejecuta fixtures tras cambios de prompt o modelo y monitorea spread, deltas promedio y cambios de ranking.',
     'app.privacy':
       'Las claves API se guardan en localStorage de este navegador. El contenido del CV se envia a {provider} solo despues de hacer clic en Procesar.',
     'provider.setup.badge': 'Configuracion IA en navegador',
@@ -276,9 +351,13 @@ const dictionaries: Record<Locale, Dictionary> = {
     'provider.status.failed': 'Fallo al reprobar el proveedor.',
     'candidate.eyebrow': 'Candidato',
     'candidate.title': 'Revisor de CV',
+    'candidate.description':
+      'Revisa un CV contra un puesto objetivo y recibe fortalezas, brechas y sugerencias de reescritura.',
     'candidate.jobTitle': 'Titulo del puesto',
     'candidate.jobDescription': 'Descripcion del puesto',
     'candidate.upload': 'Subir CV',
+    'candidate.uploadHint':
+      'Archivos compatibles: .txt, .pdf y .docx. Tambien puedes pegar el texto del CV abajo.',
     'candidate.cvText': 'Texto del CV',
     'candidate.extracting': 'Extrayendo {filename}',
     'candidate.ready': '{filename} listo',
@@ -289,6 +368,8 @@ const dictionaries: Record<Locale, Dictionary> = {
     'candidate.processError': 'No se pudo procesar este CV.',
     'candidate.processing': 'Procesando',
     'candidate.process': 'Procesar',
+    'candidate.processHint':
+      'El contenido solo se envia cuando haces clic en Procesar. Revisa la calidad antes de usarlo externamente.',
     'candidate.resultTitle': 'Resultado de Revision',
     'candidate.resultEmpty':
       'Ejecuta la revision para ver puntuacion, brechas y recomendaciones.',
@@ -317,7 +398,11 @@ const dictionaries: Record<Locale, Dictionary> = {
     'candidate.interview.suggestedAnswer': 'Respuesta sugerida',
     'hr.eyebrow': 'RRHH',
     'hr.title': 'Ranking de CVs',
+    'hr.description':
+      'Clasifica varios CVs para un puesto, revisa evidencias y riesgos, y guarda notas de decision por candidato.',
     'hr.upload': 'Archivos CV',
+    'hr.uploadHint':
+      'Sube varios CVs para crear una shortlist. Los archivos invalidos se omiten y los validos siguen.',
     'hr.extracting': 'Extrayendo archivos...',
     'hr.ready': 'listo',
     'hr.validation': 'Agrega titulo, descripcion y al menos un CV valido.',
@@ -325,6 +410,8 @@ const dictionaries: Record<Locale, Dictionary> = {
     'hr.processing': 'Procesando...',
     'hr.batchProcessing': 'Procesando lote {index} de {total}...',
     'hr.process': 'Procesar',
+    'hr.processHint':
+      'Cada candidato se evalua por separado para reducir colisiones de contexto y mejorar consistencia.',
     'hr.resultTitle': 'Resultado de Ranking',
     'hr.resultEmpty': 'Sube CVs y procesa para ver la lista ordenada.',
     'hr.recommendation': 'Recomendacion',
