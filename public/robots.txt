@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://paulorobertouri.github.io/curriculum-tools/sitemap.xml
