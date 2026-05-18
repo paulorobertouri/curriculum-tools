@@ -236,10 +236,14 @@ export function HrRanker({ config }: HrRankerProps) {
         />
         <p className='text-xs leading-5 text-slate-500'>{t('hr.uploadHint')}</p>
         {isExtracting ? (
-          <p className='text-sm text-cyan-700'>{t('hr.extracting')}</p>
+          <p className='rounded-2xl border border-cyan-200 bg-cyan-50 px-4 py-3 text-sm text-cyan-800'>
+            {t('hr.extracting')}
+          </p>
         ) : null}
         {isProcessing && processingLabel ? (
-          <p className='text-sm text-cyan-700'>{processingLabel}</p>
+          <p className='rounded-2xl border border-cyan-200 bg-cyan-50 px-4 py-3 text-sm text-cyan-800'>
+            {processingLabel}
+          </p>
         ) : null}
         {files.length > 0 ? (
           <ul className='space-y-2'>
@@ -269,7 +273,7 @@ export function HrRanker({ config }: HrRankerProps) {
           </p>
         ) : null}
         <button
-          className='primary-button'
+          className='primary-button touch-target'
           type='submit'
           disabled={isProcessing || isExtracting}
         >
@@ -284,7 +288,7 @@ export function HrRanker({ config }: HrRankerProps) {
           {t('hr.processHint')}
         </p>
         {providerNotice ? (
-          <p className='rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900'>
+          <p className='warning-message'>
             {t('provider.fallback.notice', {
               primary: providerNotice.primaryProvider,
               fallback: providerNotice.fallbackProvider,
@@ -370,7 +374,7 @@ function RankingResult({
     <div className='space-y-4'>
       <div className='flex flex-wrap gap-2'>
         <button
-          className='status-button'
+          className='status-button touch-target'
           type='button'
           onClick={() =>
             downloadJsonFile('hr-ranking', {
@@ -384,7 +388,7 @@ function RankingResult({
           {t('export.json')}
         </button>
         <button
-          className='status-button'
+          className='status-button touch-target'
           type='button'
           onClick={() => downloadHrCsvFile(result, summary)}
         >
@@ -456,6 +460,7 @@ function HrCandidateCard({
           <p className='text-sm text-slate-600'>{candidate.filename}</p>
           <label className='mt-2 inline-flex items-center gap-2 text-sm text-slate-700'>
             <input
+              className='touch-target h-5 w-5 rounded border-slate-300 text-cyan-600 focus:ring-cyan-500'
               type='checkbox'
               checked={isCompared}
               onChange={() => onToggleComparison(candidate.id)}
@@ -466,7 +471,7 @@ function HrCandidateCard({
         <div className='flex flex-col items-end gap-2'>
           <Score value={candidate.score} />
           <button
-            className='status-button'
+            className='status-button touch-target'
             type='button'
             onClick={() => downloadInterviewerBrief(candidate)}
           >
@@ -486,7 +491,7 @@ function HrCandidateCard({
       </div>
 
       {quality.unsupportedClaims.length > 0 ? (
-        <div className='mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900'>
+        <div className='warning-message mt-2'>
           Unsupported-claim guard: {quality.unsupportedClaims.length} claim(s)
         </div>
       ) : null}

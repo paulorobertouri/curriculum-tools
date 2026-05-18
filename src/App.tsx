@@ -1,5 +1,5 @@
 import { BriefcaseBusiness, FlaskConical, UserRound } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { KeyboardEvent, useEffect, useMemo, useRef, useState } from 'react';
 
 import { CandidateReviewer } from '@/components/CandidateReviewer';
 import { HrRanker } from '@/components/HrRanker';
@@ -25,6 +25,8 @@ function App() {
   const [activeTool, setActiveTool] = useState<ActiveTool>('candidate');
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isRetesting, setIsRetesting] = useState(false);
+  const [undoClearConfig, setUndoClearConfig] = useState<AiConfig | null>(null);
+  const clearTimeoutRef = useRef<number | null>(null);
 
   const shouldShowSetup = !config || editingConfig;
   const isRedactionEnabled = config?.redactSensitiveData !== false;
@@ -77,10 +79,70 @@ function App() {
   };
 
   const handleClear = () => {
+    if (config) {
+      setUndoClearConfig(config);
+
+      if (clearTimeoutRef.current) {
+        window.clearTimeout(clearTimeoutRef.current);
+      }
+
+      clearTimeoutRef.current = window.setTimeout(() => {
+        setUndoClearConfig(null);
+        clearTimeoutRef.current = null;
+      }, 8000);
+    }
+
     clearAiConfig();
     setConfig(null);
     setEditingConfig(false);
-    setStatusMessage(null);
+    setStatusMessage(t('provider.status.cleared'));
+  };
+
+  const handleUndoClear = () => {
+    if (!undoClearConfig) {
+      return;
+    }
+
+    saveAiConfig(undoClearConfig);
+    setConfig(undoClearConfig);
+    setUndoClearConfig(null);
+    setStatusMessage(t('provider.status.saved'));
+
+    if (clearTimeoutRef.current) {
+      window.clearTimeout(clearTimeoutRef.current);
+      clearTimeoutRef.current = null;
+    }
+  };
+
+  useEffect(
+    () => () => {
+      if (clearTimeoutRef.current) {
+        window.clearTimeout(clearTimeoutRef.current);
+      }
+    },
+    [],
+  );
+
+  const toolOrder: ActiveTool[] = ['candidate', 'hr', 'quality'];
+
+  const handleTabKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+    const currentIndex = toolOrder.indexOf(activeTool);
+    let nextIndex = currentIndex;
+
+    if (event.key === 'ArrowRight') {
+      nextIndex = (currentIndex + 1) % toolOrder.length;
+    } else if (event.key === 'ArrowLeft') {
+      nextIndex = (currentIndex - 1 + toolOrder.length) % toolOrder.length;
+    } else if (event.key === 'Home') {
+      nextIndex = 0;
+    } else if (event.key === 'End') {
+      nextIndex = toolOrder.length - 1;
+    } else {
+      return;
+    }
+
+    event.preventDefault();
+    setActiveTool(toolOrder[nextIndex]);
   };
 
   const handleRetest = async () => {
@@ -153,16 +215,19 @@ function App() {
             <nav
               className='grid gap-2 rounded-3xl border border-slate-200 bg-slate-50 p-2 sm:grid-cols-3'
               role='tablist'
+              aria-orientation='horizontal'
               aria-label='Main tools'
             >
               <button
                 className={toolButtonClass(activeTool === 'candidate')}
                 type='button'
                 onClick={() => setActiveTool('candidate')}
+                onKeyDown={handleTabKeyDown}
                 role='tab'
                 id='tab-candidate'
                 aria-selected={activeTool === 'candidate'}
                 aria-controls='panel-candidate'
+                tabIndex={activeTool === 'candidate' ? 0 : -1}
               >
                 <UserRound className='h-4 w-4' />
                 <span>{t('app.tab.candidate')}</span>
@@ -171,10 +236,12 @@ function App() {
                 className={toolButtonClass(activeTool === 'hr')}
                 type='button'
                 onClick={() => setActiveTool('hr')}
+                onKeyDown={handleTabKeyDown}
                 role='tab'
                 id='tab-hr'
                 aria-selected={activeTool === 'hr'}
                 aria-controls='panel-hr'
+                tabIndex={activeTool === 'hr' ? 0 : -1}
               >
                 <BriefcaseBusiness className='h-4 w-4' />
                 <span>{t('app.tab.hr')}</span>
@@ -183,10 +250,12 @@ function App() {
                 className={toolButtonClass(activeTool === 'quality')}
                 type='button'
                 onClick={() => setActiveTool('quality')}
+                onKeyDown={handleTabKeyDown}
                 role='tab'
                 id='tab-quality'
                 aria-selected={activeTool === 'quality'}
                 aria-controls='panel-quality'
+                tabIndex={activeTool === 'quality' ? 0 : -1}
               >
                 <FlaskConical className='h-4 w-4' />
                 <span>{t('app.tab.quality')}</span>
@@ -194,6 +263,23 @@ function App() {
             </nav>
           </div>
         </header>
+
+        {undoClearConfig ? (
+          <section
+            className='mt-6 flex flex-col gap-3 rounded-3xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 shadow-sm sm:flex-row sm:items-center sm:justify-between'
+            role='status'
+            aria-live='polite'
+          >
+            <p>{t('app.undoClear.message')}</p>
+            <button
+              className='status-button touch-target border-amber-300 text-amber-900'
+              type='button'
+              onClick={handleUndoClear}
+            >
+              {t('app.undoClear.action')}
+            </button>
+          </section>
+        ) : null}
 
         <section className='mt-6 rounded-3xl border border-amber-200/70 bg-amber-50/90 p-4 text-sm leading-6 text-amber-900 shadow-sm'>
           {t('app.privacy', {
@@ -233,11 +319,6 @@ function App() {
 }
 
 const toolButtonClass = (active: boolean) =>
-  [
-    'inline-flex w-full items-center justify-center gap-2 rounded-[1.1rem] px-4 py-3 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-200 focus-visible:ring-offset-2 sm:px-5',
-    active
-      ? 'bg-slate-950 text-white shadow-lg shadow-slate-950/10'
-      : 'text-slate-700 hover:bg-white hover:text-slate-950',
-  ].join(' ');
+  ['tab-button sm:px-5', active ? 'state-selected' : ''].join(' ');
 
 export default App;

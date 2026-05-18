@@ -73,7 +73,7 @@ export function ProviderStatus({
         </div>
         <div className='flex flex-wrap gap-2'>
           <button
-            className='status-button'
+            className='status-button touch-target'
             type='button'
             onClick={onRetest}
             disabled={isTesting}
@@ -83,12 +83,16 @@ export function ProviderStatus({
               ? t('provider.status.testing')
               : t('provider.status.retest')}
           </button>
-          <button className='status-button' type='button' onClick={onEdit}>
+          <button
+            className='status-button touch-target'
+            type='button'
+            onClick={onEdit}
+          >
             <Pencil className='h-4 w-4' />
             {t('provider.status.edit')}
           </button>
           <button
-            className='status-button text-rose-700'
+            className='status-button touch-target text-rose-700'
             type='button'
             onClick={onClear}
           >

@@ -25,7 +25,7 @@ export function LanguageSelector({ compact = false }: LanguageSelectorProps) {
         id='language-selector'
         className={
           compact
-            ? 'rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm outline-none transition focus:border-cyan-600 focus:ring-4 focus:ring-cyan-100'
+            ? 'status-button touch-target px-3 py-1.5 text-xs font-semibold'
             : 'text-input'
         }
         value={locale}

@@ -136,7 +136,7 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
           {t('candidate.uploadHint')}
         </p>
         {fileStatus ? (
-          <p className='rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-800'>
+          <p className='success-message'>
             {fileStatus}
           </p>
         ) : null}
@@ -155,7 +155,7 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
           </p>
         ) : null}
         <button
-          className='primary-button'
+          className='primary-button touch-target'
           type='submit'
           disabled={isProcessing}
         >
@@ -170,7 +170,7 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
           {t('candidate.processHint')}
         </p>
         {providerNotice ? (
-          <p className='rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900'>
+          <p className='warning-message'>
             {t('provider.fallback.notice', {
               primary: providerNotice.primaryProvider,
               fallback: providerNotice.fallbackProvider,
@@ -224,7 +224,7 @@ function CandidateResult({
     <div className='space-y-5'>
       <div className='flex flex-wrap gap-2'>
         <button
-          className='status-button'
+          className='status-button touch-target'
           type='button'
           onClick={() => downloadJsonFile('candidate-review', result)}
         >
@@ -232,7 +232,7 @@ function CandidateResult({
           {t('export.json')}
         </button>
         <button
-          className='status-button'
+          className='status-button touch-target'
           type='button'
           onClick={() => downloadCandidateTextFile(result)}
         >
@@ -510,13 +510,15 @@ export function ResultPanel({
   empty,
   status = 'empty',
   statusMessage,
+  errorMessage,
   children,
   className = '',
 }: {
   title: string;
   empty: string;
-  status?: 'empty' | 'loading' | 'ready';
+  status?: 'empty' | 'loading' | 'ready' | 'error';
   statusMessage?: string;
+  errorMessage?: string;
   children: ReactNode;
   className?: string;
 }) {
@@ -536,12 +538,22 @@ export function ResultPanel({
         <h2 className='panel-title'>{title}</h2>
       </div>
       {status === 'loading' ? (
-        <div className='rounded-3xl border border-dashed border-cyan-200 bg-cyan-50 p-4 text-sm leading-6 text-cyan-900'>
+        <div className='state-loading rounded-3xl border border-dashed border-cyan-200 bg-cyan-50 p-4 text-sm leading-6 text-cyan-900'>
           <div className='flex items-center gap-2 font-bold'>
             <Loader2 className='h-4 w-4 animate-spin' />
             <span>{statusMessage ?? t('result.loading')}</span>
           </div>
+          <div className='mt-3 space-y-2'>
+            <div className='skeleton h-3 w-3/4' />
+            <div className='skeleton h-3 w-5/6' />
+            <div className='skeleton h-3 w-2/3' />
+          </div>
           <p className='mt-2 text-cyan-800/80'>{empty}</p>
+        </div>
+      ) : status === 'error' ? (
+        <div className='error-message'>
+          <p className='font-bold'>{statusMessage ?? t('result.loading')}</p>
+          <p className='mt-1 text-sm'>{errorMessage ?? empty}</p>
         </div>
       ) : isReady ? (
         <div className='space-y-3'>

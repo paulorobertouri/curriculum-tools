@@ -142,7 +142,7 @@ export function QualityHarness({ config }: QualityHarnessProps) {
           </p>
         </div>
         <button
-          className='primary-button'
+          className='primary-button touch-target'
           type='button'
           onClick={runHarness}
           disabled={isRunning}
@@ -156,7 +156,7 @@ export function QualityHarness({ config }: QualityHarnessProps) {
         </button>
       </div>
 
-      <div className='rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700'>
+      <div className='surface-muted p-4 text-sm text-slate-700'>
         <p className='font-bold text-slate-900'>How to use this tool</p>
         <p className='mt-1'>1) Run fixtures after changing prompts/models.</p>
         <p>2) Review average deltas and rank swaps.</p>
@@ -187,7 +187,7 @@ export function QualityHarness({ config }: QualityHarnessProps) {
         />
       </div>
 
-      <div className='rounded-2xl border border-slate-200 bg-slate-50 p-4'>
+      <div className='surface-muted p-4'>
         <h3 className='text-sm font-bold text-slate-900'>
           Prompt quality deltas
         </h3>
@@ -201,7 +201,7 @@ export function QualityHarness({ config }: QualityHarnessProps) {
         </p>
       </div>
 
-      <div className='rounded-2xl border border-slate-200 bg-slate-50 p-4'>
+      <div className='surface-muted p-4'>
         <h3 className='text-sm font-bold text-slate-900'>
           Score drift monitor
         </h3>

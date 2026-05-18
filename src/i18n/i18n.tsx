@@ -87,6 +87,7 @@ const dictionaries: Record<Locale, Dictionary> = {
     'provider.status.retest': 'Retest',
     'provider.status.edit': 'Edit',
     'provider.status.clear': 'Clear',
+    'provider.status.cleared': 'Provider config cleared.',
     'provider.status.failed': 'Provider retest failed.',
     'provider.status.noKey': 'No API key',
     'provider.fallback.notice':
@@ -102,6 +103,9 @@ const dictionaries: Record<Locale, Dictionary> = {
     'provider.redaction.enabled': 'Sensitive data redaction is enabled.',
     'provider.redaction.disabled':
       'Sensitive data redaction is disabled; prompts are sent as-is.',
+    'app.undoClear.message':
+      'Provider config cleared. You can undo this action for a few seconds.',
+    'app.undoClear.action': 'Undo clear',
     'candidate.eyebrow': 'Candidate',
     'candidate.title': 'CV Reviewer',
     'candidate.description':
@@ -267,6 +271,7 @@ const dictionaries: Record<Locale, Dictionary> = {
     'provider.status.retest': 'Retestar',
     'provider.status.edit': 'Editar',
     'provider.status.clear': 'Limpar',
+    'provider.status.cleared': 'Configuracao do provedor removida.',
     'provider.status.failed': 'Falha ao retestar o provedor.',
     'provider.status.noKey': 'Sem chave de API',
     'provider.fallback.notice':
@@ -282,6 +287,9 @@ const dictionaries: Record<Locale, Dictionary> = {
     'provider.redaction.enabled': 'A redacao de dados sensiveis esta ativada.',
     'provider.redaction.disabled':
       'A redacao de dados sensiveis esta desativada; prompts sao enviados sem alteracoes.',
+    'app.undoClear.message':
+      'A configuracao do provedor foi removida. Voce pode desfazer essa acao por alguns segundos.',
+    'app.undoClear.action': 'Desfazer limpeza',
     'candidate.eyebrow': 'Candidato',
     'candidate.title': 'Revisor de CV',
     'candidate.description':
@@ -447,6 +455,7 @@ const dictionaries: Record<Locale, Dictionary> = {
     'provider.status.retest': 'Reprobar',
     'provider.status.edit': 'Editar',
     'provider.status.clear': 'Limpiar',
+    'provider.status.cleared': 'Configuracion del proveedor eliminada.',
     'provider.status.failed': 'Fallo al reprobar el proveedor.',
     'provider.status.noKey': 'Sin clave API',
     'provider.fallback.notice':
@@ -463,6 +472,9 @@ const dictionaries: Record<Locale, Dictionary> = {
       'La redaccion de datos sensibles esta activada.',
     'provider.redaction.disabled':
       'La redaccion de datos sensibles esta desactivada; los prompts se envian sin cambios.',
+    'app.undoClear.message':
+      'La configuracion del proveedor se elimino. Puedes deshacer esta accion por unos segundos.',
+    'app.undoClear.action': 'Deshacer limpieza',
     'candidate.eyebrow': 'Candidato',
     'candidate.title': 'Revisor de CV',
     'candidate.description':

@@ -84,9 +84,7 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
         return;
       }
 
-      if (!models.includes(model.trim())) {
-        setModel(models[0]);
-      }
+      setModel(models[0]);
 
       setStatus(
         t('provider.setup.modelsFetched', { count: String(models.length) }),
@@ -202,7 +200,7 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
               </label>
               <select
                 id='provider'
-                className='w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-600 focus:ring-4 focus:ring-cyan-100'
+                className='text-input touch-target'
                 value={provider}
                 onChange={event =>
                   handleProviderChange(event.target.value as AiProviderId)
@@ -224,7 +222,7 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
               </label>
               <input
                 id='api-key'
-                className='w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-cyan-600 focus:ring-4 focus:ring-cyan-100'
+                className='text-input touch-target'
                 type='password'
                 value={apiKey}
                 onChange={event => setApiKey(event.target.value)}
@@ -251,7 +249,7 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
                   {t('provider.setup.model')}
                 </label>
                 <button
-                  className='rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-bold text-slate-700 transition hover:border-cyan-600 hover:text-cyan-700 disabled:cursor-not-allowed disabled:opacity-60'
+                  className='status-button touch-target text-xs'
                   type='button'
                   onClick={handleFetchModels}
                   disabled={isFetchingModels || isTesting}
@@ -263,7 +261,7 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
               </div>
               <input
                 id='model'
-                className='w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-cyan-600 focus:ring-4 focus:ring-cyan-100'
+                className='text-input touch-target'
                 value={model}
                 onChange={event => setModel(event.target.value)}
                 list={availableModels.length > 0 ? modelOptionsId : undefined}
@@ -279,7 +277,7 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
 
             <label className='flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3'>
               <input
-                className='mt-1 h-4 w-4 rounded border-slate-300 text-cyan-600 focus:ring-cyan-500'
+                className='mt-1 h-5 w-5 rounded border-slate-300 text-cyan-600 focus:ring-cyan-500'
                 type='checkbox'
                 checked={redactSensitiveData}
                 onChange={event => setRedactSensitiveData(event.target.checked)}
@@ -302,7 +300,7 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
             ) : null}
 
             <button
-              className='inline-flex items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-slate-950/10 transition hover:-translate-y-0.5 hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-200 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-400 disabled:hover:translate-y-0'
+              className='primary-button touch-target'
               type='submit'
               disabled={isTesting}
             >
