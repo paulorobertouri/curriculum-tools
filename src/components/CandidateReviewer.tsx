@@ -9,6 +9,7 @@ import {
 } from 'react';
 
 import { runCandidateReviewUseCase } from '@/application/candidate/runCandidateReviewUseCase';
+import { ProviderFallbackNotice } from '@/application/providerFallback';
 import { AiConfig, CandidateReview } from '@/domain/aiTypes';
 import { buildCandidateQualitySummary } from '@/domain/reviewQuality';
 import {
@@ -38,6 +39,8 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
   );
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [providerNotice, setProviderNotice] =
+    useState<ProviderFallbackNotice | null>(null);
 
   const handleFile = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -47,6 +50,7 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
     }
 
     setError(null);
+    setProviderNotice(null);
     setFileStatus(t('candidate.extracting', { filename: file.name }));
 
     try {
@@ -76,14 +80,16 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
     setIsProcessing(true);
 
     try {
-      const review = await runCandidateReviewUseCase(config, {
-        jobTitle,
-        jobDescription,
-        cvText,
-        outputLocale: locale,
-      });
+      const { review, providerNotice: nextProviderNotice } =
+        await runCandidateReviewUseCase(config, {
+          jobTitle,
+          jobDescription,
+          cvText,
+          outputLocale: locale,
+        });
       setPreviousResult(result);
       setResult(review);
+      setProviderNotice(nextProviderNotice);
     } catch (processError) {
       setError(
         processError instanceof Error
@@ -137,7 +143,7 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
         <TextArea
           label={t('candidate.cvText')}
           value={cvText}
-          onChange={(value) => {
+          onChange={value => {
             setCvText(value);
             saveCandidateCvDraft(value);
           }}
@@ -163,6 +169,17 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
         <p className='text-xs leading-5 text-slate-500'>
           {t('candidate.processHint')}
         </p>
+        {providerNotice ? (
+          <p className='rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900'>
+            {t('provider.fallback.notice', {
+              primary: providerNotice.primaryProvider,
+              fallback: providerNotice.fallbackProvider,
+              reason: t(
+                `provider.fallback.reason.${providerNotice.reasonKind}`,
+              ),
+            })}
+          </p>
+        ) : null}
       </form>
 
       <ResultPanel

@@ -2,10 +2,17 @@ import {
   AI_CONFIG_STORAGE_KEY,
   AiConfig,
   AiProviderId,
+  providerRequiresApiKey,
 } from '@/domain/aiTypes';
 
 const isProvider = (value: unknown): value is AiProviderId =>
-  value === 'gemini' || value === 'openai' || value === 'deepseek';
+  value === 'gemini' ||
+  value === 'openai' ||
+  value === 'deepseek' ||
+  value === 'ovh' ||
+  value === 'llm7' ||
+  value === 'pollinations' ||
+  value === 'kilo';
 
 export const isAiConfig = (value: unknown): value is AiConfig => {
   if (typeof value !== 'object' || value === null) {
@@ -17,15 +24,19 @@ export const isAiConfig = (value: unknown): value is AiConfig => {
   return (
     isProvider(candidate.provider) &&
     typeof candidate.apiKey === 'string' &&
-    candidate.apiKey.trim().length > 0 &&
+    (providerRequiresApiKey(candidate.provider)
+      ? candidate.apiKey.trim().length > 0
+      : true) &&
     typeof candidate.model === 'string' &&
     candidate.model.trim().length > 0 &&
-    typeof candidate.savedAt === 'string'
+    typeof candidate.savedAt === 'string' &&
+    (typeof candidate.redactSensitiveData === 'boolean' ||
+      candidate.redactSensitiveData === undefined)
   );
 };
 
 export const readAiConfig = (
-  storage: Storage = window.localStorage,
+  storage: Storage = globalThis.localStorage,
 ): AiConfig | null => {
   const raw = storage.getItem(AI_CONFIG_STORAGE_KEY);
 
@@ -35,7 +46,14 @@ export const readAiConfig = (
 
   try {
     const parsed = JSON.parse(raw);
-    return isAiConfig(parsed) ? parsed : null;
+    if (!isAiConfig(parsed)) {
+      return null;
+    }
+
+    return {
+      ...parsed,
+      redactSensitiveData: parsed.redactSensitiveData !== false,
+    };
   } catch {
     return null;
   }
@@ -43,12 +61,12 @@ export const readAiConfig = (
 
 export const saveAiConfig = (
   config: AiConfig,
-  storage: Storage = window.localStorage,
+  storage: Storage = globalThis.localStorage,
 ) => {
   storage.setItem(AI_CONFIG_STORAGE_KEY, JSON.stringify(config));
 };
 
-export const clearAiConfig = (storage: Storage = window.localStorage) => {
+export const clearAiConfig = (storage: Storage = globalThis.localStorage) => {
   storage.removeItem(AI_CONFIG_STORAGE_KEY);
 };
 

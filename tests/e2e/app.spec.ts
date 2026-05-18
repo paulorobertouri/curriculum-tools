@@ -1,5 +1,7 @@
 import { Page, Route, expect, test } from '@playwright/test';
 
+const LOCALE_STORAGE_KEY = 'curriculum-tools.locale.v1';
+
 const captureJourneyScreenshot = async (page: Page, name: string) => {
   await page.screenshot({
     path: `tests/e2e/evidence/${name}.png`,
@@ -128,6 +130,12 @@ const setupOpenAi = async (page: Page) => {
     page.getByRole('heading', { name: 'AI tools for candidates and HR' }),
   ).toBeVisible();
 };
+
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(key => {
+    globalThis.localStorage.setItem(key, 'en-US');
+  }, LOCALE_STORAGE_KEY);
+});
 
 test('first run shows provider setup', async ({ page }) => {
   await page.goto('/');

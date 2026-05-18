@@ -17,6 +17,8 @@ import {
   TEST_PROMPT,
   assertSuccessfulResponse,
   ensureHello,
+  isPromptRedactionEnabled,
+  sanitizePromptForProvider,
   toProviderError,
 } from '@/providers/providerUtils';
 import { parseJsonResult } from '@/providers/responseParsing';
@@ -63,6 +65,11 @@ export const deepseekProvider: AiProviderAdapter = {
 };
 
 const createChatCompletion = async (config: AiConfig, prompt: string) => {
+  const sanitizedPrompt = sanitizePromptForProvider(
+    prompt,
+    isPromptRedactionEnabled(config),
+  );
+
   const response = await fetch(DEEPSEEK_CHAT_URL, {
     method: 'POST',
     headers: {
@@ -71,7 +78,7 @@ const createChatCompletion = async (config: AiConfig, prompt: string) => {
     },
     body: JSON.stringify({
       model: config.model,
-      messages: [{ role: 'user', content: prompt }],
+      messages: [{ role: 'user', content: sanitizedPrompt }],
     }),
   });
 

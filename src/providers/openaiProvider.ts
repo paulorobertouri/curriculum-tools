@@ -17,6 +17,8 @@ import {
   TEST_PROMPT,
   assertSuccessfulResponse,
   ensureHello,
+  isPromptRedactionEnabled,
+  sanitizePromptForProvider,
   toProviderError,
 } from '@/providers/providerUtils';
 import { parseJsonResult } from '@/providers/responseParsing';
@@ -73,6 +75,11 @@ const createResponse = async (
   prompt: string,
   schema: JsonSchema | null,
 ) => {
+  const sanitizedPrompt = sanitizePromptForProvider(
+    prompt,
+    isPromptRedactionEnabled(config),
+  );
+
   const response = await fetch(OPENAI_RESPONSES_URL, {
     method: 'POST',
     headers: {
@@ -81,7 +88,7 @@ const createResponse = async (
     },
     body: JSON.stringify({
       model: config.model,
-      input: prompt,
+      input: sanitizedPrompt,
       ...(schema
         ? {
             text: {

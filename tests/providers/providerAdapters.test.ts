@@ -3,13 +3,25 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AiConfig } from '@/domain/aiTypes';
 import { deepseekProvider } from '@/providers/deepseekProvider';
 import { geminiProvider } from '@/providers/geminiProvider';
+import { kiloProvider } from '@/providers/kiloProvider';
+import { llm7Provider } from '@/providers/llm7Provider';
 import { openaiProvider } from '@/providers/openaiProvider';
+import { ovhProvider } from '@/providers/ovhProvider';
+import { pollinationsProvider } from '@/providers/pollinationsProvider';
 
 const config: AiConfig = {
   provider: 'openai',
   apiKey: 'test-key',
   model: 'test-model',
   savedAt: '2026-05-15T00:00:00.000Z',
+};
+
+const parseRequestBody = (requestInit: RequestInit | undefined) => {
+  if (typeof requestInit?.body !== 'string') {
+    throw new Error('Expected JSON string request body.');
+  }
+
+  return JSON.parse(requestInit.body) as Record<string, unknown>;
 };
 
 describe('provider adapters', () => {
@@ -266,5 +278,341 @@ describe('provider adapters', () => {
       'https://api.deepseek.com/chat/completions',
       expect.objectContaining({ method: 'POST' }),
     );
+  });
+
+  it('calls OVH anonymous chat completions for connection tests', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({ choices: [{ message: { content: 'hello' } }] }),
+    } as Response);
+
+    await ovhProvider.testConnection({
+      ...config,
+      provider: 'ovh',
+      apiKey: '',
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/chat/completions',
+      expect.objectContaining({ method: 'POST' }),
+    );
+
+    const request = fetchMock.mock.calls[0]?.[1] as RequestInit;
+    const headers = request.headers as Record<string, string>;
+    expect(headers.Authorization).toBeUndefined();
+  });
+
+  it('calls LLM7 chat completions and sends auth only when key exists', async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ choices: [{ message: { content: 'hello' } }] }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ choices: [{ message: { content: 'hello' } }] }),
+      } as Response);
+
+    await llm7Provider.testConnection({
+      ...config,
+      provider: 'llm7',
+      apiKey: '',
+    });
+    await llm7Provider.testConnection({
+      ...config,
+      provider: 'llm7',
+      apiKey: 'llm7-token',
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.llm7.io/v1/chat/completions',
+      expect.objectContaining({ method: 'POST' }),
+    );
+
+    const firstHeaders = (fetchMock.mock.calls[0]?.[1] as RequestInit)
+      .headers as Record<string, string>;
+    const secondHeaders = (fetchMock.mock.calls[1]?.[1] as RequestInit)
+      .headers as Record<string, string>;
+
+    expect(firstHeaders.Authorization).toBeUndefined();
+    expect(secondHeaders.Authorization).toBe('Bearer llm7-token');
+  });
+
+  it('calls Pollinations chat completions without api key', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({ choices: [{ message: { content: 'hello' } }] }),
+    } as Response);
+
+    await pollinationsProvider.testConnection({
+      ...config,
+      provider: 'pollinations',
+      apiKey: '',
+      model: 'openai-fast',
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://text.pollinations.ai/openai/chat/completions',
+      expect.objectContaining({ method: 'POST' }),
+    );
+
+    const headers = (fetchMock.mock.calls[0]?.[1] as RequestInit)
+      .headers as Record<string, string>;
+    expect(headers.Authorization).toBeUndefined();
+  });
+
+  it('calls Kilo chat completions and sends auth only when key exists', async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ choices: [{ message: { content: 'hello' } }] }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ choices: [{ message: { content: 'hello' } }] }),
+      } as Response);
+
+    await kiloProvider.testConnection({
+      ...config,
+      provider: 'kilo',
+      apiKey: '',
+      model: 'kilo-auto/free',
+    });
+    await kiloProvider.testConnection({
+      ...config,
+      provider: 'kilo',
+      apiKey: 'kilo-token',
+      model: 'kilo-auto/free',
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.kilo.ai/api/gateway/chat/completions',
+      expect.objectContaining({ method: 'POST' }),
+    );
+
+    const firstHeaders = (fetchMock.mock.calls[0]?.[1] as RequestInit)
+      .headers as Record<string, string>;
+    const secondHeaders = (fetchMock.mock.calls[1]?.[1] as RequestInit)
+      .headers as Record<string, string>;
+
+    expect(firstHeaders.Authorization).toBeUndefined();
+    expect(secondHeaders.Authorization).toBe('Bearer kilo-token');
+  });
+
+  it('redacts sensitive data before sending prompts to OpenAI', async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          output_text: JSON.stringify({
+            score: 7.5,
+            summary: 'Summary',
+            strengths: ['Strength'],
+            gaps: ['Gap'],
+            recommendations: ['Recommendation'],
+            rewrittenBullets: ['Bullet'],
+          }),
+        }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          output_text: JSON.stringify({
+            rewrittenCv: 'Rewritten CV',
+            coverLetter: 'Cover letter',
+            interviewQa: [
+              { question: 'Question', suggestedAnswer: 'Suggested answer' },
+            ],
+          }),
+        }),
+      } as Response);
+
+    await openaiProvider.reviewCandidateCv(
+      { ...config },
+      {
+        jobTitle: 'Frontend Engineer',
+        jobDescription:
+          'Contact me at jane.doe@example.com, +1 (555) 123-4567, https://portfolio.dev',
+        cvText: `Name: Jane Doe\nEmail: jane.doe@example.com\nAddress: 123 Main St\nDocument: 123.456.789-09`,
+      },
+    );
+
+    const firstBody = parseRequestBody(fetchMock.mock.calls[0]?.[1]);
+    const prompt = String(firstBody.input);
+
+    expect(prompt).not.toContain('Jane Doe');
+    expect(prompt).not.toContain('jane.doe@example.com');
+    expect(prompt).not.toContain('123 Main St');
+    expect(prompt).not.toContain('123.456.789-09');
+    expect(prompt).not.toContain('https://portfolio.dev');
+    expect(prompt).not.toContain('+1 (555) 123-4567');
+    expect(prompt).toContain('[REDACTED_NAME]');
+    expect(prompt).toContain('[REDACTED_EMAIL]');
+    expect(prompt).toContain('[REDACTED_ADDRESS]');
+    expect(prompt).toContain('[REDACTED_DOCUMENT]');
+    expect(prompt).toContain('[REDACTED_URL]');
+    expect(prompt).toContain('[REDACTED_PHONE]');
+  });
+
+  it('redacts sensitive data before sending prompts to Gemini', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        candidates: [
+          {
+            content: {
+              parts: [
+                {
+                  text: JSON.stringify({
+                    candidates: [
+                      {
+                        id: 'candidate-1',
+                        filename: 'cv.txt',
+                        detectedName: 'Candidate',
+                        score: 6.5,
+                        justification: 'Justification',
+                        strengths: ['Strength'],
+                        concerns: ['Concern'],
+                        interviewRecommendation: 'maybe',
+                        interviewQuestions: ['Question'],
+                      },
+                    ],
+                  }),
+                },
+              ],
+            },
+          },
+        ],
+      }),
+    } as Response);
+
+    await geminiProvider.rankHrCvs(
+      { ...config, provider: 'gemini' },
+      {
+        jobTitle: 'Engineering Manager',
+        jobDescription: 'Role details at https://example.org/jobs/1',
+        cvs: [
+          {
+            id: 'candidate-1',
+            filename: 'cv.txt',
+            text: 'Email: candidate@example.org\nPhone: +55 11 91234-5678',
+          },
+        ],
+      },
+    );
+
+    const requestBody = parseRequestBody(fetchMock.mock.calls[0]?.[1]);
+    const prompt = String(requestBody.contents[0].parts[0].text);
+
+    expect(prompt).not.toContain('candidate@example.org');
+    expect(prompt).not.toContain('+55 11 91234-5678');
+    expect(prompt).not.toContain('https://example.org/jobs/1');
+    expect(prompt).toContain('[REDACTED_EMAIL]');
+    expect(prompt).toContain('[REDACTED_PHONE]');
+    expect(prompt).toContain('[REDACTED_URL]');
+  });
+
+  it('redacts sensitive data before sending prompts to DeepSeek', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                candidates: [
+                  {
+                    id: 'candidate-1',
+                    filename: 'cv.txt',
+                    detectedName: 'Candidate',
+                    score: 8,
+                    justification: 'Justification',
+                    strengths: ['Strength'],
+                    concerns: ['Concern'],
+                    interviewRecommendation: 'yes',
+                    interviewQuestions: ['Question'],
+                  },
+                ],
+              }),
+            },
+          },
+        ],
+      }),
+    } as Response);
+
+    await deepseekProvider.rankHrCvs(
+      { ...config, provider: 'deepseek' },
+      {
+        jobTitle: 'Engineering Manager',
+        jobDescription: 'Linked profile: www.linkedin.com/in/janedoe',
+        cvs: [
+          {
+            id: 'candidate-1',
+            filename: 'cv.txt',
+            text: 'Document: 123-45-6789\nAddress: 456 Market Ave',
+          },
+        ],
+      },
+    );
+
+    const requestBody = parseRequestBody(fetchMock.mock.calls[0]?.[1]);
+    const prompt = String(requestBody.messages[0].content);
+
+    expect(prompt).not.toContain('123-45-6789');
+    expect(prompt).not.toContain('456 Market Ave');
+    expect(prompt).not.toContain('www.linkedin.com/in/janedoe');
+    expect(prompt).toContain('[REDACTED_DOCUMENT]');
+    expect(prompt).toContain('[REDACTED_ADDRESS]');
+    expect(prompt).toContain('[REDACTED_URL]');
+  });
+
+  it('sends raw prompt data when redaction is explicitly disabled', async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          output_text: JSON.stringify({
+            score: 7,
+            summary: 'Summary',
+            strengths: ['Strength'],
+            gaps: ['Gap'],
+            recommendations: ['Recommendation'],
+            rewrittenBullets: ['Bullet'],
+          }),
+        }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          output_text: JSON.stringify({
+            rewrittenCv: 'Rewritten CV',
+            coverLetter: 'Cover letter',
+            interviewQa: [
+              { question: 'Question', suggestedAnswer: 'Suggested answer' },
+            ],
+          }),
+        }),
+      } as Response);
+
+    await openaiProvider.reviewCandidateCv(
+      { ...config, redactSensitiveData: false },
+      {
+        jobTitle: 'Frontend Engineer',
+        jobDescription: 'Contact at jane.doe@example.com',
+        cvText: 'Name: Jane Doe\nEmail: jane.doe@example.com',
+      },
+    );
+
+    const requestBody = parseRequestBody(fetchMock.mock.calls[0]?.[1]);
+    const prompt = String(requestBody.input);
+
+    expect(prompt).toContain('Jane Doe');
+    expect(prompt).toContain('jane.doe@example.com');
+    expect(prompt).not.toContain('[REDACTED_EMAIL]');
+    expect(prompt).not.toContain('[REDACTED_NAME]');
   });
 });

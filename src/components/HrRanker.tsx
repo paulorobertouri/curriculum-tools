@@ -1,7 +1,8 @@
 import { Download, Loader2, Sparkles } from 'lucide-react';
-import { ChangeEvent, FormEvent, useMemo, useState } from 'react';
+import { ChangeEvent, useMemo, useState } from 'react';
 
 import { runHrRankingUseCase } from '@/application/hr/runHrRankingUseCase';
+import { ProviderFallbackNotice } from '@/application/providerFallback';
 import {
   List,
   ResultPanel,
@@ -36,7 +37,7 @@ import {
 } from '@/storage/hrDecisionsStorage';
 
 type HrRankerProps = {
-  config: AiConfig;
+  readonly config: AiConfig;
 };
 
 type FileStatus = HrCvInput & {
@@ -61,6 +62,15 @@ export function HrRanker({ config }: HrRankerProps) {
   const [isExtracting, setIsExtracting] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingLabel, setProcessingLabel] = useState<string | null>(null);
+  const [providerNotice, setProviderNotice] =
+    useState<ProviderFallbackNotice | null>(null);
+
+  let resultStatus: 'loading' | 'ready' | 'empty' = 'empty';
+  if (isProcessing) {
+    resultStatus = 'loading';
+  } else if (result) {
+    resultStatus = 'ready';
+  }
 
   const updateDecision = (
     candidateId: string,
@@ -95,6 +105,7 @@ export function HrRanker({ config }: HrRankerProps) {
 
     setIsExtracting(true);
     setError(null);
+    setProviderNotice(null);
 
     const extracted = await Promise.all(
       selectedFiles.map(async file => {
@@ -126,7 +137,7 @@ export function HrRanker({ config }: HrRankerProps) {
     setIsExtracting(false);
   };
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
 
@@ -143,21 +154,22 @@ export function HrRanker({ config }: HrRankerProps) {
     setProcessingLabel(t('hr.processing'));
 
     try {
-      const ranking = await runHrRankingUseCase({
-        config,
-        jobTitle,
-        jobDescription,
-        cvs: validFiles,
-        outputLocale: locale,
-        onProgress(index, total) {
-          setProcessingLabel(
-            t('hr.batchProcessing', {
-              index,
-              total,
-            }),
-          );
-        },
-      });
+      const { ranking, providerNotice: nextProviderNotice } =
+        await runHrRankingUseCase({
+          config,
+          jobTitle,
+          jobDescription,
+          cvs: validFiles,
+          outputLocale: locale,
+          onProgress(index, total) {
+            setProcessingLabel(
+              t('hr.batchProcessing', {
+                index,
+                total,
+              }),
+            );
+          },
+        });
 
       const nextRawCvById = validFiles.reduce<Record<string, string>>(
         (accumulator, cv) => {
@@ -175,6 +187,7 @@ export function HrRanker({ config }: HrRankerProps) {
       setPreviousResult(result);
       setResult(ranking);
       setRawCvById(mergedRawCvById);
+      setProviderNotice(nextProviderNotice);
     } catch (processError) {
       setError(
         processError instanceof Error
@@ -268,12 +281,23 @@ export function HrRanker({ config }: HrRankerProps) {
         <p className='text-xs leading-5 text-slate-500'>
           {t('hr.processHint')}
         </p>
+        {providerNotice ? (
+          <p className='rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900'>
+            {t('provider.fallback.notice', {
+              primary: providerNotice.primaryProvider,
+              fallback: providerNotice.fallbackProvider,
+              reason: t(
+                `provider.fallback.reason.${providerNotice.reasonKind}`,
+              ),
+            })}
+          </p>
+        ) : null}
       </form>
 
       <ResultPanel
         title={t('hr.resultTitle')}
         empty={t('hr.resultEmpty')}
-        status={isProcessing ? 'loading' : result ? 'ready' : 'empty'}
+        status={resultStatus}
         statusMessage={
           isProcessing
             ? (processingLabel ?? t('hr.processing'))

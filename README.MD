@@ -1,6 +1,18 @@
 # Curriculum Tools
 
-Browser-first AI tools for candidates and HR teams. Users bring their own Gemini, OpenAI, or DeepSeek API key, validate it in the app, and then process CVs directly from the browser.
+Browser-first AI tools for candidates and HR teams. Users can connect key-based providers or anonymous free providers, validate in the app, and then process CVs directly from the browser.
+
+## Live Demo
+
+Test the app live on GitHub Pages: https://paulorobertouri.github.io/curriculum-tools/
+
+## Latest Changes
+
+- Added multi-provider support for both key-based and anonymous free providers, including OVH, LLM7, Pollinations, and Kilo.
+- Added a built-in language selector for localized workflows.
+- Added a Quality Evaluation Harness to track score drift and ranking stability across prompt/model changes.
+- Added optional sensitive-data redaction controls in provider setup.
+- Expanded automated coverage for unit, component, and Playwright end-to-end flows.
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE).
 
@@ -8,8 +20,11 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE).
 
 - Provider setup gate with `Test and Save`.
 - Valid provider config saved in `localStorage`.
+- Supported providers: Gemini, OpenAI, DeepSeek, OVH, LLM7, Pollinations, and Kilo.
 - Candidate CV Reviewer with role-specific score and recommendations.
 - HR CV Ranking with multiple CV uploads, summary metrics, and ranked justifications.
+- Language selector available in the app header.
+- Quality Evaluation Harness for fixture-based regression checks.
 - TXT, PDF, and DOCX text extraction.
 - Clear unsupported message for legacy DOC files.
 - Explicit empty, loading, and ready states in the result panels.
@@ -42,7 +57,7 @@ API keys are stored in this browser's `localStorage`. CV content is sent directl
 
 ### Provider Setup
 
-Connect your Gemini, OpenAI, or DeepSeek API key before using any tool.
+Connect a provider before using any tool (API key providers or anonymous free options).
 
 ![Provider setup gate — first run](tests/e2e/evidence/setup-00-first-run.png)
 

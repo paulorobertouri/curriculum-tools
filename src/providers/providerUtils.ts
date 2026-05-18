@@ -1,6 +1,79 @@
-import { ProviderError } from '@/domain/aiTypes';
+import { AiConfig, ProviderError } from '@/domain/aiTypes';
 
 export const TEST_PROMPT = 'Reply with only this exact word: hello';
+
+const EMAIL_REGEX = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
+const URL_REGEX = /\b(?:https?:\/\/|www\.)[^\s)]+/gi;
+const PHONE_REGEX = /(?<!\d)(?:\+?\d[\d\s().-]{7,}\d)(?!\d)/g;
+const CPF_REGEX = /\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b/g;
+const CNPJ_REGEX = /\b\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}\b/g;
+const SSN_REGEX = /\b\d{3}-\d{2}-\d{4}\b/g;
+
+const redactLabelValue = (
+  text: string,
+  labels: string[],
+  replacement: string,
+) => {
+  const safeLabels = labels.map(label =>
+    label.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`),
+  );
+  const labelPattern = safeLabels.join('|');
+  const regex = new RegExp(
+    String.raw`(^\s*(?:${labelPattern})\s*:\s*).+$`,
+    'gim',
+  );
+
+  return text.replace(regex, `$1${replacement}`);
+};
+
+export const isPromptRedactionEnabled = (
+  config: Pick<AiConfig, 'redactSensitiveData'>,
+): boolean => config.redactSensitiveData !== false;
+
+export const sanitizePromptForProvider = (
+  prompt: string,
+  enabled = true,
+): string => {
+  if (!enabled) {
+    return prompt;
+  }
+
+  let sanitized = prompt;
+
+  sanitized = redactLabelValue(
+    sanitized,
+    ['name', 'full name', 'nome', 'nombre'],
+    '[REDACTED_NAME]',
+  );
+  sanitized = redactLabelValue(
+    sanitized,
+    ['email', 'e-mail', 'correo', 'correo electronico'],
+    '[REDACTED_EMAIL]',
+  );
+  sanitized = redactLabelValue(
+    sanitized,
+    ['phone', 'telephone', 'tel', 'celular', 'telefone', 'telefono'],
+    '[REDACTED_PHONE]',
+  );
+  sanitized = redactLabelValue(
+    sanitized,
+    ['address', 'endereco', 'dirección', 'direccion'],
+    '[REDACTED_ADDRESS]',
+  );
+  sanitized = redactLabelValue(
+    sanitized,
+    ['document', 'documento', 'cpf', 'cnpj', 'ssn', 'rg', 'id number'],
+    '[REDACTED_DOCUMENT]',
+  );
+
+  return sanitized
+    .replace(EMAIL_REGEX, '[REDACTED_EMAIL]')
+    .replace(URL_REGEX, '[REDACTED_URL]')
+    .replace(PHONE_REGEX, '[REDACTED_PHONE]')
+    .replace(CPF_REGEX, '[REDACTED_DOCUMENT]')
+    .replace(CNPJ_REGEX, '[REDACTED_DOCUMENT]')
+    .replace(SSN_REGEX, '[REDACTED_DOCUMENT]');
+};
 
 export const assertSuccessfulResponse = async (response: Response) => {
   if (response.ok) {

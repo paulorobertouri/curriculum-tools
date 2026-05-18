@@ -56,7 +56,7 @@ describe('App', () => {
     ).toBeVisible();
     expect(
       screen.getByText(
-        'Conecte Gemini, OpenAI ou DeepSeek com sua propria chave antes de revisar ou classificar CVs.',
+        'Conecte Gemini, OpenAI, DeepSeek, OVHcloud, LLM7, Pollinations ou Kilo antes de revisar ou classificar CVs.',
       ),
     ).toBeVisible();
     expect(
@@ -83,6 +83,32 @@ describe('App', () => {
     expect(localStorage.getItem(AI_CONFIG_STORAGE_KEY)).toContain(
       'sk-test-key',
     );
+  });
+
+  it('shows risk notice when selecting anonymous providers', async () => {
+    const user = userEvent.setup();
+    renderApp();
+
+    await user.selectOptions(screen.getByLabelText('Provider'), 'ovh');
+    expect(
+      screen.getByText(
+        'Anonymous free tier is heavily rate-limited and can be unstable. Do not send sensitive CV data.',
+      ),
+    ).toBeVisible();
+
+    await user.selectOptions(screen.getByLabelText('Provider'), 'llm7');
+    expect(
+      screen.getByText(
+        'No-signup access may route through third-party infrastructure with changing limits and availability. Do not send sensitive CV data.',
+      ),
+    ).toBeVisible();
+
+    await user.selectOptions(screen.getByLabelText('Provider'), 'kilo');
+    expect(
+      screen.getByText(
+        'Anonymous routing and free-model availability can change without notice. Do not send sensitive CV data.',
+      ),
+    ).toBeVisible();
   });
 
   it('keeps setup locked when provider test fails', async () => {

@@ -1,14 +1,19 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { runHrRankingUseCase } from '@/application/hr/runHrRankingUseCase';
-import { AiConfig } from '@/domain/aiTypes';
+import { AiConfig, ProviderError } from '@/domain/aiTypes';
 
-const rankHrCvsMock = vi.fn();
+const { rankByProvider, getProviderAdapterMock } = vi.hoisted(() => ({
+  rankByProvider: {
+    openai: vi.fn(),
+    ovh: vi.fn(),
+    llm7: vi.fn(),
+  },
+  getProviderAdapterMock: vi.fn(),
+}));
 
 vi.mock('@/providers', () => ({
-  getProviderAdapter: () => ({
-    rankHrCvs: rankHrCvsMock,
-  }),
+  getProviderAdapter: getProviderAdapterMock,
 }));
 
 const config: AiConfig = {
@@ -19,8 +24,16 @@ const config: AiConfig = {
 };
 
 describe('runHrRankingUseCase', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    getProviderAdapterMock.mockImplementation((provider: string) => ({
+      rankHrCvs: rankByProvider[provider as 'openai' | 'ovh' | 'llm7'],
+    }));
+  });
+
   it('given multiple cvs when executed then evaluates separately and sorts deterministically', async () => {
-    rankHrCvsMock
+    rankByProvider.openai
       .mockResolvedValueOnce({
         candidates: [
           {
@@ -63,17 +76,18 @@ describe('runHrRankingUseCase', () => {
       onProgress: progress,
     });
 
-    expect(rankHrCvsMock).toHaveBeenCalledTimes(2);
+    expect(rankByProvider.openai).toHaveBeenCalledTimes(2);
     expect(progress).toHaveBeenNthCalledWith(1, 1, 2);
     expect(progress).toHaveBeenNthCalledWith(2, 2, 2);
-    expect(result.candidates.map(candidate => candidate.id)).toEqual([
+    expect(result.ranking.candidates.map(candidate => candidate.id)).toEqual([
       'a',
       'b',
     ]);
+    expect(result.providerNotice).toBeNull();
   });
 
   it('given missing provider candidate when executed then creates fallback entry', async () => {
-    rankHrCvsMock.mockResolvedValueOnce({ candidates: [] });
+    rankByProvider.openai.mockResolvedValueOnce({ candidates: [] });
 
     const result = await runHrRankingUseCase({
       config,
@@ -82,11 +96,53 @@ describe('runHrRankingUseCase', () => {
       cvs: [{ id: 'x', filename: 'x.txt', text: 'cv-x' }],
     });
 
-    expect(result.candidates[0]).toMatchObject({
+    expect(result.ranking.candidates[0]).toMatchObject({
       id: 'x',
       filename: 'x.txt',
       score: 0,
       interviewRecommendation: 'maybe',
+    });
+  });
+
+  it('falls back from ovh to llm7 on retryable provider errors', async () => {
+    const ovhConfig: AiConfig = {
+      provider: 'ovh',
+      apiKey: '',
+      model: 'Qwen3-32B',
+      savedAt: '2026-05-18T00:00:00.000Z',
+    };
+
+    rankByProvider.ovh.mockRejectedValueOnce(
+      new ProviderError('network', 'Network down'),
+    );
+    rankByProvider.llm7.mockResolvedValueOnce({
+      candidates: [
+        {
+          id: 'x',
+          filename: 'x.txt',
+          score: 6.2,
+          justification: 'Fallback response',
+          strengths: [],
+          concerns: [],
+          interviewRecommendation: 'maybe',
+          interviewQuestions: [],
+        },
+      ],
+    });
+
+    const result = await runHrRankingUseCase({
+      config: ovhConfig,
+      jobTitle: 'Backend Engineer',
+      jobDescription: 'Build resilient APIs',
+      cvs: [{ id: 'x', filename: 'x.txt', text: 'cv-x' }],
+    });
+
+    expect(rankByProvider.ovh).toHaveBeenCalledTimes(1);
+    expect(rankByProvider.llm7).toHaveBeenCalledTimes(1);
+    expect(result.providerNotice).toMatchObject({
+      primaryProvider: 'ovh',
+      fallbackProvider: 'llm7',
+      reasonKind: 'network',
     });
   });
 });

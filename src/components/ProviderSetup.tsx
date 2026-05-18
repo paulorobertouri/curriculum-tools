@@ -1,5 +1,5 @@
 import { KeyRound, Loader2, ShieldCheck } from 'lucide-react';
-import { FormEvent, useState } from 'react';
+import { useState } from 'react';
 
 import { LanguageSelector } from '@/components/LanguageSelector';
 import {
@@ -7,13 +7,15 @@ import {
   AiProviderId,
   DEFAULT_MODELS,
   PROVIDER_LABELS,
+  PROVIDER_RISK_I18N_KEY,
+  providerRequiresApiKey,
 } from '@/domain/aiTypes';
 import { useI18n } from '@/i18n/i18n';
 import { getProviderAdapter } from '@/providers';
 
 type ProviderSetupProps = {
-  initialConfig?: AiConfig | null;
-  onSave(config: AiConfig): void;
+  readonly initialConfig?: AiConfig | null;
+  readonly onSave: (config: AiConfig) => void;
 };
 
 export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
@@ -25,8 +27,16 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
   const [model, setModel] = useState(
     initialConfig?.model ?? DEFAULT_MODELS.openai,
   );
+  const [redactSensitiveData, setRedactSensitiveData] = useState(
+    initialConfig?.redactSensitiveData ?? true,
+  );
   const [status, setStatus] = useState<string | null>(null);
   const [isTesting, setIsTesting] = useState(false);
+
+  const apiKeyRequired = providerRequiresApiKey(provider);
+
+  const providerRiskKey = PROVIDER_RISK_I18N_KEY[provider];
+  const providerRiskMessage = providerRiskKey ? t(providerRiskKey) : null;
 
   const handleProviderChange = (nextProvider: AiProviderId) => {
     setProvider(nextProvider);
@@ -34,11 +44,16 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
     setStatus(null);
   };
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     setStatus(null);
 
-    if (!apiKey.trim() || !model.trim()) {
+    if (!model.trim()) {
+      setStatus(t('provider.setup.validationModel'));
+      return;
+    }
+
+    if (apiKeyRequired && !apiKey.trim()) {
       setStatus(t('provider.setup.validation'));
       return;
     }
@@ -48,6 +63,7 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
       apiKey: apiKey.trim(),
       model: model.trim(),
       savedAt: new Date().toISOString(),
+      redactSensitiveData,
     };
 
     setIsTesting(true);
@@ -146,7 +162,9 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
 
             <div className='space-y-2'>
               <label className='text-sm font-bold' htmlFor='api-key'>
-                {t('provider.setup.key')}
+                {apiKeyRequired
+                  ? t('provider.setup.key')
+                  : t('provider.setup.keyOptional')}
               </label>
               <input
                 id='api-key'
@@ -154,9 +172,22 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
                 type='password'
                 value={apiKey}
                 onChange={event => setApiKey(event.target.value)}
-                placeholder={t('provider.setup.placeholder')}
+                placeholder={
+                  apiKeyRequired
+                    ? t('provider.setup.placeholder')
+                    : t('provider.setup.placeholderOptional')
+                }
               />
             </div>
+
+            {providerRiskMessage ? (
+              <p className='rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900'>
+                <span className='font-bold'>
+                  {t('provider.setup.risk.title')}{' '}
+                </span>
+                {providerRiskMessage}
+              </p>
+            ) : null}
 
             <div className='space-y-2'>
               <label className='text-sm font-bold' htmlFor='model'>
@@ -169,6 +200,21 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
                 onChange={event => setModel(event.target.value)}
               />
             </div>
+
+            <label className='flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3'>
+              <input
+                className='mt-1 h-4 w-4 rounded border-slate-300 text-cyan-600 focus:ring-cyan-500'
+                type='checkbox'
+                checked={redactSensitiveData}
+                onChange={event => setRedactSensitiveData(event.target.checked)}
+              />
+              <span className='text-sm text-slate-700'>
+                <span className='block font-bold text-slate-950'>
+                  {t('provider.setup.redaction.label')}
+                </span>
+                {t('provider.setup.redaction.help')}
+              </span>
+            </label>
 
             {status ? (
               <p

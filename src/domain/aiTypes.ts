@@ -1,10 +1,18 @@
-export type AiProviderId = 'gemini' | 'openai' | 'deepseek';
+export type AiProviderId =
+  | 'gemini'
+  | 'openai'
+  | 'deepseek'
+  | 'ovh'
+  | 'llm7'
+  | 'pollinations'
+  | 'kilo';
 
 export type AiConfig = {
   provider: AiProviderId;
   apiKey: string;
   model: string;
   savedAt: string;
+  redactSensitiveData?: boolean;
 };
 
 export type TestResult = {
@@ -104,12 +112,37 @@ export const PROVIDER_LABELS: Record<AiProviderId, string> = {
   openai: 'OpenAI',
   gemini: 'Gemini',
   deepseek: 'DeepSeek',
+  ovh: 'OVHcloud AI Endpoints (Anonymous)',
+  llm7: 'LLM7 (Anonymous)',
+  pollinations: 'Pollinations (Anonymous)',
+  kilo: 'Kilo Code (Anonymous)',
 };
 
 export const DEFAULT_MODELS: Record<AiProviderId, string> = {
   openai: 'gpt-5.4-mini',
   gemini: 'gemini-3.1-flash-lite',
   deepseek: 'deepseek-v4-flash',
+  ovh: 'Qwen3-32B',
+  llm7: 'deepseek-v3-0324',
+  pollinations: 'openai-fast',
+  kilo: 'kilo-auto/free',
 };
+
+export const PROVIDER_RISK_I18N_KEY: Partial<Record<AiProviderId, string>> = {
+  ovh: 'provider.setup.risk.ovh',
+  llm7: 'provider.setup.risk.llm7',
+  pollinations: 'provider.setup.risk.pollinations',
+  kilo: 'provider.setup.risk.kilo',
+};
+
+export const PROVIDERS_WITH_OPTIONAL_API_KEY: AiProviderId[] = [
+  'ovh',
+  'llm7',
+  'pollinations',
+  'kilo',
+];
+
+export const providerRequiresApiKey = (provider: AiProviderId): boolean =>
+  !PROVIDERS_WITH_OPTIONAL_API_KEY.includes(provider);
 
 export const AI_CONFIG_STORAGE_KEY = 'curriculum-tools.aiConfig.v1';

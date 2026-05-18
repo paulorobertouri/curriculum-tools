@@ -38,18 +38,31 @@ const dictionaries: Record<Locale, Dictionary> = {
     'app.toolIntro.qualitySteps':
       'Run fixture packs after prompt or model changes and monitor score spread, average deltas, and rank swaps.',
     'app.privacy':
-      'API keys are saved in localStorage on this browser. CV content is sent from this browser to {provider} only after Process is clicked.',
+      'API keys are saved in localStorage on this browser. CV content is sent from this browser to {provider} only after Process is clicked. {redaction}',
     'provider.setup.badge': 'Browser-first AI setup',
     'provider.setup.title': 'Curriculum Tools',
     'provider.setup.subtitle':
-      'Connect Gemini, OpenAI, or DeepSeek with your own API key before reviewing CVs or ranking candidates.',
+      'Connect Gemini, OpenAI, DeepSeek, OVHcloud, LLM7, Pollinations, or Kilo before reviewing CVs or ranking candidates.',
     'provider.setup.privacy':
       "Your API key is stored in this browser's localStorage. CV text is sent directly from this browser to the selected AI provider only when you click Process.",
     'provider.setup.provider': 'Provider',
     'provider.setup.key': 'API key',
+    'provider.setup.keyOptional': 'API key (optional)',
     'provider.setup.model': 'Model',
     'provider.setup.placeholder': 'Paste your provider key',
+    'provider.setup.placeholderOptional':
+      'Optional: paste a key for higher limits',
     'provider.setup.validation': 'Enter an API key and model before testing.',
+    'provider.setup.validationModel': 'Enter a model before testing.',
+    'provider.setup.risk.title': 'Risk notice:',
+    'provider.setup.risk.ovh':
+      'Anonymous free tier is heavily rate-limited and can be unstable. Do not send sensitive CV data.',
+    'provider.setup.risk.llm7':
+      'No-signup access may route through third-party infrastructure with changing limits and availability. Do not send sensitive CV data.',
+    'provider.setup.risk.pollinations':
+      'Anonymous free usage is community-managed and can change limits quickly. Do not send sensitive CV data.',
+    'provider.setup.risk.kilo':
+      'Anonymous routing and free-model availability can change without notice. Do not send sensitive CV data.',
     'provider.setup.testing': 'Testing provider',
     'provider.setup.submit': 'Test and Save',
     'provider.setup.feature.browser': 'Browser-first',
@@ -58,6 +71,9 @@ const dictionaries: Record<Locale, Dictionary> = {
     'provider.setup.feature.storageValue': 'localStorage only',
     'provider.setup.feature.direct': 'Direct provider calls',
     'provider.setup.feature.directValue': 'Triggered on Process',
+    'provider.setup.redaction.label': 'Redact sensitive data before API calls',
+    'provider.setup.redaction.help':
+      'Removes full name labels, email, document IDs, address labels, phone numbers, and URLs from prompts before sending.',
     'provider.status.connected': '{provider} connected',
     'provider.status.saved': 'Provider tested and saved.',
     'provider.status.testing': 'Testing',
@@ -65,6 +81,20 @@ const dictionaries: Record<Locale, Dictionary> = {
     'provider.status.edit': 'Edit',
     'provider.status.clear': 'Clear',
     'provider.status.failed': 'Provider retest failed.',
+    'provider.status.noKey': 'No API key',
+    'provider.fallback.notice':
+      'Primary provider {primary} failed ({reason}). Request was retried with {fallback}.',
+    'provider.fallback.reason.auth': 'authentication error',
+    'provider.fallback.reason.quota': 'quota or rate-limit error',
+    'provider.fallback.reason.network': 'network error',
+    'provider.fallback.reason.provider': 'provider error',
+    'provider.fallback.reason.parse': 'response parse error',
+    'provider.fallback.reason.validation': 'validation error',
+    'provider.status.redactionOn': 'Sensitive data redaction: enabled',
+    'provider.status.redactionOff': 'Sensitive data redaction: disabled',
+    'provider.redaction.enabled': 'Sensitive data redaction is enabled.',
+    'provider.redaction.disabled':
+      'Sensitive data redaction is disabled; prompts are sent as-is.',
     'candidate.eyebrow': 'Candidate',
     'candidate.title': 'CV Reviewer',
     'candidate.description':
@@ -179,19 +209,32 @@ const dictionaries: Record<Locale, Dictionary> = {
     'app.toolIntro.qualitySteps':
       'Execute os fixtures apos mudar prompt ou modelo e acompanhe spread de notas, deltas medios e trocas de ranking.',
     'app.privacy':
-      'As chaves de API sao salvas no localStorage deste navegador. O conteudo do CV e enviado para {provider} somente apos clicar em Processar.',
+      'As chaves de API sao salvas no localStorage deste navegador. O conteudo do CV e enviado para {provider} somente apos clicar em Processar. {redaction}',
     'provider.setup.badge': 'Configuracao de IA no navegador',
     'provider.setup.title': 'Curriculum Tools',
     'provider.setup.subtitle':
-      'Conecte Gemini, OpenAI ou DeepSeek com sua propria chave antes de revisar ou classificar CVs.',
+      'Conecte Gemini, OpenAI, DeepSeek, OVHcloud, LLM7, Pollinations ou Kilo antes de revisar ou classificar CVs.',
     'provider.setup.privacy':
       'Sua chave de API e armazenada no localStorage deste navegador. O texto do CV e enviado diretamente para o provedor selecionado somente quando voce clicar em Processar.',
     'provider.setup.provider': 'Provedor',
     'provider.setup.key': 'Chave de API',
+    'provider.setup.keyOptional': 'Chave de API (opcional)',
     'provider.setup.model': 'Modelo',
     'provider.setup.placeholder': 'Cole sua chave do provedor',
+    'provider.setup.placeholderOptional':
+      'Opcional: cole uma chave para limites maiores',
     'provider.setup.validation':
       'Informe uma chave de API e um modelo antes de testar.',
+    'provider.setup.validationModel': 'Informe um modelo antes de testar.',
+    'provider.setup.risk.title': 'Aviso de risco:',
+    'provider.setup.risk.ovh':
+      'O modo anonimo gratuito tem limite de taxa forte e pode ser instavel. Nao envie dados sensiveis de CV.',
+    'provider.setup.risk.llm7':
+      'O acesso sem cadastro pode usar infraestrutura de terceiros com limites e disponibilidade variaveis. Nao envie dados sensiveis de CV.',
+    'provider.setup.risk.pollinations':
+      'O uso anonimo gratuito e gerenciado pela comunidade e pode mudar limites rapidamente. Nao envie dados sensiveis de CV.',
+    'provider.setup.risk.kilo':
+      'O roteamento anonimo e a disponibilidade de modelos gratis podem mudar sem aviso. Nao envie dados sensiveis de CV.',
     'provider.setup.testing': 'Testando provedor',
     'provider.setup.submit': 'Testar e Salvar',
     'provider.setup.feature.browser': 'Primeiro no navegador',
@@ -200,6 +243,10 @@ const dictionaries: Record<Locale, Dictionary> = {
     'provider.setup.feature.storageValue': 'Somente localStorage',
     'provider.setup.feature.direct': 'Chamadas diretas',
     'provider.setup.feature.directValue': 'Disparadas em Processar',
+    'provider.setup.redaction.label':
+      'Redigir dados sensiveis antes das chamadas de API',
+    'provider.setup.redaction.help':
+      'Remove rotulos de nome completo, email, documentos, rotulos de endereco, telefones e URLs dos prompts antes do envio.',
     'provider.status.connected': '{provider} conectado',
     'provider.status.saved': 'Provedor testado e salvo.',
     'provider.status.testing': 'Testando',
@@ -207,6 +254,20 @@ const dictionaries: Record<Locale, Dictionary> = {
     'provider.status.edit': 'Editar',
     'provider.status.clear': 'Limpar',
     'provider.status.failed': 'Falha ao retestar o provedor.',
+    'provider.status.noKey': 'Sem chave de API',
+    'provider.fallback.notice':
+      'O provedor principal {primary} falhou ({reason}). A requisicao foi repetida com {fallback}.',
+    'provider.fallback.reason.auth': 'erro de autenticacao',
+    'provider.fallback.reason.quota': 'erro de limite ou cota',
+    'provider.fallback.reason.network': 'erro de rede',
+    'provider.fallback.reason.provider': 'erro do provedor',
+    'provider.fallback.reason.parse': 'erro de parse da resposta',
+    'provider.fallback.reason.validation': 'erro de validacao',
+    'provider.status.redactionOn': 'Redacao de dados sensiveis: ativada',
+    'provider.status.redactionOff': 'Redacao de dados sensiveis: desativada',
+    'provider.redaction.enabled': 'A redacao de dados sensiveis esta ativada.',
+    'provider.redaction.disabled':
+      'A redacao de dados sensiveis esta desativada; prompts sao enviados sem alteracoes.',
     'candidate.eyebrow': 'Candidato',
     'candidate.title': 'Revisor de CV',
     'candidate.description':
@@ -321,19 +382,32 @@ const dictionaries: Record<Locale, Dictionary> = {
     'app.toolIntro.qualitySteps':
       'Ejecuta fixtures tras cambios de prompt o modelo y monitorea spread, deltas promedio y cambios de ranking.',
     'app.privacy':
-      'Las claves API se guardan en localStorage de este navegador. El contenido del CV se envia a {provider} solo despues de hacer clic en Procesar.',
+      'Las claves API se guardan en localStorage de este navegador. El contenido del CV se envia a {provider} solo despues de hacer clic en Procesar. {redaction}',
     'provider.setup.badge': 'Configuracion IA en navegador',
     'provider.setup.title': 'Curriculum Tools',
     'provider.setup.subtitle':
-      'Conecta Gemini, OpenAI o DeepSeek con tu propia clave antes de revisar o clasificar CVs.',
+      'Conecta Gemini, OpenAI, DeepSeek, OVHcloud, LLM7, Pollinations o Kilo antes de revisar o clasificar CVs.',
     'provider.setup.privacy':
       'Tu clave API se guarda en el localStorage del navegador. El texto del CV se envia directamente al proveedor seleccionado solo cuando haces clic en Procesar.',
     'provider.setup.provider': 'Proveedor',
     'provider.setup.key': 'Clave API',
+    'provider.setup.keyOptional': 'Clave API (opcional)',
     'provider.setup.model': 'Modelo',
     'provider.setup.placeholder': 'Pega tu clave del proveedor',
+    'provider.setup.placeholderOptional':
+      'Opcional: pega una clave para limites mas altos',
     'provider.setup.validation':
       'Introduce una clave API y un modelo antes de probar.',
+    'provider.setup.validationModel': 'Introduce un modelo antes de probar.',
+    'provider.setup.risk.title': 'Aviso de riesgo:',
+    'provider.setup.risk.ovh':
+      'El modo anonimo gratuito tiene limite de tasa estricto y puede ser inestable. No envies datos sensibles del CV.',
+    'provider.setup.risk.llm7':
+      'El acceso sin registro puede usar infraestructura de terceros con limites y disponibilidad variables. No envies datos sensibles del CV.',
+    'provider.setup.risk.pollinations':
+      'El uso anonimo gratuito es gestionado por la comunidad y puede cambiar limites rapidamente. No envies datos sensibles del CV.',
+    'provider.setup.risk.kilo':
+      'El enrutamiento anonimo y la disponibilidad de modelos gratuitos pueden cambiar sin aviso. No envies datos sensibles del CV.',
     'provider.setup.testing': 'Probando proveedor',
     'provider.setup.submit': 'Probar y Guardar',
     'provider.setup.feature.browser': 'Primero en el navegador',
@@ -342,6 +416,10 @@ const dictionaries: Record<Locale, Dictionary> = {
     'provider.setup.feature.storageValue': 'Solo localStorage',
     'provider.setup.feature.direct': 'Llamadas directas',
     'provider.setup.feature.directValue': 'Se activan al procesar',
+    'provider.setup.redaction.label':
+      'Redactar datos sensibles antes de las llamadas API',
+    'provider.setup.redaction.help':
+      'Elimina etiquetas de nombre completo, correo, documentos, etiquetas de direccion, telefonos y URLs de los prompts antes de enviarlos.',
     'provider.status.connected': '{provider} conectado',
     'provider.status.saved': 'Proveedor probado y guardado.',
     'provider.status.testing': 'Probando',
@@ -349,6 +427,21 @@ const dictionaries: Record<Locale, Dictionary> = {
     'provider.status.edit': 'Editar',
     'provider.status.clear': 'Limpiar',
     'provider.status.failed': 'Fallo al reprobar el proveedor.',
+    'provider.status.noKey': 'Sin clave API',
+    'provider.fallback.notice':
+      'El proveedor principal {primary} fallo ({reason}). La solicitud se reintento con {fallback}.',
+    'provider.fallback.reason.auth': 'error de autenticacion',
+    'provider.fallback.reason.quota': 'error de cuota o limite',
+    'provider.fallback.reason.network': 'error de red',
+    'provider.fallback.reason.provider': 'error del proveedor',
+    'provider.fallback.reason.parse': 'error de parseo de respuesta',
+    'provider.fallback.reason.validation': 'error de validacion',
+    'provider.status.redactionOn': 'Redaccion de datos sensibles: activada',
+    'provider.status.redactionOff': 'Redaccion de datos sensibles: desactivada',
+    'provider.redaction.enabled':
+      'La redaccion de datos sensibles esta activada.',
+    'provider.redaction.disabled':
+      'La redaccion de datos sensibles esta desactivada; los prompts se envian sin cambios.',
     'candidate.eyebrow': 'Candidato',
     'candidate.title': 'Revisor de CV',
     'candidate.description':

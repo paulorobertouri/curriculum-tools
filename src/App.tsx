@@ -27,6 +27,7 @@ function App() {
   const [isRetesting, setIsRetesting] = useState(false);
 
   const shouldShowSetup = !config || editingConfig;
+  const isRedactionEnabled = config?.redactSensitiveData !== false;
 
   const activeToolGuide = useMemo(() => {
     if (activeTool === 'candidate') {
@@ -195,7 +196,12 @@ function App() {
         </header>
 
         <section className='mt-6 rounded-3xl border border-amber-200/70 bg-amber-50/90 p-4 text-sm leading-6 text-amber-900 shadow-sm'>
-          {t('app.privacy', { provider: config.provider })}
+          {t('app.privacy', {
+            provider: config.provider,
+            redaction: isRedactionEnabled
+              ? t('provider.redaction.enabled')
+              : t('provider.redaction.disabled'),
+          })}
         </section>
 
         <section className='mt-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm'>

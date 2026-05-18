@@ -23,23 +23,26 @@ import {
 } from '@/providers/providerUtils';
 import { parseJsonResult } from '@/providers/responseParsing';
 
-export const geminiProvider: AiProviderAdapter = {
+const POLLINATIONS_CHAT_URL =
+  'https://text.pollinations.ai/openai/chat/completions';
+
+export const pollinationsProvider: AiProviderAdapter = {
   async testConnection(config): Promise<TestResult> {
     try {
-      const text = await generateContent(config, TEST_PROMPT);
+      const text = await createChatCompletion(config, TEST_PROMPT);
       ensureHello(text);
-      return { ok: true, message: 'Gemini responded successfully.' };
+      return { ok: true, message: 'Pollinations responded successfully.' };
     } catch (error) {
       throw toProviderError(error);
     }
   },
 
   async reviewCandidateCv(config, input): Promise<CandidateReview> {
-    const reviewText = await generateContent(
+    const reviewText = await createChatCompletion(
       config,
       buildCandidatePrompt(input),
     );
-    const toolkitText = await generateContent(
+    const toolkitText = await createChatCompletion(
       config,
       buildCandidateToolkitPrompt(input),
     );
@@ -57,50 +60,38 @@ export const geminiProvider: AiProviderAdapter = {
   },
 
   async rankHrCvs(config, input): Promise<HrRankingResult> {
-    const text = await generateContent(config, buildHrPrompt(input));
+    const text = await createChatCompletion(config, buildHrPrompt(input));
     return parseJsonResult(text, normalizeHrRanking);
   },
 };
 
-const generateContent = async (config: AiConfig, prompt: string) => {
+const createChatCompletion = async (config: AiConfig, prompt: string) => {
   const sanitizedPrompt = sanitizePromptForProvider(
     prompt,
     isPromptRedactionEnabled(config),
   );
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
-      config.model,
-    )}:generateContent`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': config.apiKey,
-      },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: sanitizedPrompt }] }],
-      }),
+  const response = await fetch(POLLINATIONS_CHAT_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
     },
-  );
+    body: JSON.stringify({
+      model: config.model,
+      messages: [{ role: 'user', content: sanitizedPrompt }],
+    }),
+  });
 
   await assertSuccessfulResponse(response);
 
   const body = await response.json();
-  return extractGeminiText(body);
+  return extractText(body);
 };
 
-const extractGeminiText = (body: unknown): string => {
+const extractText = (body: unknown): string => {
   const response = body as {
-    candidates?: Array<{
-      content?: { parts?: Array<{ text?: string }> };
-    }>;
+    choices?: Array<{ message?: { content?: string } }>;
   };
 
-  return (
-    response.candidates?.[0]?.content?.parts
-      ?.map(part => part.text)
-      .filter(Boolean)
-      .join('\n') ?? ''
-  );
+  return response.choices?.[0]?.message?.content ?? '';
 };
