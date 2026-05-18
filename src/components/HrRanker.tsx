@@ -9,18 +9,23 @@ import {
   TextArea,
   TextField,
 } from '@/components/CandidateReviewer';
-import { AiConfig, HrCvInput, HrRankingResult, RankedCandidate } from '@/domain/aiTypes';
+import {
+  AiConfig,
+  HrCvInput,
+  HrRankingResult,
+  RankedCandidate,
+} from '@/domain/aiTypes';
 import { buildHrMetricsSummary } from '@/domain/hrMetricsSummary';
 import {
   buildHrCandidateQualitySummary,
   buildHrRankDiffSummary,
 } from '@/domain/reviewQuality';
-import { SUPPORTED_FILE_TYPES, extractTextFromFile } from '@/files/extractText';
 import {
   downloadHrCsvFile,
   downloadInterviewerBrief,
   downloadJsonFile,
 } from '@/files/exportResults';
+import { SUPPORTED_FILE_TYPES, extractTextFromFile } from '@/files/extractText';
 import { useI18n } from '@/i18n/i18n';
 import {
   HrDecision,
@@ -260,7 +265,9 @@ export function HrRanker({ config }: HrRankerProps) {
           )}
           {isProcessing ? t('hr.processing') : t('hr.process')}
         </button>
-        <p className='text-xs leading-5 text-slate-500'>{t('hr.processHint')}</p>
+        <p className='text-xs leading-5 text-slate-500'>
+          {t('hr.processHint')}
+        </p>
       </form>
 
       <ResultPanel
@@ -444,10 +451,13 @@ function HrCandidateCard({
         </div>
       </div>
 
-      <p className='mt-4 text-sm leading-6 text-slate-700'>{candidate.justification}</p>
+      <p className='mt-4 text-sm leading-6 text-slate-700'>
+        {candidate.justification}
+      </p>
 
       <div className='mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700'>
-        Confidence: <span className='font-bold'>{quality.confidenceScore}/100</span>
+        Confidence:{' '}
+        <span className='font-bold'>{quality.confidenceScore}/100</span>
       </div>
 
       {quality.unsupportedClaims.length > 0 ? (
@@ -457,16 +467,23 @@ function HrCandidateCard({
       ) : null}
 
       <div className='mt-4 grid gap-4 md:grid-cols-2'>
-        <List title={t('candidate.list.strengths')} items={candidate.strengths} />
+        <List
+          title={t('candidate.list.strengths')}
+          items={candidate.strengths}
+        />
         <List title={t('candidate.list.concerns')} items={candidate.concerns} />
       </div>
 
       <p className='mt-4 rounded-full bg-slate-100 px-3 py-2 text-sm font-bold text-slate-800'>
-        {t('hr.recommendation')}: {candidate.interviewRecommendation.replace('_', ' ')}
+        {t('hr.recommendation')}:{' '}
+        {candidate.interviewRecommendation.replace('_', ' ')}
       </p>
 
       <div className='mt-4'>
-        <List title={t('hr.list.interviewQuestions')} items={candidate.interviewQuestions} />
+        <List
+          title={t('hr.list.interviewQuestions')}
+          items={candidate.interviewQuestions}
+        />
       </div>
 
       <HrDecisionPanel
@@ -484,7 +501,10 @@ function HrCandidateCard({
           {quality.traces.slice(0, 6).map(trace => (
             <div key={`${trace.claim}-${trace.evidence ?? 'none'}`}>
               <p className='font-semibold text-slate-900'>{trace.claim}</p>
-              <p>{trace.evidence ?? 'No direct supporting excerpt found in CV text.'}</p>
+              <p>
+                {trace.evidence ??
+                  'No direct supporting excerpt found in CV text.'}
+              </p>
             </div>
           ))}
         </div>
@@ -520,7 +540,9 @@ function HrDecisionPanel({
             key={status.value}
             className={[
               'status-button text-xs',
-              decision?.status === status.value ? 'border-cyan-600 text-cyan-700' : '',
+              decision?.status === status.value
+                ? 'border-cyan-600 text-cyan-700'
+                : '',
             ].join(' ')}
             type='button'
             onClick={() => onStatusChange(status.value)}
@@ -529,14 +551,18 @@ function HrDecisionPanel({
           </button>
         ))}
       </div>
-      <label className='mt-3 block text-sm font-semibold text-slate-700'>Notes</label>
+      <label className='mt-3 block text-sm font-semibold text-slate-700'>
+        Notes
+      </label>
       <textarea
         className='text-input mt-1 resize-y'
         rows={2}
         value={decision?.note ?? ''}
         onChange={event => onNoteChange(event.target.value)}
       />
-      <label className='mt-3 block text-sm font-semibold text-slate-700'>Tags (comma separated)</label>
+      <label className='mt-3 block text-sm font-semibold text-slate-700'>
+        Tags (comma separated)
+      </label>
       <input
         className='text-input mt-1'
         value={(decision?.tags ?? []).join(', ')}
@@ -553,39 +579,49 @@ function HrDecisionPanel({
   );
 }
 
-function HrComparisonMatrix({
-  candidates,
-}: {
-  candidates: RankedCandidate[];
-}) {
+function HrComparisonMatrix({ candidates }: { candidates: RankedCandidate[] }) {
   return (
     <section className='rounded-3xl border border-slate-200 bg-slate-50 p-4 shadow-sm'>
-      <h3 className='text-sm font-bold text-slate-900'>Side-by-side comparison</h3>
+      <h3 className='text-sm font-bold text-slate-900'>
+        Side-by-side comparison
+      </h3>
       <div className='mt-3 overflow-x-auto'>
         <table className='w-full min-w-[640px] border-collapse text-sm'>
           <thead>
             <tr className='text-left text-slate-600'>
               <th className='border-b border-slate-200 px-2 py-2'>Metric</th>
               {candidates.map(candidate => (
-                <th key={candidate.id} className='border-b border-slate-200 px-2 py-2'>
+                <th
+                  key={candidate.id}
+                  className='border-b border-slate-200 px-2 py-2'
+                >
                   {candidate.detectedName ?? candidate.filename}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            <MatrixRow label='Score' values={candidates.map(item => item.score.toFixed(1))} />
+            <MatrixRow
+              label='Score'
+              values={candidates.map(item => item.score.toFixed(1))}
+            />
             <MatrixRow
               label='Recommendation'
-              values={candidates.map(item => item.interviewRecommendation.replace('_', ' '))}
+              values={candidates.map(item =>
+                item.interviewRecommendation.replace('_', ' '),
+              )}
             />
             <MatrixRow
               label='Top strengths'
-              values={candidates.map(item => item.strengths.slice(0, 2).join(' | '))}
+              values={candidates.map(item =>
+                item.strengths.slice(0, 2).join(' | '),
+              )}
             />
             <MatrixRow
               label='Top concerns'
-              values={candidates.map(item => item.concerns.slice(0, 2).join(' | '))}
+              values={candidates.map(item =>
+                item.concerns.slice(0, 2).join(' | '),
+              )}
             />
           </tbody>
         </table>
@@ -597,9 +633,14 @@ function HrComparisonMatrix({
 function MatrixRow({ label, values }: { label: string; values: string[] }) {
   return (
     <tr>
-      <th className='border-b border-slate-200 px-2 py-2 text-left text-slate-700'>{label}</th>
+      <th className='border-b border-slate-200 px-2 py-2 text-left text-slate-700'>
+        {label}
+      </th>
       {values.map((value, index) => (
-        <td key={`${label}-${index}`} className='border-b border-slate-200 px-2 py-2 text-slate-700'>
+        <td
+          key={`${label}-${index}`}
+          className='border-b border-slate-200 px-2 py-2 text-slate-700'
+        >
           {value || 'N/A'}
         </td>
       ))}
@@ -624,11 +665,16 @@ function HrRerunDiffPanel({
           </span>
         </p>
         <p className='rounded-xl bg-white px-3 py-2 text-sm text-slate-700'>
-          Previous avg: <span className='font-bold'>{diff.previousAverage.toFixed(1)}</span>
+          Previous avg:{' '}
+          <span className='font-bold'>{diff.previousAverage.toFixed(1)}</span>
         </p>
         <p className='rounded-xl bg-white px-3 py-2 text-sm text-slate-700'>
           Rank swaps:{' '}
-          <span className={diff.rankSwapCount > 1 ? 'font-bold text-amber-700' : 'font-bold'}>
+          <span
+            className={
+              diff.rankSwapCount > 1 ? 'font-bold text-amber-700' : 'font-bold'
+            }
+          >
             {diff.rankSwapCount}
           </span>
         </p>
@@ -646,7 +692,9 @@ function HrMetricsDashboard({ result }: { result: HrRankingResult }) {
 
   return (
     <section className='rounded-3xl border border-slate-200 bg-slate-50 p-4 shadow-sm'>
-      <p className='text-sm font-bold text-slate-900'>{t('hr.dashboard.title')}</p>
+      <p className='text-sm font-bold text-slate-900'>
+        {t('hr.dashboard.title')}
+      </p>
       <div className='mt-3 grid gap-3 sm:grid-cols-3'>
         <HrSummaryStat
           label={t('hr.dashboard.count')}

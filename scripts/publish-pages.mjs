@@ -5,7 +5,10 @@ import { fileURLToPath } from 'node:url';
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const projectRoot = resolve(scriptDir, '..');
 const sourceDir = resolve(projectRoot, 'wwwroot');
-const targetDir = resolve(projectRoot, '../paulorobertouri.github.io/curriculum-tools');
+const targetDir = resolve(
+  projectRoot,
+  '../paulorobertouri.github.io/curriculum-tools',
+);
 
 const main = async () => {
   await rm(targetDir, { recursive: true, force: true });

@@ -6,8 +6,8 @@ import {
   TestResult,
 } from '@/domain/aiTypes';
 import {
-  normalizeCandidateReview,
   normalizeCandidateCareerToolkit,
+  normalizeCandidateReview,
   normalizeHrRanking,
 } from '@/domain/validation';
 import { buildCandidatePrompt } from '@/prompts/candidatePrompt';
@@ -59,7 +59,11 @@ export const openaiProvider: AiProviderAdapter = {
   },
 
   async rankHrCvs(config, input): Promise<HrRankingResult> {
-    const text = await createResponse(config, buildHrPrompt(input), hrRankingSchema);
+    const text = await createResponse(
+      config,
+      buildHrPrompt(input),
+      hrRankingSchema,
+    );
     return parseJsonResult(text, normalizeHrRanking);
   },
 };

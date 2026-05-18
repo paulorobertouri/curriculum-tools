@@ -1,4 +1,10 @@
-import { AlertTriangle, FlaskConical, Loader2, Play, TrendingUp } from 'lucide-react';
+import {
+  AlertTriangle,
+  FlaskConical,
+  Loader2,
+  Play,
+  TrendingUp,
+} from 'lucide-react';
 import { ReactNode, useMemo, useState } from 'react';
 
 import { AiConfig } from '@/domain/aiTypes';
@@ -46,11 +52,17 @@ export function QualityHarness({ config }: QualityHarnessProps) {
   const previousRun = runs.length > 1 ? runs[runs.length - 2] : null;
 
   const driftAcrossModels = useMemo(() => {
-    const sameFixtureRuns = runs.filter(run => run.provider === config.provider);
+    const sameFixtureRuns = runs.filter(
+      run => run.provider === config.provider,
+    );
 
     return candidateFixtures.map(fixture => {
       const scores = sameFixtureRuns
-        .map(run => run.candidateRuns.find(item => item.fixtureId === fixture.id)?.score)
+        .map(
+          run =>
+            run.candidateRuns.find(item => item.fixtureId === fixture.id)
+              ?.score,
+        )
         .filter((value): value is number => typeof value === 'number');
 
       if (scores.length === 0) {
@@ -86,12 +98,16 @@ export function QualityHarness({ config }: QualityHarnessProps) {
   const latestRankSwaps =
     latestRun && previousRun
       ? latestRun.hrRuns.reduce((sum, run) => {
-          const previous = previousRun.hrRuns.find(item => item.fixtureId === run.fixtureId);
+          const previous = previousRun.hrRuns.find(
+            item => item.fixtureId === run.fixtureId,
+          );
           if (!previous) {
             return sum;
           }
 
-          return sum + rankSwapCount(previous.candidateOrder, run.candidateOrder);
+          return (
+            sum + rankSwapCount(previous.candidateOrder, run.candidateOrder)
+          );
         }, 0)
       : 0;
 
@@ -114,7 +130,9 @@ export function QualityHarness({ config }: QualityHarnessProps) {
         hrRuns.push({
           fixtureId: fixture.id,
           candidateOrder: ranking.candidates.map(candidate => candidate.id),
-          averageScore: average(ranking.candidates.map(candidate => candidate.score)),
+          averageScore: average(
+            ranking.candidates.map(candidate => candidate.score),
+          ),
         });
       }
 
@@ -132,7 +150,9 @@ export function QualityHarness({ config }: QualityHarnessProps) {
       setRuns(nextRuns);
       saveEvaluationRuns(nextRuns);
     } catch (runError) {
-      setError(runError instanceof Error ? runError.message : 'Harness run failed.');
+      setError(
+        runError instanceof Error ? runError.message : 'Harness run failed.',
+      );
     } finally {
       setIsRunning(false);
     }
@@ -145,28 +165,44 @@ export function QualityHarness({ config }: QualityHarnessProps) {
           <p className='eyebrow'>Quality</p>
           <h2 className='panel-title'>Evaluation Harness</h2>
           <p className='mt-2 text-sm leading-6 text-slate-600'>
-            Validate prompt quality and ranking stability using fixed benchmark fixtures. This helps detect score drift and ranking volatility after prompt or model changes.
+            Validate prompt quality and ranking stability using fixed benchmark
+            fixtures. This helps detect score drift and ranking volatility after
+            prompt or model changes.
           </p>
         </div>
-        <button className='primary-button' type='button' onClick={runHarness} disabled={isRunning}>
-          {isRunning ? <Loader2 className='h-4 w-4 animate-spin' /> : <Play className='h-4 w-4' />}
+        <button
+          className='primary-button'
+          type='button'
+          onClick={runHarness}
+          disabled={isRunning}
+        >
+          {isRunning ? (
+            <Loader2 className='h-4 w-4 animate-spin' />
+          ) : (
+            <Play className='h-4 w-4' />
+          )}
           {isRunning ? 'Running fixtures' : 'Run fixture pack'}
         </button>
       </div>
 
       <div className='rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700'>
         <p className='font-bold text-slate-900'>How to use this tool</p>
-        <p className='mt-1'>
-          1) Run fixtures after changing prompts/models.
-        </p>
+        <p className='mt-1'>1) Run fixtures after changing prompts/models.</p>
         <p>2) Review average deltas and rank swaps.</p>
-        <p>3) Investigate warnings before relying on outputs in production hiring flows.</p>
+        <p>
+          3) Investigate warnings before relying on outputs in production hiring
+          flows.
+        </p>
       </div>
 
       {error ? <p className='error-message'>{error}</p> : null}
 
       <div className='grid gap-3 md:grid-cols-3'>
-        <StatCard label='Runs stored' value={String(runs.length)} icon={<FlaskConical className='h-4 w-4' />} />
+        <StatCard
+          label='Runs stored'
+          value={String(runs.length)}
+          icon={<FlaskConical className='h-4 w-4' />}
+        />
         <StatCard
           label='Candidate avg delta'
           value={`${(latestCandidateAverage - previousCandidateAverage).toFixed(1)}`}
@@ -181,17 +217,23 @@ export function QualityHarness({ config }: QualityHarnessProps) {
       </div>
 
       <div className='rounded-2xl border border-slate-200 bg-slate-50 p-4'>
-        <h3 className='text-sm font-bold text-slate-900'>Prompt quality deltas</h3>
+        <h3 className='text-sm font-bold text-slate-900'>
+          Prompt quality deltas
+        </h3>
         <p className='mt-2 text-sm text-slate-700'>
-          Candidate avg: {previousCandidateAverage.toFixed(1)} &rarr; {latestCandidateAverage.toFixed(1)}
+          Candidate avg: {previousCandidateAverage.toFixed(1)} &rarr;{' '}
+          {latestCandidateAverage.toFixed(1)}
         </p>
         <p className='text-sm text-slate-700'>
-          HR avg: {previousHrAverage.toFixed(1)} &rarr; {latestHrAverage.toFixed(1)}
+          HR avg: {previousHrAverage.toFixed(1)} &rarr;{' '}
+          {latestHrAverage.toFixed(1)}
         </p>
       </div>
 
       <div className='rounded-2xl border border-slate-200 bg-slate-50 p-4'>
-        <h3 className='text-sm font-bold text-slate-900'>Score drift monitor</h3>
+        <h3 className='text-sm font-bold text-slate-900'>
+          Score drift monitor
+        </h3>
         <ul className='mt-2 space-y-1 text-sm text-slate-700'>
           {driftAcrossModels.map(item => (
             <li key={item.fixtureId}>
@@ -204,7 +246,8 @@ export function QualityHarness({ config }: QualityHarnessProps) {
 
       {latestRun ? (
         <div className='rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-700'>
-          Last run: {new Date(latestRun.ranAt).toLocaleString()} · {latestRun.provider} · {latestRun.model}
+          Last run: {new Date(latestRun.ranAt).toLocaleString()} ·{' '}
+          {latestRun.provider} · {latestRun.model}
         </div>
       ) : null}
     </section>
@@ -228,10 +271,12 @@ function StatCard({
         {icon}
         {label}
       </p>
-      <p className={[
-        'mt-2 text-lg font-black',
-        warning ? 'text-amber-700' : 'text-slate-950',
-      ].join(' ')}>
+      <p
+        className={[
+          'mt-2 text-lg font-black',
+          warning ? 'text-amber-700' : 'text-slate-950',
+        ].join(' ')}
+      >
         {value}
       </p>
     </article>

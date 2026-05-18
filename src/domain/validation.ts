@@ -33,7 +33,9 @@ const asCandidateInterviewQa = (
         suggestedAnswer: String(typed.suggestedAnswer ?? '').trim(),
       };
     })
-    .filter(item => item.question.length > 0 && item.suggestedAnswer.length > 0);
+    .filter(
+      item => item.question.length > 0 && item.suggestedAnswer.length > 0,
+    );
 };
 
 export const normalizeScore = (value: unknown): number => {

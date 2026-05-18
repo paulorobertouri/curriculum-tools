@@ -107,11 +107,14 @@ describe('provider adapters', () => {
         }),
       } as Response);
 
-    await openaiProvider.reviewCandidateCv({ ...config }, {
-      jobTitle: 'Frontend Engineer',
-      jobDescription: 'Build React apps.',
-      cvText: 'Built React apps.',
-    });
+    await openaiProvider.reviewCandidateCv(
+      { ...config },
+      {
+        jobTitle: 'Frontend Engineer',
+        jobDescription: 'Build React apps.',
+        cvText: 'Built React apps.',
+      },
+    );
 
     const requestInit = fetchMock.mock.calls[0]?.[1];
     expect(requestInit).toBeDefined();
@@ -140,7 +143,9 @@ describe('provider adapters', () => {
     });
 
     const secondRequestInit = fetchMock.mock.calls[1]?.[1];
-    const secondBody = JSON.parse(String((secondRequestInit as RequestInit).body));
+    const secondBody = JSON.parse(
+      String((secondRequestInit as RequestInit).body),
+    );
     expect(secondBody.text.format.schema).toEqual({
       type: 'object',
       properties: {
@@ -186,13 +191,16 @@ describe('provider adapters', () => {
       }),
     } as Response);
 
-    await openaiProvider.rankHrCvs({ ...config }, {
-      jobTitle: 'Engineering Manager',
-      jobDescription: 'Lead engineering teams and execute roadmap.',
-      cvs: [
-        { id: 'candidate-1', filename: 'alice.txt', text: 'Alice CV text' },
-      ],
-    });
+    await openaiProvider.rankHrCvs(
+      { ...config },
+      {
+        jobTitle: 'Engineering Manager',
+        jobDescription: 'Lead engineering teams and execute roadmap.',
+        cvs: [
+          { id: 'candidate-1', filename: 'alice.txt', text: 'Alice CV text' },
+        ],
+      },
+    );
 
     const requestInit = fetchMock.mock.calls[0]?.[1];
     expect(requestInit).toBeDefined();

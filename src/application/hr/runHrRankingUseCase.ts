@@ -1,8 +1,4 @@
-import {
-  AiConfig,
-  HrCvInput,
-  HrRankingResult,
-} from '@/domain/aiTypes';
+import { AiConfig, HrCvInput, HrRankingResult } from '@/domain/aiTypes';
 import { getProviderAdapter } from '@/providers';
 
 const sortCandidates = (

@@ -101,14 +101,14 @@ export type AiProviderAdapter = {
 };
 
 export const PROVIDER_LABELS: Record<AiProviderId, string> = {
-  gemini: 'Gemini',
   openai: 'OpenAI',
+  gemini: 'Gemini',
   deepseek: 'DeepSeek',
 };
 
 export const DEFAULT_MODELS: Record<AiProviderId, string> = {
-  gemini: 'gemini-2.5-flash',
   openai: 'gpt-5-mini',
+  gemini: 'gemini-2.5-flash',
   deepseek: 'deepseek-chat',
 };
 

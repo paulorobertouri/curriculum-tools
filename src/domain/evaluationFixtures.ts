@@ -49,20 +49,17 @@ export const hrFixtures: HrFixture[] = [
         {
           id: 'fixture-candidate-a',
           filename: 'alice.txt',
-          text:
-            'Led a team of 8 engineers, improved sprint predictability, and delivered platform migration on time.',
+          text: 'Led a team of 8 engineers, improved sprint predictability, and delivered platform migration on time.',
         },
         {
           id: 'fixture-candidate-b',
           filename: 'bob.txt',
-          text:
-            'Strong IC engineer with React and Node expertise. Limited people management experience.',
+          text: 'Strong IC engineer with React and Node expertise. Limited people management experience.',
         },
         {
           id: 'fixture-candidate-c',
           filename: 'carol.txt',
-          text:
-            'Managed cross-functional delivery for infrastructure reliability, improved incident response process, and coached team leads.',
+          text: 'Managed cross-functional delivery for infrastructure reliability, improved incident response process, and coached team leads.',
         },
       ],
     },

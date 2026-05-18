@@ -20,8 +20,16 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     background:
-      radial-gradient(circle at top left, rgba(14, 165, 233, 0.12), transparent 32%),
-      radial-gradient(circle at top right, rgba(16, 185, 129, 0.11), transparent 26%),
+      radial-gradient(
+        circle at top left,
+        rgba(14, 165, 233, 0.12),
+        transparent 32%
+      ),
+      radial-gradient(
+        circle at top right,
+        rgba(16, 185, 129, 0.11),
+        transparent 26%
+      ),
       #f8fafc;
   }
 
@@ -30,7 +38,11 @@
     min-width: 320px;
     min-height: 100vh;
     background:
-      linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(241, 245, 249, 0.98)),
+      linear-gradient(
+        180deg,
+        rgba(248, 250, 252, 0.96),
+        rgba(241, 245, 249, 0.98)
+      ),
       #f8fafc;
   }
 

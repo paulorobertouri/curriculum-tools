@@ -394,7 +394,8 @@ const dictionaries: Record<Locale, Dictionary> = {
     'candidate.list.rewritten': 'Bullets reescritos',
     'candidate.list.rewrittenCv': 'CV reescrito',
     'candidate.list.coverLetter': 'Carta de presentacion',
-    'candidate.list.interviewQa': 'Preguntas de entrevista y respuestas sugeridas',
+    'candidate.list.interviewQa':
+      'Preguntas de entrevista y respuestas sugeridas',
     'candidate.interview.suggestedAnswer': 'Respuesta sugerida',
     'hr.eyebrow': 'RRHH',
     'hr.title': 'Ranking de CVs',

@@ -11,11 +11,11 @@ import {
 import { runCandidateReviewUseCase } from '@/application/candidate/runCandidateReviewUseCase';
 import { AiConfig, CandidateReview } from '@/domain/aiTypes';
 import { buildCandidateQualitySummary } from '@/domain/reviewQuality';
-import { SUPPORTED_FILE_TYPES, extractTextFromFile } from '@/files/extractText';
 import {
   downloadCandidateTextFile,
   downloadJsonFile,
 } from '@/files/exportResults';
+import { SUPPORTED_FILE_TYPES, extractTextFromFile } from '@/files/extractText';
 import { useI18n } from '@/i18n/i18n';
 
 type CandidateReviewerProps = {
@@ -269,7 +269,8 @@ function CandidateQualityPanel({
       <p className='text-sm font-bold text-slate-900'>Reliability checks</p>
       <div className='mt-2 grid gap-2 sm:grid-cols-2'>
         <p className='rounded-xl bg-white px-3 py-2 text-sm text-slate-700'>
-          Confidence score: <span className='font-bold'>{quality.confidenceScore}/100</span>
+          Confidence score:{' '}
+          <span className='font-bold'>{quality.confidenceScore}/100</span>
         </p>
         <p className='rounded-xl bg-white px-3 py-2 text-sm text-slate-700'>
           Evidence coverage:{' '}
@@ -296,7 +297,10 @@ function CandidateQualityPanel({
           {quality.traces.slice(0, 8).map(trace => (
             <div key={`${trace.claim}-${trace.evidence ?? 'none'}`}>
               <p className='font-semibold text-slate-900'>{trace.claim}</p>
-              <p>{trace.evidence ?? 'No direct supporting excerpt found in CV text.'}</p>
+              <p>
+                {trace.evidence ??
+                  'No direct supporting excerpt found in CV text.'}
+              </p>
             </div>
           ))}
         </div>
@@ -381,7 +385,9 @@ function CandidateInterviewQaList({
               key={`${item.question}-${item.suggestedAnswer}`}
               className='rounded-2xl border border-slate-200 bg-slate-50 p-3'
             >
-              <p className='text-sm font-bold text-slate-900'>{item.question}</p>
+              <p className='text-sm font-bold text-slate-900'>
+                {item.question}
+              </p>
               <p className='mt-2 text-sm leading-6 text-slate-700'>
                 <span className='font-semibold text-slate-900'>
                   {t('candidate.interview.suggestedAnswer')}:

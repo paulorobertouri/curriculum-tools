@@ -41,8 +41,7 @@ export const buildHrMetricsSummary = (
     sortedScores.length === 0
       ? 0
       : sortedScores.length % 2 === 0
-        ?
-          (sortedScores[sortedScores.length / 2 - 1] +
+        ? (sortedScores[sortedScores.length / 2 - 1] +
             sortedScores[sortedScores.length / 2]) /
           2
         : sortedScores[Math.floor(sortedScores.length / 2)];
@@ -70,8 +69,7 @@ export const buildHrMetricsSummary = (
     scoreSpread: Math.max(0, topScore - lowestScore),
     yesOrBetterRate:
       totalCandidates > 0
-        ?
-          ((recommendationCounts.strong_yes + recommendationCounts.yes) /
+        ? ((recommendationCounts.strong_yes + recommendationCounts.yes) /
             totalCandidates) *
           100
         : 0,

@@ -66,7 +66,10 @@ describe('runHrRankingUseCase', () => {
     expect(rankHrCvsMock).toHaveBeenCalledTimes(2);
     expect(progress).toHaveBeenNthCalledWith(1, 1, 2);
     expect(progress).toHaveBeenNthCalledWith(2, 2, 2);
-    expect(result.candidates.map(candidate => candidate.id)).toEqual(['a', 'b']);
+    expect(result.candidates.map(candidate => candidate.id)).toEqual([
+      'a',
+      'b',
+    ]);
   });
 
   it('given missing provider candidate when executed then creates fallback entry', async () => {

@@ -109,9 +109,10 @@ export const buildCandidateQualitySummary = (
     100;
 
   const confidenceScore = Number(
-    Math.min(100, evidenceCoverageRate * 0.65 + completenessRate * 0.35).toFixed(
-      0,
-    ),
+    Math.min(
+      100,
+      evidenceCoverageRate * 0.65 + completenessRate * 0.35,
+    ).toFixed(0),
   );
 
   return {
@@ -158,7 +159,9 @@ export const buildHrCandidateQualitySummary = (
 
   return {
     confidenceScore,
-    unsupportedClaims: traces.filter(item => !item.supported).map(item => item.claim),
+    unsupportedClaims: traces
+      .filter(item => !item.supported)
+      .map(item => item.claim),
     traces,
   };
 };

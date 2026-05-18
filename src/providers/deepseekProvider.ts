@@ -6,8 +6,8 @@ import {
   TestResult,
 } from '@/domain/aiTypes';
 import {
-  normalizeCandidateReview,
   normalizeCandidateCareerToolkit,
+  normalizeCandidateReview,
   normalizeHrRanking,
 } from '@/domain/validation';
 import { buildCandidatePrompt } from '@/prompts/candidatePrompt';
