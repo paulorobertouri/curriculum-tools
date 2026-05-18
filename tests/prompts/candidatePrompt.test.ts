@@ -11,7 +11,9 @@ describe('candidatePrompt', () => {
       cvText: 'Built React apps and improved release cadence.',
     });
 
-    expect(prompt).toContain(`Prompt version: ${PROMPT_VERSIONS.candidate}`);
+    expect(prompt).toContain(
+      `Prompt version: ${PROMPT_VERSIONS.candidateReview}`,
+    );
     expect(prompt).toContain('Strict requirements:');
     expect(prompt).toContain('Scoring rubric:');
     expect(prompt).toContain('Frontend Engineer');

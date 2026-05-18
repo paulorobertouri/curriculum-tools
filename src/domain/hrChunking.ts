@@ -81,6 +81,7 @@ export const mergeHrRankingResults = (
       strengths: [],
       concerns: [],
       interviewRecommendation: 'maybe',
+      interviewQuestions: [],
     });
   }
 

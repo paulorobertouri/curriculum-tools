@@ -1,7 +1,7 @@
 # Curriculum Tools TODO
 
 Last planned: 2026-05-15
-Last implementation pass: 2026-05-16
+Last implementation pass: 2026-05-18
 
 ## Goal
 
@@ -25,6 +25,10 @@ Create a browser-first AI application for curriculum and recruiting workflows. U
 - [x] Result panels now expose explicit empty, loading, and ready states with keyboard focus and live-region feedback.
 - [x] MIT license added and referenced from the README.
 - [x] Docs aligned with the current source layout and test commands.
+- [x] Candidate Reviewer now makes separate evaluation and toolkit requests (rewrite CV, cover letter, interview Q&A with suggested answers).
+- [x] HR Ranker now evaluates candidates in separated requests to reduce per-request context size.
+- [x] HR ranking result now includes per-candidate interview questions.
+- [x] Candidate and HR dashboards now include expanded metrics (median, deviation, evidence/readiness).
 
 ## Milestone 1: Project Scaffold
 
@@ -137,7 +141,7 @@ Acceptance criteria:
 - [x] Add first metrics visualization blocks in Candidate and HR result panels.
 - [x] Improve spacing hierarchy and responsive density for large HR result lists.
 - [x] Add empty/loading/success visual states with stronger visual differentiation.
-- [ ] Add accessibility pass for keyboard navigation, focus visibility, and ARIA updates.
+- [x] Add accessibility pass for keyboard navigation, focus visibility, and ARIA updates.
 
 ### Localization Plan (en-US, pt-BR, es-ES)
 
@@ -153,14 +157,53 @@ Acceptance criteria:
 - [x] Add recommendation distribution graph for HR (`strong_yes`, `yes`, `maybe`, `no`).
 - [x] Add trend/comparison view between batch average and top candidate score.
 - [x] Add export-ready metrics summary model for future CSV/JSON reporting.
+- [x] Add median score, score deviation, and yes-or-better ratio metrics for HR ranking quality.
+- [x] Add candidate evidence coverage and interview readiness metrics.
+
+### Candidate Toolkit Plan
+
+- [x] Add a second candidate prompt/request dedicated to CV rewrite and interview preparation outputs.
+- [x] Add full rewritten CV output tailored to the target role.
+- [x] Add tailored cover letter output.
+- [x] Add candidate interview questions with suggested answers grounded in CV evidence.
+
+### HR Per-Candidate Evaluation Plan
+
+- [x] Evaluate each candidate in a separated request to reduce context and prompt collision risk.
+- [x] Keep deterministic merge and ranking ordering across separated results.
+- [x] Add role-specific interview questions for each ranked candidate card.
+
+## Milestone 9: Quality, Calibration, and Decision Support
+
+### Prompt Evaluation And Calibration
+
+- [x] Add evaluation harness UI with fixture packs for candidate and HR prompts.
+- [x] Track prompt quality deltas across prompt versions and providers.
+- [x] Add score drift monitor across providers/models for the same fixture set.
+- [x] Add consistency checks and warning badges when rank swaps exceed threshold.
+
+### Explainability And Reliability
+
+- [x] Add evidence trace panel mapping each strength/gap to CV excerpts.
+- [x] Add unsupported-claim guard to flag output statements without CV evidence.
+- [x] Add confidence score based on extraction quality, evidence density, and output completeness.
+- [x] Add rerun diff view showing what changed between analyses.
+
+### Interview And Decision Tools
+
+- [x] Add interviewer brief export per candidate (summary, concerns, question set).
+- [x] Add HR decision actions (shortlist/hold/reject/interview) with local notes and tags.
+- [x] Add side-by-side candidate comparison matrix for top candidates.
+- [x] Add CSV/JSON export including ranking metrics and recommendations.
+- [x] Add candidate review export actions (JSON and text toolkit bundle).
 
 ### Prompt And Metrics Quality Plan
 
 - [x] Improve candidate and HR prompts with stricter rubric and evidence constraints.
 - [x] Add prompt versioning constants to track changes over time.
 - [x] Add first prompt quality evaluation fixture tests.
-- [ ] Add evaluation harness with mocked CV fixtures to compare prompt quality deltas.
-- [ ] Add calibration checks to reduce score drift across providers/models.
+- [x] Add evaluation harness with mocked CV fixtures to compare prompt quality deltas.
+- [x] Add calibration checks to reduce score drift across providers/models.
 
 Acceptance criteria:
 

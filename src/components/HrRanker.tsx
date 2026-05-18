@@ -1,5 +1,5 @@
-import { Loader2, Sparkles } from 'lucide-react';
-import { ChangeEvent, FormEvent, useState } from 'react';
+import { Download, Loader2, Sparkles } from 'lucide-react';
+import { ChangeEvent, FormEvent, useMemo, useState } from 'react';
 
 import {
   List,
@@ -8,16 +8,27 @@ import {
   TextArea,
   TextField,
 } from '@/components/CandidateReviewer';
-import { AiConfig, HrCvInput, HrRankingResult } from '@/domain/aiTypes';
-import {
-  chunkHrCvs,
-  mergeHrRankingResults,
-  shouldChunkHrRequest,
-} from '@/domain/hrChunking';
+import { AiConfig, HrCvInput, HrRankingResult, RankedCandidate } from '@/domain/aiTypes';
 import { buildHrMetricsSummary } from '@/domain/hrMetricsSummary';
+import {
+  buildHrCandidateQualitySummary,
+  buildHrRankDiffSummary,
+} from '@/domain/reviewQuality';
 import { SUPPORTED_FILE_TYPES, extractTextFromFile } from '@/files/extractText';
+import {
+  downloadHrCsvFile,
+  downloadInterviewerBrief,
+  downloadJsonFile,
+} from '@/files/exportResults';
 import { useI18n } from '@/i18n/i18n';
 import { getProviderAdapter } from '@/providers';
+import {
+  HrDecision,
+  HrDecisionMap,
+  HrDecisionStatus,
+  readHrDecisions,
+  saveHrDecisions,
+} from '@/storage/hrDecisionsStorage';
 
 type HrRankerProps = {
   config: AiConfig;
@@ -34,10 +45,41 @@ export function HrRanker({ config }: HrRankerProps) {
   const [jobDescription, setJobDescription] = useState('');
   const [files, setFiles] = useState<FileStatus[]>([]);
   const [result, setResult] = useState<HrRankingResult | null>(null);
+  const [previousResult, setPreviousResult] = useState<HrRankingResult | null>(
+    null,
+  );
+  const [rawCvById, setRawCvById] = useState<Record<string, string>>({});
+  const [decisions, setDecisions] = useState<HrDecisionMap>(() =>
+    readHrDecisions(),
+  );
   const [error, setError] = useState<string | null>(null);
   const [isExtracting, setIsExtracting] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingLabel, setProcessingLabel] = useState<string | null>(null);
+
+  const updateDecision = (
+    candidateId: string,
+    patch: Partial<Omit<HrDecision, 'candidateId' | 'updatedAt'>>,
+  ) => {
+    setDecisions(current => {
+      const existing = current[candidateId];
+      const next: HrDecision = {
+        candidateId,
+        status: patch.status ?? existing?.status ?? 'hold',
+        note: patch.note ?? existing?.note ?? '',
+        tags: patch.tags ?? existing?.tags ?? [],
+        updatedAt: new Date().toISOString(),
+      };
+
+      const merged = {
+        ...current,
+        [candidateId]: next,
+      };
+
+      saveHrDecisions(merged);
+      return merged;
+    });
+  };
 
   const handleFiles = async (event: ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(event.target.files ?? []);
@@ -82,7 +124,6 @@ export function HrRanker({ config }: HrRankerProps) {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
-    setResult(null);
 
     const validFiles = files.filter(
       file => file.status === 'ready' && file.text,
@@ -98,41 +139,69 @@ export function HrRanker({ config }: HrRankerProps) {
 
     try {
       const provider = getProviderAdapter(config.provider);
-      const shouldChunk = shouldChunkHrRequest(validFiles);
+      const rankedCandidates = [] as HrRankingResult['candidates'];
 
-      let ranking: HrRankingResult;
+      for (let index = 0; index < validFiles.length; index += 1) {
+        const cv = validFiles[index];
 
-      if (shouldChunk) {
-        const chunks = chunkHrCvs(validFiles);
-        const partialResults: HrRankingResult[] = [];
+        setProcessingLabel(
+          t('hr.batchProcessing', {
+            index: index + 1,
+            total: validFiles.length,
+          }),
+        );
 
-        for (let index = 0; index < chunks.length; index += 1) {
-          setProcessingLabel(
-            t('hr.batchProcessing', {
-              index: index + 1,
-              total: chunks.length,
-            }),
-          );
-
-          const partial = await provider.rankHrCvs(config, {
-            jobTitle,
-            jobDescription,
-            cvs: chunks[index],
-          });
-
-          partialResults.push(partial);
-        }
-
-        ranking = mergeHrRankingResults(validFiles, partialResults);
-      } else {
-        ranking = await provider.rankHrCvs(config, {
+        const partial = await provider.rankHrCvs(config, {
           jobTitle,
           jobDescription,
-          cvs: validFiles,
+          cvs: [cv],
+        });
+
+        const partialCandidate =
+          partial.candidates.find(candidate => candidate.id === cv.id) ??
+          partial.candidates[0];
+
+        if (partialCandidate) {
+          rankedCandidates.push(partialCandidate);
+          continue;
+        }
+
+        rankedCandidates.push({
+          id: cv.id,
+          filename: cv.filename,
+          score: 0,
+          justification:
+            'No candidate entry was returned for this file. Review manually.',
+          strengths: [],
+          concerns: ['No ranking response was returned for this candidate.'],
+          interviewRecommendation: 'maybe',
+          interviewQuestions: [],
         });
       }
 
+      const ranking: HrRankingResult = {
+        candidates: [...rankedCandidates].sort((left, right) => {
+          if (right.score !== left.score) {
+            return right.score - left.score;
+          }
+
+          const byFilename = left.filename.localeCompare(right.filename);
+          if (byFilename !== 0) {
+            return byFilename;
+          }
+
+          return left.id.localeCompare(right.id);
+        }),
+      };
+
+      setPreviousResult(result);
       setResult(ranking);
+      setRawCvById(
+        validFiles.reduce<Record<string, string>>((accumulator, cv) => {
+          accumulator[cv.id] = cv.text;
+          return accumulator;
+        }, {}),
+      );
     } catch (processError) {
       setError(
         processError instanceof Error
@@ -232,65 +301,374 @@ export function HrRanker({ config }: HrRankerProps) {
             : t('result.ready')
         }
       >
-        {result ? <RankingResult result={result} /> : null}
+        {result ? (
+          <RankingResult
+            result={result}
+            previousResult={previousResult}
+            rawCvById={rawCvById}
+            decisions={decisions}
+            onDecisionChange={updateDecision}
+          />
+        ) : null}
       </ResultPanel>
     </section>
   );
 }
 
-function RankingResult({ result }: { result: HrRankingResult }) {
+function RankingResult({
+  result,
+  previousResult,
+  rawCvById,
+  decisions,
+  onDecisionChange,
+}: {
+  result: HrRankingResult;
+  previousResult: HrRankingResult | null;
+  rawCvById: Record<string, string>;
+  decisions: HrDecisionMap;
+  onDecisionChange(
+    candidateId: string,
+    patch: Partial<Omit<HrDecision, 'candidateId' | 'updatedAt'>>,
+  ): void;
+}) {
   const { t } = useI18n();
+  const summary = buildHrMetricsSummary(result);
+  const [comparisonIds, setComparisonIds] = useState<string[]>([]);
+
+  const diffSummary = useMemo(() => {
+    if (!previousResult) {
+      return null;
+    }
+
+    return buildHrRankDiffSummary(previousResult, result);
+  }, [previousResult, result]);
+
+  const comparedCandidates = result.candidates.filter(candidate =>
+    comparisonIds.includes(candidate.id),
+  );
+
+  const toggleComparison = (candidateId: string) => {
+    setComparisonIds(current => {
+      if (current.includes(candidateId)) {
+        return current.filter(id => id !== candidateId);
+      }
+
+      if (current.length >= 3) {
+        return [...current.slice(1), candidateId];
+      }
+
+      return [...current, candidateId];
+    });
+  };
 
   return (
     <div className='space-y-4'>
+      <div className='flex flex-wrap gap-2'>
+        <button
+          className='status-button'
+          type='button'
+          onClick={() =>
+            downloadJsonFile('hr-ranking', {
+              summary,
+              result,
+              decisions,
+            })
+          }
+        >
+          <Download className='h-4 w-4' />
+          {t('export.json')}
+        </button>
+        <button
+          className='status-button'
+          type='button'
+          onClick={() => downloadHrCsvFile(result, summary)}
+        >
+          <Download className='h-4 w-4' />
+          {t('export.csv')}
+        </button>
+      </div>
+
+      {diffSummary ? <HrRerunDiffPanel diff={diffSummary} /> : null}
+
       <HrMetricsDashboard result={result} />
       <HrRecommendationDistribution result={result} />
+
+      {comparedCandidates.length >= 2 ? (
+        <HrComparisonMatrix candidates={comparedCandidates} />
+      ) : null}
+
       {result.candidates.map(candidate => (
-        <article
-          className='rounded-3xl border border-slate-200 bg-white p-4 shadow-sm'
+        <HrCandidateCard
           key={candidate.id}
-        >
-          <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
-            <div>
-              <h3 className='text-lg font-black text-slate-950'>
-                {candidate.detectedName || candidate.filename}
-              </h3>
-              <p className='text-sm text-slate-600'>{candidate.filename}</p>
-            </div>
-            <Score value={candidate.score} />
-          </div>
-          <p className='mt-4 text-sm leading-6 text-slate-700'>
-            {candidate.justification}
-          </p>
-          <div className='mt-4 grid gap-4 md:grid-cols-2'>
-            <List
-              title={t('candidate.list.strengths')}
-              items={candidate.strengths}
-            />
-            <List
-              title={t('candidate.list.concerns')}
-              items={candidate.concerns}
-            />
-          </div>
-          <p className='mt-4 rounded-full bg-slate-100 px-3 py-2 text-sm font-bold text-slate-800'>
-            {t('hr.recommendation')}:{' '}
-            {candidate.interviewRecommendation.replace('_', ' ')}
-          </p>
-        </article>
+          candidate={candidate}
+          cvText={rawCvById[candidate.id] ?? ''}
+          decision={decisions[candidate.id]}
+          onDecisionChange={onDecisionChange}
+          isCompared={comparisonIds.includes(candidate.id)}
+          onToggleComparison={toggleComparison}
+        />
       ))}
     </div>
   );
 }
 
-function HrMetricsDashboard({ result }: { result: HrRankingResult }) {
+function HrCandidateCard({
+  candidate,
+  cvText,
+  decision,
+  onDecisionChange,
+  isCompared,
+  onToggleComparison,
+}: {
+  candidate: RankedCandidate;
+  cvText: string;
+  decision?: HrDecision;
+  onDecisionChange(
+    candidateId: string,
+    patch: Partial<Omit<HrDecision, 'candidateId' | 'updatedAt'>>,
+  ): void;
+  isCompared: boolean;
+  onToggleComparison(candidateId: string): void;
+}) {
   const { t } = useI18n();
+  const quality = useMemo(
+    () =>
+      buildHrCandidateQualitySummary(cvText, [
+        candidate.justification,
+        ...candidate.strengths,
+        ...candidate.concerns,
+      ]),
+    [candidate.concerns, candidate.justification, candidate.strengths, cvText],
+  );
+
+  return (
+    <article className='rounded-3xl border border-slate-200 bg-white p-4 shadow-sm'>
+      <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
+        <div>
+          <h3 className='text-lg font-black text-slate-950'>
+            {candidate.detectedName || candidate.filename}
+          </h3>
+          <p className='text-sm text-slate-600'>{candidate.filename}</p>
+          <label className='mt-2 inline-flex items-center gap-2 text-sm text-slate-700'>
+            <input
+              type='checkbox'
+              checked={isCompared}
+              onChange={() => onToggleComparison(candidate.id)}
+            />
+            Compare
+          </label>
+        </div>
+        <div className='flex flex-col items-end gap-2'>
+          <Score value={candidate.score} />
+          <button
+            className='status-button'
+            type='button'
+            onClick={() => downloadInterviewerBrief(candidate)}
+          >
+            <Download className='h-4 w-4' />
+            Interviewer brief
+          </button>
+        </div>
+      </div>
+
+      <p className='mt-4 text-sm leading-6 text-slate-700'>{candidate.justification}</p>
+
+      <div className='mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700'>
+        Confidence: <span className='font-bold'>{quality.confidenceScore}/100</span>
+      </div>
+
+      {quality.unsupportedClaims.length > 0 ? (
+        <div className='mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900'>
+          Unsupported-claim guard: {quality.unsupportedClaims.length} claim(s)
+        </div>
+      ) : null}
+
+      <div className='mt-4 grid gap-4 md:grid-cols-2'>
+        <List title={t('candidate.list.strengths')} items={candidate.strengths} />
+        <List title={t('candidate.list.concerns')} items={candidate.concerns} />
+      </div>
+
+      <p className='mt-4 rounded-full bg-slate-100 px-3 py-2 text-sm font-bold text-slate-800'>
+        {t('hr.recommendation')}: {candidate.interviewRecommendation.replace('_', ' ')}
+      </p>
+
+      <div className='mt-4'>
+        <List title={t('hr.list.interviewQuestions')} items={candidate.interviewQuestions} />
+      </div>
+
+      <HrDecisionPanel
+        decision={decision}
+        onStatusChange={status => onDecisionChange(candidate.id, { status })}
+        onNoteChange={note => onDecisionChange(candidate.id, { note })}
+        onTagChange={tags => onDecisionChange(candidate.id, { tags })}
+      />
+
+      <details className='mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3'>
+        <summary className='cursor-pointer text-sm font-bold text-slate-900'>
+          Evidence trace
+        </summary>
+        <div className='mt-2 space-y-2 text-sm text-slate-700'>
+          {quality.traces.slice(0, 6).map(trace => (
+            <div key={`${trace.claim}-${trace.evidence ?? 'none'}`}>
+              <p className='font-semibold text-slate-900'>{trace.claim}</p>
+              <p>{trace.evidence ?? 'No direct supporting excerpt found in CV text.'}</p>
+            </div>
+          ))}
+        </div>
+      </details>
+    </article>
+  );
+}
+
+function HrDecisionPanel({
+  decision,
+  onStatusChange,
+  onNoteChange,
+  onTagChange,
+}: {
+  decision?: HrDecision;
+  onStatusChange(status: HrDecisionStatus): void;
+  onNoteChange(note: string): void;
+  onTagChange(tags: string[]): void;
+}) {
+  const statuses: HrDecisionStatus[] = ['shortlist', 'hold', 'reject', 'interview'];
+
+  return (
+    <section className='mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3'>
+      <p className='text-sm font-bold text-slate-900'>Decision actions</p>
+      <div className='mt-2 flex flex-wrap gap-2'>
+        {statuses.map(status => (
+          <button
+            key={status}
+            className={[
+              'status-button text-xs',
+              decision?.status === status ? 'border-cyan-600 text-cyan-700' : '',
+            ].join(' ')}
+            type='button'
+            onClick={() => onStatusChange(status)}
+          >
+            {status}
+          </button>
+        ))}
+      </div>
+      <label className='mt-3 block text-sm font-semibold text-slate-700'>Notes</label>
+      <textarea
+        className='text-input mt-1 resize-y'
+        rows={2}
+        value={decision?.note ?? ''}
+        onChange={event => onNoteChange(event.target.value)}
+      />
+      <label className='mt-3 block text-sm font-semibold text-slate-700'>Tags (comma separated)</label>
+      <input
+        className='text-input mt-1'
+        value={(decision?.tags ?? []).join(', ')}
+        onChange={event =>
+          onTagChange(
+            event.target.value
+              .split(',')
+              .map(item => item.trim())
+              .filter(Boolean),
+          )
+        }
+      />
+    </section>
+  );
+}
+
+function HrComparisonMatrix({
+  candidates,
+}: {
+  candidates: RankedCandidate[];
+}) {
+  return (
+    <section className='rounded-3xl border border-slate-200 bg-slate-50 p-4 shadow-sm'>
+      <h3 className='text-sm font-bold text-slate-900'>Side-by-side comparison</h3>
+      <div className='mt-3 overflow-x-auto'>
+        <table className='w-full min-w-[640px] border-collapse text-sm'>
+          <thead>
+            <tr className='text-left text-slate-600'>
+              <th className='border-b border-slate-200 px-2 py-2'>Metric</th>
+              {candidates.map(candidate => (
+                <th key={candidate.id} className='border-b border-slate-200 px-2 py-2'>
+                  {candidate.detectedName ?? candidate.filename}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            <MatrixRow label='Score' values={candidates.map(item => item.score.toFixed(1))} />
+            <MatrixRow
+              label='Recommendation'
+              values={candidates.map(item => item.interviewRecommendation.replace('_', ' '))}
+            />
+            <MatrixRow
+              label='Top strengths'
+              values={candidates.map(item => item.strengths.slice(0, 2).join(' | '))}
+            />
+            <MatrixRow
+              label='Top concerns'
+              values={candidates.map(item => item.concerns.slice(0, 2).join(' | '))}
+            />
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+function MatrixRow({ label, values }: { label: string; values: string[] }) {
+  return (
+    <tr>
+      <th className='border-b border-slate-200 px-2 py-2 text-left text-slate-700'>{label}</th>
+      {values.map((value, index) => (
+        <td key={`${label}-${index}`} className='border-b border-slate-200 px-2 py-2 text-slate-700'>
+          {value || 'N/A'}
+        </td>
+      ))}
+    </tr>
+  );
+}
+
+function HrRerunDiffPanel({
+  diff,
+}: {
+  diff: ReturnType<typeof buildHrRankDiffSummary>;
+}) {
+  return (
+    <section className='rounded-3xl border border-slate-200 bg-slate-50 p-4 shadow-sm'>
+      <h3 className='text-sm font-bold text-slate-900'>Rerun diff</h3>
+      <div className='mt-2 grid gap-2 sm:grid-cols-3'>
+        <p className='rounded-xl bg-white px-3 py-2 text-sm text-slate-700'>
+          Avg score delta:{' '}
+          <span className='font-bold'>
+            {diff.averageDelta >= 0 ? '+' : ''}
+            {diff.averageDelta.toFixed(1)}
+          </span>
+        </p>
+        <p className='rounded-xl bg-white px-3 py-2 text-sm text-slate-700'>
+          Previous avg: <span className='font-bold'>{diff.previousAverage.toFixed(1)}</span>
+        </p>
+        <p className='rounded-xl bg-white px-3 py-2 text-sm text-slate-700'>
+          Rank swaps:{' '}
+          <span className={diff.rankSwapCount > 1 ? 'font-bold text-amber-700' : 'font-bold'}>
+            {diff.rankSwapCount}
+          </span>
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function HrMetricsDashboard({ result }: { result: HrRankingResult }) {
+  const { locale, t } = useI18n();
   const summary = buildHrMetricsSummary(result);
+  const percentFormatter = new Intl.NumberFormat(locale, {
+    maximumFractionDigits: 0,
+  });
 
   return (
     <section className='rounded-3xl border border-slate-200 bg-slate-50 p-4 shadow-sm'>
-      <p className='text-sm font-bold text-slate-900'>
-        {t('hr.dashboard.title')}
-      </p>
+      <p className='text-sm font-bold text-slate-900'>{t('hr.dashboard.title')}</p>
       <div className='mt-3 grid gap-3 sm:grid-cols-3'>
         <HrSummaryStat
           label={t('hr.dashboard.count')}
@@ -305,10 +683,28 @@ function HrMetricsDashboard({ result }: { result: HrRankingResult }) {
           value={summary.topCandidateLabel}
         />
       </div>
+      <div className='mt-3 grid gap-3 sm:grid-cols-3'>
+        <HrSummaryStat
+          label={t('hr.dashboard.median')}
+          value={`${summary.medianScore.toFixed(1)}/10`}
+        />
+        <HrSummaryStat
+          label={t('hr.dashboard.deviation')}
+          value={summary.standardDeviation.toFixed(1)}
+        />
+        <HrSummaryStat
+          label={t('hr.dashboard.yesRate')}
+          value={`${percentFormatter.format(summary.yesOrBetterRate)}%`}
+        />
+      </div>
       <div className='mt-3 space-y-3'>
         <HrMetricBar
           label={t('hr.dashboard.average')}
           value={summary.averageScore}
+        />
+        <HrMetricBar
+          label={t('hr.dashboard.median')}
+          value={summary.medianScore}
         />
         <HrMetricBar label={t('hr.dashboard.max')} value={summary.topScore} />
         <HrMetricBar

@@ -1,8 +1,20 @@
-import { FileText, Loader2, Sparkles } from 'lucide-react';
-import { ChangeEvent, FormEvent, ReactNode, useState } from 'react';
+import { Download, FileText, Loader2, Sparkles } from 'lucide-react';
+import {
+  ChangeEvent,
+  FormEvent,
+  ReactNode,
+  useId,
+  useMemo,
+  useState,
+} from 'react';
 
 import { AiConfig, CandidateReview } from '@/domain/aiTypes';
+import { buildCandidateQualitySummary } from '@/domain/reviewQuality';
 import { SUPPORTED_FILE_TYPES, extractTextFromFile } from '@/files/extractText';
+import {
+  downloadCandidateTextFile,
+  downloadJsonFile,
+} from '@/files/exportResults';
 import { useI18n } from '@/i18n/i18n';
 import { getProviderAdapter } from '@/providers';
 
@@ -17,6 +29,9 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
   const [cvText, setCvText] = useState('');
   const [fileStatus, setFileStatus] = useState<string | null>(null);
   const [result, setResult] = useState<CandidateReview | null>(null);
+  const [previousResult, setPreviousResult] = useState<CandidateReview | null>(
+    null,
+  );
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -47,7 +62,6 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
-    setResult(null);
 
     if (!jobTitle.trim() || !jobDescription.trim() || !cvText.trim()) {
       setError(t('candidate.validation'));
@@ -64,6 +78,7 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
         jobDescription,
         cvText,
       });
+      setPreviousResult(result);
       setResult(review);
     } catch (processError) {
       setError(
@@ -143,19 +158,75 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
           isProcessing ? t('candidate.processing') : t('result.ready')
         }
       >
-        {result ? <CandidateResult result={result} /> : null}
+        {result ? (
+          <CandidateResult
+            result={result}
+            cvText={cvText}
+            previousResult={previousResult}
+          />
+        ) : null}
       </ResultPanel>
     </section>
   );
 }
 
-function CandidateResult({ result }: { result: CandidateReview }) {
+function CandidateResult({
+  result,
+  cvText,
+  previousResult,
+}: {
+  result: CandidateReview;
+  cvText: string;
+  previousResult: CandidateReview | null;
+}) {
   const { t } = useI18n();
+  const quality = useMemo(
+    () => buildCandidateQualitySummary(cvText, result),
+    [cvText, result],
+  );
+  const scoreDelta = previousResult
+    ? Number((result.score - previousResult.score).toFixed(1))
+    : 0;
 
   return (
     <div className='space-y-5'>
+      <div className='flex flex-wrap gap-2'>
+        <button
+          className='status-button'
+          type='button'
+          onClick={() => downloadJsonFile('candidate-review', result)}
+        >
+          <Download className='h-4 w-4' />
+          {t('export.json')}
+        </button>
+        <button
+          className='status-button'
+          type='button'
+          onClick={() => downloadCandidateTextFile(result)}
+        >
+          <Download className='h-4 w-4' />
+          {t('export.text')}
+        </button>
+      </div>
       <Score value={result.score} />
+      {previousResult ? (
+        <div className='rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700'>
+          <p className='font-bold text-slate-900'>Rerun diff</p>
+          <p className='mt-1'>
+            Score delta: {scoreDelta >= 0 ? '+' : ''}
+            {scoreDelta.toFixed(1)}
+          </p>
+          <p>
+            Strength items: {previousResult.strengths.length} {'->'}{' '}
+            {result.strengths.length}
+          </p>
+          <p>
+            Gap items: {previousResult.gaps.length} {'->'} {result.gaps.length}
+          </p>
+        </div>
+      ) : null}
       <CandidateMetricsChart result={result} />
+      <CandidateQualityPanel quality={quality} />
       <p className='text-sm leading-6 text-slate-700'>{result.summary}</p>
       <List title={t('candidate.list.strengths')} items={result.strengths} />
       <List title={t('candidate.list.gaps')} items={result.gaps} />
@@ -167,7 +238,62 @@ function CandidateResult({ result }: { result: CandidateReview }) {
         title={t('candidate.list.rewritten')}
         items={result.rewrittenBullets}
       />
+      <LongTextBlock
+        title={t('candidate.list.rewrittenCv')}
+        text={result.rewrittenCv}
+      />
+      <LongTextBlock
+        title={t('candidate.list.coverLetter')}
+        text={result.coverLetter}
+      />
+      <CandidateInterviewQaList items={result.interviewQa} />
     </div>
+  );
+}
+
+function CandidateQualityPanel({
+  quality,
+}: {
+  quality: ReturnType<typeof buildCandidateQualitySummary>;
+}) {
+  return (
+    <section className='rounded-3xl border border-slate-200 bg-slate-50 p-4 shadow-sm'>
+      <p className='text-sm font-bold text-slate-900'>Reliability checks</p>
+      <div className='mt-2 grid gap-2 sm:grid-cols-2'>
+        <p className='rounded-xl bg-white px-3 py-2 text-sm text-slate-700'>
+          Confidence score: <span className='font-bold'>{quality.confidenceScore}/100</span>
+        </p>
+        <p className='rounded-xl bg-white px-3 py-2 text-sm text-slate-700'>
+          Evidence coverage:{' '}
+          <span className='font-bold'>{quality.evidenceCoverageRate}%</span>
+        </p>
+      </div>
+
+      {quality.unsupportedClaims.length > 0 ? (
+        <div className='mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900'>
+          <p className='font-bold'>Unsupported-claim guard</p>
+          <ul className='mt-1 list-disc space-y-1 pl-5'>
+            {quality.unsupportedClaims.slice(0, 5).map(claim => (
+              <li key={claim}>{claim}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      <details className='mt-3 rounded-xl border border-slate-200 bg-white p-3'>
+        <summary className='cursor-pointer text-sm font-bold text-slate-900'>
+          Evidence trace
+        </summary>
+        <div className='mt-2 space-y-2 text-sm text-slate-700'>
+          {quality.traces.slice(0, 8).map(trace => (
+            <div key={`${trace.claim}-${trace.evidence ?? 'none'}`}>
+              <p className='font-semibold text-slate-900'>{trace.claim}</p>
+              <p>{trace.evidence ?? 'No direct supporting excerpt found in CV text.'}</p>
+            </div>
+          ))}
+        </div>
+      </details>
+    </section>
   );
 }
 
@@ -176,6 +302,11 @@ function CandidateMetricsChart({ result }: { result: CandidateReview }) {
   const strengthsScore = Math.min(10, result.strengths.length * 2);
   const gapsScore = Math.max(0, 10 - Math.min(10, result.gaps.length * 2));
   const recommendationScore = Math.min(10, result.recommendations.length * 2);
+  const evidenceCoverage = Math.min(
+    10,
+    (result.strengths.length + result.rewrittenBullets.length) * 1.25,
+  );
+  const interviewReadiness = Math.min(10, result.interviewQa.length * 1.5);
 
   return (
     <div className='rounded-3xl border border-slate-200 bg-slate-50 p-4 shadow-sm'>
@@ -193,7 +324,68 @@ function CandidateMetricsChart({ result }: { result: CandidateReview }) {
           label={t('candidate.metric.recommendations')}
           value={recommendationScore}
         />
+        <MetricBar
+          label={t('candidate.metric.evidenceCoverage')}
+          value={evidenceCoverage}
+        />
+        <MetricBar
+          label={t('candidate.metric.interviewReadiness')}
+          value={interviewReadiness}
+        />
       </div>
+    </div>
+  );
+}
+
+function LongTextBlock({ title, text }: { title: string; text: string }) {
+  const { t } = useI18n();
+
+  return (
+    <div>
+      <h3 className='text-sm font-bold text-slate-950'>{title}</h3>
+      {text.trim().length > 0 ? (
+        <pre className='mt-2 whitespace-pre-wrap rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-700'>
+          {text}
+        </pre>
+      ) : (
+        <p className='mt-2 text-sm text-slate-500'>{t('result.noItems')}</p>
+      )}
+    </div>
+  );
+}
+
+function CandidateInterviewQaList({
+  items,
+}: {
+  items: CandidateReview['interviewQa'];
+}) {
+  const { t } = useI18n();
+
+  return (
+    <div>
+      <h3 className='text-sm font-bold text-slate-950'>
+        {t('candidate.list.interviewQa')}
+      </h3>
+      {items.length > 0 ? (
+        <div className='mt-2 space-y-3'>
+          {items.map(item => (
+            <article
+              key={`${item.question}-${item.suggestedAnswer}`}
+              className='rounded-2xl border border-slate-200 bg-slate-50 p-3'
+            >
+              <p className='text-sm font-bold text-slate-900'>{item.question}</p>
+              <p className='mt-2 text-sm leading-6 text-slate-700'>
+                <span className='font-semibold text-slate-900'>
+                  {t('candidate.interview.suggestedAnswer')}:
+                </span>{' '}
+                {item.suggestedAnswer}
+              </p>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <p className='mt-2 text-sm text-slate-500'>{t('result.noItems')}</p>
+      )}
     </div>
   );
 }
@@ -229,7 +421,7 @@ export function TextField({
   value: string;
   onChange(value: string): void;
 }) {
-  const id = label.toLowerCase().replace(/\s+/g, '-');
+  const id = useId();
 
   return (
     <div className='space-y-2'>
@@ -257,7 +449,7 @@ export function TextArea({
   rows: number;
   onChange(value: string): void;
 }) {
-  const id = label.toLowerCase().replace(/\s+/g, '-');
+  const id = useId();
 
   return (
     <div className='space-y-2'>
@@ -298,6 +490,8 @@ export function ResultPanel({
       className={['tool-panel', className].filter(Boolean).join(' ')}
       aria-busy={status === 'loading'}
       aria-live='polite'
+      aria-atomic='true'
+      tabIndex={-1}
     >
       <div className='flex items-center gap-2'>
         <FileText className='h-5 w-5 text-cyan-700' />

@@ -7,9 +7,11 @@ import {
 } from '@/domain/aiTypes';
 import {
   normalizeCandidateReview,
+  normalizeCandidateCareerToolkit,
   normalizeHrRanking,
 } from '@/domain/validation';
 import { buildCandidatePrompt } from '@/prompts/candidatePrompt';
+import { buildCandidateToolkitPrompt } from '@/prompts/candidateToolkitPrompt';
 import { buildHrPrompt } from '@/prompts/hrPrompt';
 import {
   TEST_PROMPT,
@@ -33,12 +35,27 @@ export const openaiProvider: AiProviderAdapter = {
   },
 
   async reviewCandidateCv(config, input): Promise<CandidateReview> {
-    const text = await createResponse(
+    const reviewText = await createResponse(
       config,
       buildCandidatePrompt(input),
       candidateReviewSchema,
     );
-    return parseJsonResult(text, normalizeCandidateReview);
+    const toolkitText = await createResponse(
+      config,
+      buildCandidateToolkitPrompt(input),
+      candidateToolkitSchema,
+    );
+
+    const review = parseJsonResult(reviewText, normalizeCandidateReview);
+    const toolkit = parseJsonResult(
+      toolkitText,
+      normalizeCandidateCareerToolkit,
+    );
+
+    return {
+      ...review,
+      ...toolkit,
+    };
   },
 
   async rankHrCvs(config, input): Promise<HrRankingResult> {
@@ -128,6 +145,28 @@ const candidateReviewSchema: JsonSchema = {
   additionalProperties: false,
 };
 
+const candidateToolkitSchema: JsonSchema = {
+  type: 'object',
+  properties: {
+    rewrittenCv: { type: 'string' },
+    coverLetter: { type: 'string' },
+    interviewQa: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          question: { type: 'string' },
+          suggestedAnswer: { type: 'string' },
+        },
+        required: ['question', 'suggestedAnswer'],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ['rewrittenCv', 'coverLetter', 'interviewQa'],
+  additionalProperties: false,
+};
+
 const hrCandidateSchema = {
   type: 'object',
   properties: {
@@ -142,6 +181,7 @@ const hrCandidateSchema = {
       type: 'string',
       enum: ['strong_yes', 'yes', 'maybe', 'no'],
     },
+    interviewQuestions: stringArraySchema,
   },
   required: [
     'id',
@@ -152,6 +192,7 @@ const hrCandidateSchema = {
     'strengths',
     'concerns',
     'interviewRecommendation',
+    'interviewQuestions',
   ],
   additionalProperties: false,
 } as const;

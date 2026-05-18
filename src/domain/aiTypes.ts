@@ -18,6 +18,17 @@ export type CandidateReviewInput = {
   cvText: string;
 };
 
+export type CandidateInterviewQuestion = {
+  question: string;
+  suggestedAnswer: string;
+};
+
+export type CandidateCareerToolkit = {
+  rewrittenCv: string;
+  coverLetter: string;
+  interviewQa: CandidateInterviewQuestion[];
+};
+
 export type CandidateReview = {
   score: number;
   summary: string;
@@ -25,6 +36,9 @@ export type CandidateReview = {
   gaps: string[];
   recommendations: string[];
   rewrittenBullets: string[];
+  rewrittenCv: string;
+  coverLetter: string;
+  interviewQa: CandidateInterviewQuestion[];
 };
 
 export type HrCvInput = {
@@ -50,6 +64,7 @@ export type RankedCandidate = {
   strengths: string[];
   concerns: string[];
   interviewRecommendation: InterviewRecommendation;
+  interviewQuestions: string[];
 };
 
 export type HrRankingResult = {

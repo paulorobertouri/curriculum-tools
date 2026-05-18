@@ -108,19 +108,38 @@ describe('App', () => {
     seedSavedConfig();
     const user = userEvent.setup();
 
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        output_text: JSON.stringify({
-          score: 8.4,
-          summary: 'Strong fit for the role.',
-          strengths: ['React delivery'],
-          gaps: ['Leadership examples'],
-          recommendations: ['Quantify impact'],
-          rewrittenBullets: ['Improved page performance by 30% in React app.'],
+    vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          output_text: JSON.stringify({
+            score: 8.4,
+            summary: 'Strong fit for the role.',
+            strengths: ['React delivery'],
+            gaps: ['Leadership examples'],
+            recommendations: ['Quantify impact'],
+            rewrittenBullets: [
+              'Improved page performance by 30% in React app.',
+            ],
+          }),
         }),
-      }),
-    } as Response);
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          output_text: JSON.stringify({
+            rewrittenCv: 'Updated CV content',
+            coverLetter: 'Tailored cover letter content',
+            interviewQa: [
+              {
+                question: 'How did you improve delivery cadence?',
+                suggestedAnswer:
+                  'I introduced release checklists and automation that reduced delays.',
+              },
+            ],
+          }),
+        }),
+      } as Response);
 
     renderApp();
 
@@ -170,6 +189,7 @@ describe('App', () => {
               strengths: ['Team leadership'],
               concerns: ['Limited domain depth'],
               interviewRecommendation: 'strong_yes',
+              interviewQuestions: ['Tell us about your mentoring approach.'],
             },
           ],
         }),
@@ -178,7 +198,7 @@ describe('App', () => {
 
     renderApp();
 
-    await user.click(screen.getByRole('button', { name: 'HR' }));
+    await user.click(screen.getByRole('tab', { name: 'HR' }));
     await user.click(screen.getByRole('button', { name: 'Process' }));
     expect(
       await screen.findByText(

@@ -4,7 +4,7 @@ import { PROMPT_VERSIONS } from '@/prompts/promptVersions';
 export const buildHrPrompt = (input: HrRankingInput) => `
 Prompt version: ${PROMPT_VERSIONS.hr}
 
-Rank these CVs against the target role. Return only valid JSON with this shape:
+Evaluate each CV against the target role. Return only valid JSON with this shape:
 {
   "candidates": [
     {
@@ -15,7 +15,8 @@ Rank these CVs against the target role. Return only valid JSON with this shape:
       "justification": string,
       "strengths": string[],
       "concerns": string[],
-      "interviewRecommendation": "strong_yes" | "yes" | "maybe" | "no"
+      "interviewRecommendation": "strong_yes" | "yes" | "maybe" | "no",
+      "interviewQuestions": string[]
     }
   ]
 }
@@ -38,7 +39,9 @@ Quality rules:
 - justification must reference concrete role criteria and CV evidence.
 - strengths and concerns must be specific, not generic.
 - interviewRecommendation must be one of: strong_yes, yes, maybe, no.
+- interviewQuestions should include 4 focused job-relevant interview questions.
 - keep relative score calibration consistent across all candidates in this batch.
+- the caller may send one candidate per request, so evaluate only provided inputs.
 
 Job title:
 ${input.jobTitle}

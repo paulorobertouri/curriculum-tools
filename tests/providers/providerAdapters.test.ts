@@ -73,19 +73,39 @@ describe('provider adapters', () => {
   });
 
   it('sends a valid structured-output schema for OpenAI result parsing', async () => {
-    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        output_text: JSON.stringify({
-          score: 8.4,
-          summary: 'Strong fit for the role.',
-          strengths: ['React delivery'],
-          gaps: ['Leadership examples'],
-          recommendations: ['Quantify impact'],
-          rewrittenBullets: ['Improved page performance by 30% in React app.'],
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          output_text: JSON.stringify({
+            score: 8.4,
+            summary: 'Strong fit for the role.',
+            strengths: ['React delivery'],
+            gaps: ['Leadership examples'],
+            recommendations: ['Quantify impact'],
+            rewrittenBullets: [
+              'Improved page performance by 30% in React app.',
+            ],
+          }),
         }),
-      }),
-    } as Response);
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          output_text: JSON.stringify({
+            rewrittenCv: 'Updated CV',
+            coverLetter: 'Tailored cover letter',
+            interviewQa: [
+              {
+                question: 'How do you measure impact?',
+                suggestedAnswer:
+                  'I use delivery and outcome metrics aligned to business goals.',
+              },
+            ],
+          }),
+        }),
+      } as Response);
 
     await openaiProvider.reviewCandidateCv({ ...config }, {
       jobTitle: 'Frontend Engineer',
@@ -118,6 +138,30 @@ describe('provider adapters', () => {
       ],
       additionalProperties: false,
     });
+
+    const secondRequestInit = fetchMock.mock.calls[1]?.[1];
+    const secondBody = JSON.parse(String((secondRequestInit as RequestInit).body));
+    expect(secondBody.text.format.schema).toEqual({
+      type: 'object',
+      properties: {
+        rewrittenCv: { type: 'string' },
+        coverLetter: { type: 'string' },
+        interviewQa: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              question: { type: 'string' },
+              suggestedAnswer: { type: 'string' },
+            },
+            required: ['question', 'suggestedAnswer'],
+            additionalProperties: false,
+          },
+        },
+      },
+      required: ['rewrittenCv', 'coverLetter', 'interviewQa'],
+      additionalProperties: false,
+    });
   });
 
   it('sends a valid structured-output schema for OpenAI HR ranking', async () => {
@@ -135,6 +179,7 @@ describe('provider adapters', () => {
               strengths: ['Team leadership'],
               concerns: ['Limited domain depth'],
               interviewRecommendation: 'strong_yes',
+              interviewQuestions: ['Describe your approach to mentoring.'],
             },
           ],
         }),
@@ -168,6 +213,7 @@ describe('provider adapters', () => {
           type: 'string',
           enum: ['strong_yes', 'yes', 'maybe', 'no'],
         },
+        interviewQuestions: { type: 'array', items: { type: 'string' } },
       },
       required: [
         'id',
@@ -178,6 +224,7 @@ describe('provider adapters', () => {
         'strengths',
         'concerns',
         'interviewRecommendation',
+        'interviewQuestions',
       ],
       additionalProperties: false,
     });

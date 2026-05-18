@@ -1,4 +1,5 @@
 import {
+  CandidateCareerToolkit,
   CandidateReview,
   HrRankingResult,
   InterviewRecommendation,
@@ -12,6 +13,27 @@ const asStringArray = (value: unknown): string[] => {
   return value
     .map(item => String(item ?? '').trim())
     .filter(item => item.length > 0);
+};
+
+const asCandidateInterviewQa = (
+  value: unknown,
+): Array<{ question: string; suggestedAnswer: string }> => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .filter(
+      item => typeof item === 'object' && item !== null && !Array.isArray(item),
+    )
+    .map(item => {
+      const typed = item as Record<string, unknown>;
+      return {
+        question: String(typed.question ?? '').trim(),
+        suggestedAnswer: String(typed.suggestedAnswer ?? '').trim(),
+      };
+    })
+    .filter(item => item.question.length > 0 && item.suggestedAnswer.length > 0);
 };
 
 export const normalizeScore = (value: unknown): number => {
@@ -34,6 +56,17 @@ export const normalizeCandidateReview = (
   gaps: asStringArray(value.gaps),
   recommendations: asStringArray(value.recommendations),
   rewrittenBullets: asStringArray(value.rewrittenBullets),
+  rewrittenCv: String(value.rewrittenCv ?? '').trim(),
+  coverLetter: String(value.coverLetter ?? '').trim(),
+  interviewQa: asCandidateInterviewQa(value.interviewQa),
+});
+
+export const normalizeCandidateCareerToolkit = (
+  value: Record<string, unknown>,
+): CandidateCareerToolkit => ({
+  rewrittenCv: String(value.rewrittenCv ?? '').trim(),
+  coverLetter: String(value.coverLetter ?? '').trim(),
+  interviewQa: asCandidateInterviewQa(value.interviewQa),
 });
 
 export const normalizeHrRanking = (
@@ -67,6 +100,7 @@ export const normalizeHrRanking = (
           interviewRecommendation: normalizeRecommendation(
             candidate.interviewRecommendation,
           ),
+          interviewQuestions: asStringArray(candidate.interviewQuestions),
         };
       })
       .sort((left, right) => {

@@ -6,6 +6,7 @@ import { HrRanker } from '@/components/HrRanker';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { ProviderSetup } from '@/components/ProviderSetup';
 import { ProviderStatus } from '@/components/ProviderStatus';
+import { QualityHarness } from '@/components/QualityHarness';
 import { AiConfig } from '@/domain/aiTypes';
 import { useI18n } from '@/i18n/i18n';
 import { getProviderAdapter } from '@/providers';
@@ -120,11 +121,19 @@ function App() {
               </div>
             </div>
 
-            <nav className='grid gap-2 rounded-3xl border border-slate-200 bg-slate-50 p-2 sm:grid-cols-2'>
+            <nav
+              className='grid gap-2 rounded-3xl border border-slate-200 bg-slate-50 p-2 sm:grid-cols-2'
+              role='tablist'
+              aria-label='Main tools'
+            >
               <button
                 className={toolButtonClass(activeTool === 'candidate')}
                 type='button'
                 onClick={() => setActiveTool('candidate')}
+                role='tab'
+                id='tab-candidate'
+                aria-selected={activeTool === 'candidate'}
+                aria-controls='panel-candidate'
               >
                 <UserRound className='h-4 w-4' />
                 <span>{t('app.tab.candidate')}</span>
@@ -133,6 +142,10 @@ function App() {
                 className={toolButtonClass(activeTool === 'hr')}
                 type='button'
                 onClick={() => setActiveTool('hr')}
+                role='tab'
+                id='tab-hr'
+                aria-selected={activeTool === 'hr'}
+                aria-controls='panel-hr'
               >
                 <BriefcaseBusiness className='h-4 w-4' />
                 <span>{t('app.tab.hr')}</span>
@@ -145,9 +158,18 @@ function App() {
           {t('app.privacy', { provider: config.provider })}
         </section>
 
-        <div className='mt-6'>
+        <div
+          className='mt-6'
+          role='tabpanel'
+          id={activeTool === 'candidate' ? 'panel-candidate' : 'panel-hr'}
+          aria-labelledby={
+            activeTool === 'candidate' ? 'tab-candidate' : 'tab-hr'
+          }
+        >
           {activeContent}
         </div>
+
+        <QualityHarness config={config} />
       </div>
     </main>
   );

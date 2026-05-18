@@ -7,9 +7,11 @@ import {
 } from '@/domain/aiTypes';
 import {
   normalizeCandidateReview,
+  normalizeCandidateCareerToolkit,
   normalizeHrRanking,
 } from '@/domain/validation';
 import { buildCandidatePrompt } from '@/prompts/candidatePrompt';
+import { buildCandidateToolkitPrompt } from '@/prompts/candidateToolkitPrompt';
 import { buildHrPrompt } from '@/prompts/hrPrompt';
 import {
   TEST_PROMPT,
@@ -33,11 +35,25 @@ export const deepseekProvider: AiProviderAdapter = {
   },
 
   async reviewCandidateCv(config, input): Promise<CandidateReview> {
-    const text = await createChatCompletion(
+    const reviewText = await createChatCompletion(
       config,
       buildCandidatePrompt(input),
     );
-    return parseJsonResult(text, normalizeCandidateReview);
+    const toolkitText = await createChatCompletion(
+      config,
+      buildCandidateToolkitPrompt(input),
+    );
+
+    const review = parseJsonResult(reviewText, normalizeCandidateReview);
+    const toolkit = parseJsonResult(
+      toolkitText,
+      normalizeCandidateCareerToolkit,
+    );
+
+    return {
+      ...review,
+      ...toolkit,
+    };
   },
 
   async rankHrCvs(config, input): Promise<HrRankingResult> {

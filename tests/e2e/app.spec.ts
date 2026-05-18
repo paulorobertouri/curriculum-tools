@@ -55,7 +55,27 @@ const routeOpenAiForAllFlows = async (
       return;
     }
 
-    if (prompt.includes('Rank these CVs against the target role')) {
+    if (prompt.includes('Create a practical candidate toolkit')) {
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          output_text: JSON.stringify({
+            rewrittenCv: 'Rewritten CV content tailored for the role.',
+            coverLetter: 'Cover letter tailored to the target role.',
+            interviewQa: [
+              {
+                question: 'How did you improve developer workflow?',
+                suggestedAnswer:
+                  'I introduced CI checks and clearer ownership to reduce handoff delays.',
+              },
+            ],
+          }),
+        }),
+      });
+      return;
+    }
+
+    if (prompt.includes('Evaluate each CV against the target role')) {
       await route.fulfill({
         contentType: 'application/json',
         body: JSON.stringify({
@@ -70,6 +90,7 @@ const routeOpenAiForAllFlows = async (
                 strengths: ['System design', 'Mentoring'],
                 concerns: ['Limited domain-specific certifications'],
                 interviewRecommendation: 'strong_yes',
+                interviewQuestions: ['How do you mentor underperforming devs?'],
               },
               {
                 id: 'candidate-2',
@@ -81,6 +102,7 @@ const routeOpenAiForAllFlows = async (
                 strengths: ['React'],
                 concerns: ['Less backend depth'],
                 interviewRecommendation: 'yes',
+                interviewQuestions: ['How do you prioritize architecture trade-offs?'],
               },
             ],
           }),
@@ -153,7 +175,7 @@ test('candidate flow extracts uploaded CV files', async ({ page }) => {
   await routeOpenAiForAllFlows(page);
   await setupOpenAi(page);
 
-  await page.getByRole('button', { name: 'Candidate' }).click();
+  await page.getByRole('tab', { name: 'Candidate' }).click();
   await page.getByLabel('Job title').fill('Frontend Engineer');
   await page
     .getByLabel('Job description')
@@ -186,7 +208,7 @@ test('hr flow renders ranked candidates', async ({ page }) => {
   await routeOpenAiForAllFlows(page);
   await setupOpenAi(page);
 
-  await page.getByRole('button', { name: 'HR' }).click();
+  await page.getByRole('tab', { name: 'HR' }).click();
   await page.getByLabel('Job title').fill('Engineering Manager');
   await page
     .getByLabel('Job description')
@@ -221,7 +243,7 @@ test('hr flow renders ranked candidates', async ({ page }) => {
   await captureJourneyScreenshot(page, 'hr-00-ranking-result');
 });
 
-test('hr flow chunks large batches into multiple ranking requests', async ({
+test('hr flow evaluates each candidate in separated ranking requests', async ({
   page,
 }) => {
   let rankingRequestCount = 0;
@@ -238,7 +260,7 @@ test('hr flow chunks large batches into multiple ranking requests', async ({
       return;
     }
 
-    if (prompt.includes('Rank these CVs against the target role')) {
+    if (prompt.includes('Evaluate each CV against the target role')) {
       rankingRequestCount += 1;
 
       const ids = [...prompt.matchAll(/id:\s*([^\n]+)/g)].map(match =>
@@ -256,6 +278,7 @@ test('hr flow chunks large batches into multiple ranking requests', async ({
         strengths: ['Relevant experience'],
         concerns: ['Needs deeper evaluation'],
         interviewRecommendation: 'maybe',
+        interviewQuestions: ['What trade-offs did you make in architecture?'],
       }));
 
       await route.fulfill({
@@ -284,6 +307,20 @@ test('hr flow chunks large batches into multiple ranking requests', async ({
       return;
     }
 
+    if (prompt.includes('Create a practical candidate toolkit')) {
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          output_text: JSON.stringify({
+            rewrittenCv: 'Updated CV',
+            coverLetter: 'Updated cover letter',
+            interviewQa: [],
+          }),
+        }),
+      });
+      return;
+    }
+
     await route.fulfill({
       contentType: 'application/json',
       body: JSON.stringify({ output_text: '{}' }),
@@ -291,7 +328,7 @@ test('hr flow chunks large batches into multiple ranking requests', async ({
   });
 
   await setupOpenAi(page);
-  await page.getByRole('button', { name: 'HR' }).click();
+  await page.getByRole('tab', { name: 'HR' }).click();
   await page.getByLabel('Job title').fill('Senior Engineer');
   await page
     .getByLabel('Job description')
@@ -314,7 +351,7 @@ test('hr flow chunks large batches into multiple ranking requests', async ({
   await expect(
     page.getByRole('heading', { name: 'candidate-9.txt' }),
   ).toBeVisible();
-  expect(rankingRequestCount).toBe(2);
+  expect(rankingRequestCount).toBe(9);
 
   await captureJourneyScreenshot(page, 'hr-01-chunked-batch-result');
 });
@@ -334,7 +371,7 @@ test('hr flow keeps extraction errors visible while processing valid files', asy
       return;
     }
 
-    if (prompt.includes('Rank these CVs against the target role')) {
+    if (prompt.includes('Evaluate each CV against the target role')) {
       const ids = [...prompt.matchAll(/id:\s*([^\n]+)/g)].map(match =>
         match[1].trim(),
       );
@@ -355,6 +392,7 @@ test('hr flow keeps extraction errors visible while processing valid files', asy
               strengths: ['Role-relevant experience'],
               concerns: [],
               interviewRecommendation: 'yes',
+              interviewQuestions: ['How would you scale this backend service?'],
             })),
           }),
         }),
@@ -369,7 +407,7 @@ test('hr flow keeps extraction errors visible while processing valid files', asy
   });
 
   await setupOpenAi(page);
-  await page.getByRole('button', { name: 'HR' }).click();
+  await page.getByRole('tab', { name: 'HR' }).click();
   await page.getByLabel('Job title').fill('Backend Engineer');
   await page
     .getByLabel('Job description')

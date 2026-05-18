@@ -14,6 +14,7 @@ describe('hrMetricsSummary', () => {
           strengths: [],
           concerns: [],
           interviewRecommendation: 'yes',
+          interviewQuestions: [],
         },
         {
           id: '1',
@@ -23,6 +24,7 @@ describe('hrMetricsSummary', () => {
           strengths: [],
           concerns: [],
           interviewRecommendation: 'strong_yes',
+          interviewQuestions: [],
         },
         {
           id: '3',
@@ -32,6 +34,7 @@ describe('hrMetricsSummary', () => {
           strengths: [],
           concerns: [],
           interviewRecommendation: 'maybe',
+          interviewQuestions: [],
         },
       ],
     });
@@ -40,7 +43,10 @@ describe('hrMetricsSummary', () => {
     expect(summary.averageScore).toBeCloseTo(7.5, 1);
     expect(summary.topScore).toBe(9.0);
     expect(summary.lowestScore).toBe(6.0);
+    expect(summary.medianScore).toBe(7.5);
+    expect(summary.standardDeviation).toBeCloseTo(1.2, 1);
     expect(summary.scoreSpread).toBeCloseTo(1.5, 1);
+    expect(summary.yesOrBetterRate).toBeCloseTo(66.7, 1);
     expect(summary.recommendationCounts).toEqual({
       strong_yes: 1,
       yes: 1,
@@ -58,7 +64,10 @@ describe('hrMetricsSummary', () => {
     expect(summary.averageScore).toBe(0);
     expect(summary.topScore).toBe(0);
     expect(summary.lowestScore).toBe(0);
+    expect(summary.medianScore).toBe(0);
+    expect(summary.standardDeviation).toBe(0);
     expect(summary.scoreSpread).toBe(0);
+    expect(summary.yesOrBetterRate).toBe(0);
     expect(summary.recommendationCounts).toEqual({
       strong_yes: 0,
       yes: 0,

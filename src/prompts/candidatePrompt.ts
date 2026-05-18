@@ -2,7 +2,7 @@ import { CandidateReviewInput } from '@/domain/aiTypes';
 import { PROMPT_VERSIONS } from '@/prompts/promptVersions';
 
 export const buildCandidatePrompt = (input: CandidateReviewInput) => `
-Prompt version: ${PROMPT_VERSIONS.candidate}
+Prompt version: ${PROMPT_VERSIONS.candidateReview}
 
 Evaluate this CV for the target role. Return only valid JSON with this shape:
 {
@@ -32,6 +32,7 @@ Quality rules:
 - strengths and gaps: concrete and role-specific.
 - recommendations: prioritized, practical actions.
 - rewrittenBullets: measurable, impact-focused bullets when possible.
+- rewrittenBullets should target key role requirements and stay truthful to CV evidence.
 
 Job title:
 ${input.jobTitle}

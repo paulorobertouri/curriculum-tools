@@ -6,9 +6,11 @@ import {
 } from '@/domain/aiTypes';
 import {
   normalizeCandidateReview,
+  normalizeCandidateCareerToolkit,
   normalizeHrRanking,
 } from '@/domain/validation';
 import { buildCandidatePrompt } from '@/prompts/candidatePrompt';
+import { buildCandidateToolkitPrompt } from '@/prompts/candidateToolkitPrompt';
 import { buildHrPrompt } from '@/prompts/hrPrompt';
 import {
   TEST_PROMPT,
@@ -34,12 +36,27 @@ export const geminiProvider: AiProviderAdapter = {
   },
 
   async reviewCandidateCv(config, input): Promise<CandidateReview> {
-    const text = await generateContent(
+    const reviewText = await generateContent(
       config.apiKey,
       config.model,
       buildCandidatePrompt(input),
     );
-    return parseJsonResult(text, normalizeCandidateReview);
+    const toolkitText = await generateContent(
+      config.apiKey,
+      config.model,
+      buildCandidateToolkitPrompt(input),
+    );
+
+    const review = parseJsonResult(reviewText, normalizeCandidateReview);
+    const toolkit = parseJsonResult(
+      toolkitText,
+      normalizeCandidateCareerToolkit,
+    );
+
+    return {
+      ...review,
+      ...toolkit,
+    };
   },
 
   async rankHrCvs(config, input): Promise<HrRankingResult> {
