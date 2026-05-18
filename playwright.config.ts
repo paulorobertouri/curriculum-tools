@@ -1,4 +1,19 @@
+import { existsSync } from 'node:fs';
+
 import { defineConfig, devices } from '@playwright/test';
+
+const chromiumExecutableCandidates = [
+  process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,
+  '/usr/bin/google-chrome-stable',
+  '/usr/bin/google-chrome',
+  '/snap/bin/chromium',
+  '/usr/bin/chromium-browser',
+  '/usr/bin/chromium',
+].filter((candidate): candidate is string => Boolean(candidate));
+
+const chromiumExecutablePath = chromiumExecutableCandidates.find(candidate =>
+  existsSync(candidate),
+);
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -12,9 +27,9 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'on', // Capture screenshot for every test
     video: 'on-first-retry',
-    launchOptions: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH
+    launchOptions: chromiumExecutablePath
       ? {
-          executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,
+          executablePath: chromiumExecutablePath,
         }
       : undefined,
   },
