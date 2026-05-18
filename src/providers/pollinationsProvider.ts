@@ -16,7 +16,7 @@ import { buildHrPrompt } from '@/prompts/hrPrompt';
 import {
   TEST_PROMPT,
   assertSuccessfulResponse,
-  ensureHello,
+  ensureNonEmptyResponse,
   isPromptRedactionEnabled,
   sanitizePromptForProvider,
   toProviderError,
@@ -30,7 +30,7 @@ export const pollinationsProvider: AiProviderAdapter = {
   async testConnection(config): Promise<TestResult> {
     try {
       const text = await createChatCompletion(config, TEST_PROMPT);
-      ensureHello(text);
+      ensureNonEmptyResponse(text);
       return { ok: true, message: 'Pollinations responded successfully.' };
     } catch (error) {
       throw toProviderError(error);

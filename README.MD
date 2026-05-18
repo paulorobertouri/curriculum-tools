@@ -86,4 +86,5 @@ Run fixed fixture packs to track prompt quality, score drift, and ranking stabil
 - [Product Plan](docs/PRODUCT_PLAN.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Engineering Standards](docs/ENGINEERING_STANDARDS.md)
-- [TODO](TODO.MD)
+
+Roadmap and pending work are tracked in the Product Plan.

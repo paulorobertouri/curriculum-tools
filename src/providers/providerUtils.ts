@@ -120,6 +120,15 @@ export const ensureHello = (text: string) => {
   }
 };
 
+export const ensureNonEmptyResponse = (text: string) => {
+  if (!text.trim()) {
+    throw new ProviderError(
+      'provider',
+      'The provider responded, but the test response was empty.',
+    );
+  }
+};
+
 export const toProviderError = (error: unknown): ProviderError => {
   if (error instanceof ProviderError) {
     return error;

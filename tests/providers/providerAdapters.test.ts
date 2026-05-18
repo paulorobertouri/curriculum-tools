@@ -302,6 +302,43 @@ describe('provider adapters', () => {
     expect(headers.Authorization).toBeUndefined();
   });
 
+  it('accepts OVH connectivity when chat is rate-limited but models is reachable', async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 429,
+        json: async () => ({ message: 'API rate limit exceeded' }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ data: [{ id: 'Qwen3-32B' }] }),
+      } as Response);
+
+    await expect(
+      ovhProvider.testConnection({
+        ...config,
+        provider: 'ovh',
+        apiKey: '',
+      }),
+    ).resolves.toEqual({
+      ok: true,
+      message:
+        'OVHcloud AI Endpoints is reachable, but chat is currently rate-limited.',
+    });
+
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/chat/completions',
+      expect.objectContaining({ method: 'POST' }),
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/models',
+      expect.objectContaining({ method: 'GET' }),
+    );
+  });
+
   it('calls LLM7 chat completions and sends auth only when key exists', async () => {
     const fetchMock = vi
       .spyOn(globalThis, 'fetch')
@@ -360,6 +397,25 @@ describe('provider adapters', () => {
     const headers = (fetchMock.mock.calls[0]?.[1] as RequestInit)
       .headers as Record<string, string>;
     expect(headers.Authorization).toBeUndefined();
+  });
+
+  it('accepts Pollinations test response when it is non-empty but not hello', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({ choices: [{ message: { content: 'Hi there' } }] }),
+    } as Response);
+
+    await expect(
+      pollinationsProvider.testConnection({
+        ...config,
+        provider: 'pollinations',
+        apiKey: '',
+        model: 'openai-fast',
+      }),
+    ).resolves.toEqual({
+      ok: true,
+      message: 'Pollinations responded successfully.',
+    });
   });
 
   it('calls Kilo chat completions and sends auth only when key exists', async () => {

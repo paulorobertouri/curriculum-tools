@@ -1,4 +1,5 @@
 import {
+  ProviderError,
   AiConfig,
   AiProviderAdapter,
   CandidateReview,
@@ -25,6 +26,7 @@ import { parseJsonResult } from '@/providers/responseParsing';
 
 const OVH_CHAT_URL =
   'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/chat/completions';
+const OVH_MODELS_URL = 'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/models';
 
 export const ovhProvider: AiProviderAdapter = {
   async testConnection(config): Promise<TestResult> {
@@ -36,7 +38,18 @@ export const ovhProvider: AiProviderAdapter = {
         message: 'OVHcloud AI Endpoints responded successfully.',
       };
     } catch (error) {
-      throw toProviderError(error);
+      const providerError = toProviderError(error);
+
+      if (providerError.kind === 'quota') {
+        await verifyModelsEndpoint(config);
+        return {
+          ok: true,
+          message:
+            'OVHcloud AI Endpoints is reachable, but chat is currently rate-limited.',
+        };
+      }
+
+      throw providerError;
     }
   },
 
@@ -102,4 +115,26 @@ const extractText = (body: unknown): string => {
   };
 
   return response.choices?.[0]?.message?.content ?? '';
+};
+
+const verifyModelsEndpoint = async (config: AiConfig) => {
+  const headers: Record<string, string> = {};
+
+  if (config.apiKey.trim()) {
+    headers.Authorization = `Bearer ${config.apiKey.trim()}`;
+  }
+
+  const response = await fetch(OVH_MODELS_URL, {
+    method: 'GET',
+    headers,
+  });
+
+  try {
+    await assertSuccessfulResponse(response);
+  } catch (error) {
+    throw new ProviderError(
+      'quota',
+      'The provider reported quota, billing, or rate limit trouble.',
+    );
+  }
 };
