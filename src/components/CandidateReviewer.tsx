@@ -135,11 +135,7 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
         <p className='text-xs leading-5 text-slate-500'>
           {t('candidate.uploadHint')}
         </p>
-        {fileStatus ? (
-          <p className='success-message'>
-            {fileStatus}
-          </p>
-        ) : null}
+        {fileStatus ? <p className='success-message'>{fileStatus}</p> : null}
         <TextArea
           label={t('candidate.cvText')}
           value={cvText}

@@ -8,16 +8,20 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
   use: {
-    channel: 'chrome',
     baseURL: 'http://localhost:4173',
     trace: 'on-first-retry',
     screenshot: 'on', // Capture screenshot for every test
     video: 'on-first-retry',
+    launchOptions: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH
+      ? {
+          executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,
+        }
+      : undefined,
   },
   projects: [
     {
       name: 'chromium',
-      use: { channel: 'chrome', ...devices['Desktop Chrome'] },
+      use: { ...devices['Desktop Chrome'] },
     },
   ],
   webServer: {

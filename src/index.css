@@ -124,7 +124,11 @@
 
   .tool-panel {
     @apply grid gap-5 border bg-white/90 p-5 backdrop-blur sm:p-6;
-    border-color: color-mix(in oklab, var(--color-bg-surface) 60%, var(--color-border-default));
+    border-color: color-mix(
+      in oklab,
+      var(--color-bg-surface) 60%,
+      var(--color-border-default)
+    );
     border-radius: var(--radius-panel);
     box-shadow: var(--shadow-panel);
   }
