@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "build:pages": "tsc -b && vite build --base=/curriculum-tools/",
-    "publish": "pnpm run build:pages && node ./scripts/publish-pages.mjs",
+    "release": "pnpm run build:pages && node ./scripts/publish-pages.mjs",
     "lint": "eslint .",
     "format": "prettier --write .",
     "preview": "vite preview",
