@@ -11,7 +11,7 @@ import {
 const config: AiConfig = {
   provider: 'openai',
   apiKey: 'sk-test-123456',
-  model: 'gpt-5-mini',
+  model: 'gpt-5.4-mini',
   savedAt: '2026-05-15T00:00:00.000Z',
 };
 

@@ -9,7 +9,7 @@ import {
 const makeRun = (index: number): EvaluationRun => ({
   id: `run-${index}`,
   provider: 'openai',
-  model: 'gpt-5-mini',
+  model: 'gpt-5.4-mini',
   promptVersions: {
     candidate: '1.0.0',
     hr: '1.0.0',
@@ -52,7 +52,7 @@ describe('evaluationHarnessStorage', () => {
         {
           id: 'missing-fields',
           provider: 'openai',
-          model: 'gpt-5-mini',
+          model: 'gpt-5.4-mini',
           ranAt: '2026-05-18T00:00:00.000Z',
           candidateRuns: 'not-array',
           hrRuns: [],

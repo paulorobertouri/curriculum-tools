@@ -19,11 +19,11 @@ type ProviderSetupProps = {
 export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
   const { t } = useI18n();
   const [provider, setProvider] = useState<AiProviderId>(
-    initialConfig?.provider ?? 'gemini',
+    initialConfig?.provider ?? 'openai',
   );
   const [apiKey, setApiKey] = useState(initialConfig?.apiKey ?? '');
   const [model, setModel] = useState(
-    initialConfig?.model ?? DEFAULT_MODELS.gemini,
+    initialConfig?.model ?? DEFAULT_MODELS.openai,
   );
   const [status, setStatus] = useState<string | null>(null);
   const [isTesting, setIsTesting] = useState(false);

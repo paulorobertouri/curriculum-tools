@@ -107,9 +107,9 @@ export const PROVIDER_LABELS: Record<AiProviderId, string> = {
 };
 
 export const DEFAULT_MODELS: Record<AiProviderId, string> = {
-  openai: 'gpt-5-mini',
-  gemini: 'gemini-2.5-flash',
-  deepseek: 'deepseek-chat',
+  openai: 'gpt-5.4-mini',
+  gemini: 'gemini-3.1-flash-lite',
+  deepseek: 'deepseek-v4-flash',
 };
 
 export const AI_CONFIG_STORAGE_KEY = 'curriculum-tools.aiConfig.v1';

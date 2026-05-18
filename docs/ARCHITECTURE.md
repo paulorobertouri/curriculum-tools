@@ -212,7 +212,7 @@ Minimal payload shape:
 
 ```json
 {
-  "model": "gpt-5-mini",
+  "model": "gpt-5.4-mini",
   "input": "Reply with only this exact word: hello"
 }
 ```
@@ -247,7 +247,7 @@ Minimal payload shape:
 }
 ```
 
-Default model should be defined in a constant and rechecked during implementation. The implementation uses stable `gemini-2.5-flash` as the default.
+Default model should be defined in a constant and rechecked during implementation. The implementation uses stable `gemini-3.1-flash-lite` as the default.
 
 Reference: https://ai.google.dev/gemini-api/docs
 
@@ -265,7 +265,7 @@ Minimal payload shape:
 
 ```json
 {
-  "model": "deepseek-chat",
+  "model": "deepseek-v4-flash",
   "messages": [
     {
       "role": "user",
