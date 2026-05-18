@@ -1,18 +1,13 @@
-import { expect, Page, Route, test } from '@playwright/test';
+import { Page, Route, expect, test } from '@playwright/test';
 
-const captureJourneyScreenshot = async (
-  page: Page,
-  name: string,
-) => {
+const captureJourneyScreenshot = async (page: Page, name: string) => {
   await page.screenshot({
     path: `tests/e2e/evidence/${name}.png`,
     fullPage: true,
   });
 };
 
-const routeOpenAiForSetupOnly = async (
-  page: Page,
-) => {
+const routeOpenAiForSetupOnly = async (page: Page) => {
   await page.route('https://api.openai.com/v1/responses', async route => {
     await route.fulfill({
       contentType: 'application/json',
@@ -21,101 +16,106 @@ const routeOpenAiForSetupOnly = async (
   });
 };
 
-const routeOpenAiForAllFlows = async (
-  page: Page,
-) => {
-  await page.route('https://api.openai.com/v1/responses', async (route: Route) => {
-    const body = route.request().postDataJSON() as { input?: string };
-    const prompt = body.input ?? '';
+const routeOpenAiForAllFlows = async (page: Page) => {
+  await page.route(
+    'https://api.openai.com/v1/responses',
+    async (route: Route) => {
+      const body = route.request().postDataJSON() as { input?: string };
+      const prompt = body.input ?? '';
 
-    if (prompt.includes('Reply with only this exact word: hello')) {
-      await route.fulfill({
-        contentType: 'application/json',
-        body: JSON.stringify({ output_text: 'hello' }),
-      });
-      return;
-    }
+      if (prompt.includes('Reply with only this exact word: hello')) {
+        await route.fulfill({
+          contentType: 'application/json',
+          body: JSON.stringify({ output_text: 'hello' }),
+        });
+        return;
+      }
 
-    if (prompt.includes('Evaluate this CV for the target role')) {
-      await route.fulfill({
-        contentType: 'application/json',
-        body: JSON.stringify({
-          output_text: JSON.stringify({
-            score: 8.7,
-            summary: 'Good fit for the role with clear impact.',
-            strengths: ['Strong React and TypeScript delivery'],
-            gaps: ['Limited leadership examples'],
-            recommendations: ['Quantify outcomes in recent projects'],
-            rewrittenBullets: [
-              'Led React migration improving release cadence by 20%',
-            ],
+      if (prompt.includes('Evaluate this CV for the target role')) {
+        await route.fulfill({
+          contentType: 'application/json',
+          body: JSON.stringify({
+            output_text: JSON.stringify({
+              score: 8.7,
+              summary: 'Good fit for the role with clear impact.',
+              strengths: ['Strong React and TypeScript delivery'],
+              gaps: ['Limited leadership examples'],
+              recommendations: ['Quantify outcomes in recent projects'],
+              rewrittenBullets: [
+                'Led React migration improving release cadence by 20%',
+              ],
+            }),
           }),
-        }),
-      });
-      return;
-    }
+        });
+        return;
+      }
 
-    if (prompt.includes('Create a practical candidate toolkit')) {
+      if (prompt.includes('Create a practical candidate toolkit')) {
+        await route.fulfill({
+          contentType: 'application/json',
+          body: JSON.stringify({
+            output_text: JSON.stringify({
+              rewrittenCv: 'Rewritten CV content tailored for the role.',
+              coverLetter: 'Cover letter tailored to the target role.',
+              interviewQa: [
+                {
+                  question: 'How did you improve developer workflow?',
+                  suggestedAnswer:
+                    'I introduced CI checks and clearer ownership to reduce handoff delays.',
+                },
+              ],
+            }),
+          }),
+        });
+        return;
+      }
+
+      if (prompt.includes('Evaluate each CV against the target role')) {
+        await route.fulfill({
+          contentType: 'application/json',
+          body: JSON.stringify({
+            output_text: JSON.stringify({
+              candidates: [
+                {
+                  id: 'candidate-1',
+                  filename: 'alice.txt',
+                  detectedName: 'Alice',
+                  score: 9.1,
+                  justification: 'Strong alignment with role requirements.',
+                  strengths: ['System design', 'Mentoring'],
+                  concerns: ['Limited domain-specific certifications'],
+                  interviewRecommendation: 'strong_yes',
+                  interviewQuestions: [
+                    'How do you mentor underperforming devs?',
+                  ],
+                },
+                {
+                  id: 'candidate-2',
+                  filename: 'bob.txt',
+                  detectedName: 'Bob',
+                  score: 7.8,
+                  justification:
+                    'Solid baseline with a few missing requirements.',
+                  strengths: ['React'],
+                  concerns: ['Less backend depth'],
+                  interviewRecommendation: 'yes',
+                  interviewQuestions: [
+                    'How do you prioritize architecture trade-offs?',
+                  ],
+                },
+              ],
+            }),
+          }),
+        });
+        return;
+      }
+
       await route.fulfill({
         contentType: 'application/json',
-        body: JSON.stringify({
-          output_text: JSON.stringify({
-            rewrittenCv: 'Rewritten CV content tailored for the role.',
-            coverLetter: 'Cover letter tailored to the target role.',
-            interviewQa: [
-              {
-                question: 'How did you improve developer workflow?',
-                suggestedAnswer:
-                  'I introduced CI checks and clearer ownership to reduce handoff delays.',
-              },
-            ],
-          }),
-        }),
+        body: JSON.stringify({ output_text: '{}' }),
       });
-      return;
-    }
-
-    if (prompt.includes('Evaluate each CV against the target role')) {
-      await route.fulfill({
-        contentType: 'application/json',
-        body: JSON.stringify({
-          output_text: JSON.stringify({
-            candidates: [
-              {
-                id: 'candidate-1',
-                filename: 'alice.txt',
-                detectedName: 'Alice',
-                score: 9.1,
-                justification: 'Strong alignment with role requirements.',
-                strengths: ['System design', 'Mentoring'],
-                concerns: ['Limited domain-specific certifications'],
-                interviewRecommendation: 'strong_yes',
-                interviewQuestions: ['How do you mentor underperforming devs?'],
-              },
-              {
-                id: 'candidate-2',
-                filename: 'bob.txt',
-                detectedName: 'Bob',
-                score: 7.8,
-                justification:
-                  'Solid baseline with a few missing requirements.',
-                strengths: ['React'],
-                concerns: ['Less backend depth'],
-                interviewRecommendation: 'yes',
-                interviewQuestions: ['How do you prioritize architecture trade-offs?'],
-              },
-            ],
-          }),
-        }),
-      });
-      return;
-    }
-
-    await route.fulfill({
-      contentType: 'application/json',
-      body: JSON.stringify({ output_text: '{}' }),
-    });
-  });
+    },
+  );
 };
 
 const setupOpenAi = async (page: Page) => {
@@ -238,7 +238,9 @@ test('hr flow renders ranked candidates', async ({ page }) => {
   await expect(
     page.getByRole('heading', { name: 'Average vs top candidate' }),
   ).toBeVisible();
-  await expect(page.getByText('Recommendation: strong yes').first()).toBeVisible();
+  await expect(
+    page.getByText('Recommendation: strong yes').first(),
+  ).toBeVisible();
 
   await captureJourneyScreenshot(page, 'hr-00-ranking-result');
 });
@@ -445,4 +447,29 @@ test('hr flow keeps extraction errors visible while processing valid files', asy
   await expect(page.getByText('Recommendation: yes')).toBeVisible();
 
   await captureJourneyScreenshot(page, 'hr-03-partial-extraction-result');
+});
+
+test('quality harness runs fixtures and stores run metrics', async ({
+  page,
+}) => {
+  await routeOpenAiForAllFlows(page);
+  await setupOpenAi(page);
+
+  await page.getByRole('tab', { name: 'Quality' }).click();
+
+  await expect(
+    page.getByRole('heading', { name: 'Evaluation Harness' }).first(),
+  ).toBeVisible();
+  await expect(page.getByText('How to use this tool')).toBeVisible();
+  await expect(page.getByText('Runs stored').first()).toBeVisible();
+  await expect(page.getByText('0', { exact: true }).first()).toBeVisible();
+
+  await page.getByRole('button', { name: 'Run fixture pack' }).click();
+
+  await expect(page.getByText('Runs stored').first()).toBeVisible();
+  await expect(page.getByText('1', { exact: true }).first()).toBeVisible();
+  await expect(page.getByText('Last run:')).toBeVisible();
+  await expect(page.getByText('Score drift monitor')).toBeVisible();
+
+  await captureJourneyScreenshot(page, 'quality-00-harness-run');
 });
