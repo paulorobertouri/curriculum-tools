@@ -1,6 +1,10 @@
 import { KeyRound, Loader2, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
 
+import {
+  listProviderModelsUseCase,
+  testProviderConnectionUseCase,
+} from '@/application/provider/providerSetupUseCases';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import {
   AiConfig,
@@ -11,7 +15,6 @@ import {
   providerRequiresApiKey,
 } from '@/domain/aiTypes';
 import { useI18n } from '@/i18n/i18n';
-import { getProviderAdapter } from '@/providers';
 
 type ProviderSetupProps = {
   readonly initialConfig?: AiConfig | null;
@@ -64,17 +67,16 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
       redactSensitiveData,
     };
 
-    const adapter = getProviderAdapter(provider);
-
-    if (!adapter.listModels) {
-      setStatus(t('provider.setup.modelsUnsupported'));
-      return;
-    }
-
     setIsFetchingModels(true);
 
     try {
-      const models = await adapter.listModels(config);
+      const { supported, models } = await listProviderModelsUseCase(config);
+
+      if (!supported) {
+        setStatus(t('provider.setup.modelsUnsupported'));
+        return;
+      }
+
       setAvailableModels(models);
 
       if (models.length === 0) {
@@ -123,7 +125,7 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
     setIsTesting(true);
 
     try {
-      await getProviderAdapter(provider).testConnection(config);
+      await testProviderConnectionUseCase(config);
       onSave(config);
     } catch (error) {
       setStatus(

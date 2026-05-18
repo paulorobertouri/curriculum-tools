@@ -7,15 +7,14 @@ import {
 } from 'lucide-react';
 import { ReactNode, useMemo, useState } from 'react';
 
-import { AiConfig } from '@/domain/aiTypes';
-import { candidateFixtures, hrFixtures } from '@/domain/evaluationFixtures';
-import { PROMPT_VERSIONS } from '@/prompts/promptVersions';
-import { getProviderAdapter } from '@/providers';
 import {
-  EvaluationRun,
-  readEvaluationRuns,
-  saveEvaluationRuns,
-} from '@/storage/evaluationHarnessStorage';
+  loadEvaluationRuns,
+  persistEvaluationRuns,
+} from '@/application/quality/evaluationHarnessGateway';
+import { runEvaluationHarnessUseCase } from '@/application/quality/runEvaluationHarnessUseCase';
+import { AiConfig } from '@/domain/aiTypes';
+import { candidateFixtures } from '@/domain/evaluationFixtures';
+import { EvaluationRun } from '@/storage/evaluationHarnessStorage';
 
 type QualityHarnessProps = {
   config: AiConfig;
@@ -44,7 +43,7 @@ const rankSwapCount = (left: string[], right: string[]) => {
 };
 
 export function QualityHarness({ config }: QualityHarnessProps) {
-  const [runs, setRuns] = useState<EvaluationRun[]>(() => readEvaluationRuns());
+  const [runs, setRuns] = useState<EvaluationRun[]>(() => loadEvaluationRuns());
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -116,39 +115,11 @@ export function QualityHarness({ config }: QualityHarnessProps) {
     setError(null);
 
     try {
-      const adapter = getProviderAdapter(config.provider);
-
-      const candidateRuns = [] as EvaluationRun['candidateRuns'];
-      for (const fixture of candidateFixtures) {
-        const review = await adapter.reviewCandidateCv(config, fixture.input);
-        candidateRuns.push({ fixtureId: fixture.id, score: review.score });
-      }
-
-      const hrRuns = [] as EvaluationRun['hrRuns'];
-      for (const fixture of hrFixtures) {
-        const ranking = await adapter.rankHrCvs(config, fixture.input);
-        hrRuns.push({
-          fixtureId: fixture.id,
-          candidateOrder: ranking.candidates.map(candidate => candidate.id),
-          averageScore: average(
-            ranking.candidates.map(candidate => candidate.score),
-          ),
-        });
-      }
-
-      const run: EvaluationRun = {
-        id: crypto.randomUUID(),
-        provider: config.provider,
-        model: config.model,
-        promptVersions: { ...PROMPT_VERSIONS },
-        ranAt: new Date().toISOString(),
-        candidateRuns,
-        hrRuns,
-      };
+      const run = await runEvaluationHarnessUseCase(config);
 
       const nextRuns = [...runs, run].slice(-30);
       setRuns(nextRuns);
-      saveEvaluationRuns(nextRuns);
+      persistEvaluationRuns(nextRuns);
     } catch (runError) {
       setError(
         runError instanceof Error ? runError.message : 'Harness run failed.',

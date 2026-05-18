@@ -1,6 +1,6 @@
 import { ProviderError } from '@/domain/aiTypes';
 
-export const parseJsonResult = <T,>(
+export const parseJsonResult = <T>(
   text: string,
   normalize: (value: Record<string, unknown>) => T,
 ): T => {

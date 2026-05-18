@@ -13,6 +13,9 @@ Test the app live on GitHub Pages: https://paulorobertouri.github.io/curriculum-
 - Added a Quality Evaluation Harness to track score drift and ranking stability across prompt/model changes.
 - Added optional sensitive-data redaction controls in provider setup.
 - Expanded automated coverage for unit, component, and Playwright end-to-end flows.
+- Refactored provider adapters to use shared orchestration and parsing helpers.
+- Introduced application gateways to reduce direct UI coupling with storage/provider infrastructure.
+- Raised global test coverage gates from 80% to 82%.
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE).
 
@@ -28,6 +31,7 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE).
 - TXT, PDF, and DOCX text extraction.
 - Clear unsupported message for legacy DOC files.
 - Explicit empty, loading, and ready states in the result panels.
+- Application-layer gateways for draft persistence, HR decisions, provider setup actions, and quality harness runs.
 
 ## Commands
 
@@ -40,6 +44,10 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE).
 - `pnpm test:coverage` - run unit and component tests with coverage.
 - `pnpm run lint` - run ESLint.
 - `pnpm run test:e2e` - run Playwright smoke tests.
+
+Quality gate expectation:
+
+- `pnpm test:coverage` enforces global 82% thresholds for statements, branches, functions, and lines.
 
 Playwright journey screenshots are written to `tests/e2e/evidence/`.
 
@@ -86,5 +94,10 @@ Run fixed fixture packs to track prompt quality, score drift, and ranking stabil
 - [Product Plan](docs/PRODUCT_PLAN.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Engineering Standards](docs/ENGINEERING_STANDARDS.md)
+- [Testing Strategy](docs/TESTING_STRATEGY.md)
+- [Contributing](CONTRIBUTING.md)
+- [ADR 0001 - Provider Workflow Standardization](docs/adr/0001-provider-workflow-standardization.md)
+- [ADR 0002 - Layer Boundaries and Application Gateways](docs/adr/0002-layer-boundaries-and-application-gateways.md)
+- [ADR 0003 - Testing Strategy and Coverage Gates](docs/adr/0003-testing-strategy-and-coverage-gates.md)
 
 Roadmap and pending work are tracked in the Product Plan.

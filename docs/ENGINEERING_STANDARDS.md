@@ -8,12 +8,13 @@ The codebase follows a layered browser-first architecture:
 
 - `src/domain`: core business types and pure domain logic.
 - `src/application`: use-cases that orchestrate workflows and depend on domain abstractions.
-- `src/providers`: infrastructure adapters for OpenAI, Gemini, and DeepSeek.
+- `src/providers`: infrastructure adapters for OpenAI, Gemini, DeepSeek, OVH, LLM7, Pollinations, and Kilo.
 - `src/storage`: persistence concerns (`localStorage`) behind modules.
 - `src/components`: presentation and interaction layer.
 
 Rules:
 
+- Components should not call providers or storage modules directly when application gateways/use-cases exist.
 - Components should not embed provider orchestration logic.
 - Use-cases should be testable without React.
 - Domain modules must stay framework-agnostic.
@@ -32,6 +33,12 @@ Rules:
 - Use-case pattern (application service):
   - `runCandidateReviewUseCase`
   - `runHrRankingUseCase`
+- Application gateway pattern:
+  - `candidateDraftGateway`
+  - `hrDecisionsGateway`
+  - `providerSetupUseCases`
+  - `evaluationHarnessGateway`
+  - `runEvaluationHarnessUseCase`
 - Repository-like storage modules for local persistence.
 
 ## TDD Workflow
@@ -41,8 +48,18 @@ Rules:
 3. Refactor while keeping tests green.
 4. Run:
    - `pnpm test --run`
-   - `pnpm run build`
-   - `pnpm run lint`
+
+- `pnpm test:coverage`
+- `pnpm run build`
+- `pnpm run lint`
+- `pnpm run test:e2e`
+
+Coverage gates:
+
+- Statements: 82%
+- Branches: 70%
+- Functions: 80%
+- Lines: 83%
 
 ## BDD-style Test Naming
 
@@ -50,6 +67,10 @@ Prefer behavior-driven naming:
 
 - `given valid input when processing then returns ranked candidates`
 - `given provider omission when processing then creates fallback entry`
+
+## ADR Requirement
+
+When changing architecture boundaries, provider orchestration strategy, or testing gates, add/update ADRs in `docs/adr`.
 
 ## VS Code Workspace Baseline
 

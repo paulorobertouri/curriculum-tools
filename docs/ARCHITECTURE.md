@@ -1,476 +1,124 @@
 # Curriculum Tools Architecture
 
-Last planned: 2026-05-16
+Last planned: 2026-05-18
 
 ## Overview
 
-Curriculum Tools should be a browser-only Vite + React + TypeScript application. It has no backend in v1. The app stores validated provider configuration in `localStorage`, extracts CV text in the browser, and sends prompts directly to the selected AI provider.
+Curriculum Tools is a browser-only Vite + React + TypeScript application.
 
-Recommended stack:
+- No backend in v1.
+- Provider configuration is persisted in browser storage.
+- CV text is extracted in-browser and sent to AI providers only after explicit user action.
+- The app supports key-based and optional-key anonymous provider modes.
 
-- Vite
-- React
-- TypeScript
-- TailwindCSS
-- Vitest
-- Testing Library
-- Playwright
-- `lucide-react` for icons
-- `pdfjs-dist` for PDF text extraction
-- `mammoth` for DOCX text extraction
+## Architecture Style
 
-## Suggested Source Structure
+Layered Clean Architecture (DDD-lite):
+
+- `src/domain`: business types, invariants, pure logic.
+- `src/application`: use-cases and gateways that orchestrate workflows.
+- `src/providers`: infrastructure adapters with provider-specific HTTP details.
+- `src/storage`: persistence modules (`localStorage`).
+- `src/components`: UI/presentation concerns.
+
+Dependency direction:
+
+- `components` -> `application` -> (`domain`, `providers`, `storage`)
+- `domain` does not depend on framework or infrastructure modules.
+
+## Current Provider Portfolio
+
+Supported providers:
+
+- OpenAI
+- Gemini
+- DeepSeek
+- OVHcloud AI Endpoints (anonymous optional key)
+- LLM7 (anonymous optional key)
+- Pollinations (anonymous optional key)
+- Kilo (anonymous optional key)
+
+Provider orchestration uses shared workflows in `src/providers/providerWorkflows.ts` and shared response extraction/parsing in `src/providers/responseParsing.ts`.
+
+## Source Structure
 
 ```text
 src/
-  app/
-    App.tsx
-    AppShell.tsx
+  application/
+    candidate/
+    hr/
+    provider/
+    quality/
   components/
-    ProviderSetup.tsx
-    ProviderStatus.tsx
-    CandidateReviewer.tsx
-    HrRanker.tsx
+    common/
   domain/
     aiTypes.ts
+    evaluationFixtures.ts
+    hrChunking.ts
     hrMetricsSummary.ts
+    reviewQuality.ts
     validation.ts
+  files/
+    extractText.ts
+    exportResults.ts
+  i18n/
+    i18n.tsx
+  prompts/
+    candidatePrompt.ts
+    candidateToolkitPrompt.ts
+    hrPrompt.ts
+    promptVersions.ts
   providers/
     index.ts
-    openaiProvider.ts
-    geminiProvider.ts
     deepseekProvider.ts
+    geminiProvider.ts
+    kiloProvider.ts
+    llm7Provider.ts
+    openaiProvider.ts
+    ovhProvider.ts
+    pollinationsProvider.ts
+    providerUtils.ts
+    providerWorkflows.ts
     responseParsing.ts
   storage/
     aiConfigStorage.ts
-  files/
-    extractText.ts
-  prompts/
-    candidatePrompt.ts
-    hrPrompt.ts
-  test/
-    mocks.ts
+    candidateDraftStorage.ts
+    evaluationHarnessStorage.ts
+    hrDecisionsStorage.ts
 ```
 
-This structure keeps UI, domain contracts, provider HTTP details, storage, file parsing, and prompt construction separate.
+## Application Boundaries
 
-## Core Types
+Application gateways/use-cases are the primary seams between UI and infrastructure:
 
-Use one app-level provider config type:
+- Candidate draft gateway: `src/application/candidate/candidateDraftGateway.ts`
+- HR decisions gateway: `src/application/hr/hrDecisionsGateway.ts`
+- Provider setup use-cases: `src/application/provider/providerSetupUseCases.ts`
+- Quality harness execution/gateway:
+  - `src/application/quality/runEvaluationHarnessUseCase.ts`
+  - `src/application/quality/evaluationHarnessGateway.ts`
 
-```ts
-export type AiProvider = 'openai' | 'gemini' | 'deepseek';
+These keep components focused on rendering, interaction, and state transitions.
 
-export type AiConfig = {
-  provider: AiProvider;
-  apiKey: string;
-  model: string;
-  savedAt: string;
-};
-```
+## Persistence
 
-Use one shared provider interface:
+Storage keys:
 
-```ts
-export type AiProviderAdapter = {
-  testConnection(config: AiConfig): Promise<TestResult>;
-  reviewCandidateCv(
-    config: AiConfig,
-    input: CandidateReviewInput,
-  ): Promise<CandidateReview>;
-  rankHrCvs(config: AiConfig, input: HrRankingInput): Promise<HrRankingResult>;
-};
-```
+- Provider config: `curriculum-tools.aiConfig.v1`
+- Evaluation harness runs: `curriculum-tools.evaluationHarness.v1`
 
-Candidate input:
+Storage modules validate payload shape and avoid logging sensitive values.
 
-```ts
-export type CandidateReviewInput = {
-  jobTitle: string;
-  jobDescription: string;
-  cvText: string;
-};
-```
+## Testing Architecture
 
-Candidate output:
+- Unit tests cover domain, providers, storage, prompts, and application use-cases.
+- E2E tests cover first-run setup, candidate flow, HR flow, chunking behavior, and partial extraction behavior.
+- Coverage gates are enforced in Vitest.
 
-```ts
-export type CandidateReview = {
-  score: number;
-  summary: string;
-  strengths: string[];
-  gaps: string[];
-  recommendations: string[];
-  rewrittenBullets: string[];
-};
-```
+## Architectural Decisions
 
-HR input:
+See ADRs:
 
-```ts
-export type HrRankingInput = {
-  jobTitle: string;
-  jobDescription: string;
-  cvs: Array<{
-    id: string;
-    filename: string;
-    text: string;
-  }>;
-};
-```
-
-HR output:
-
-```ts
-export type HrRankingResult = {
-  candidates: Array<{
-    id: string;
-    filename: string;
-    detectedName?: string;
-    score: number;
-    justification: string;
-    strengths: string[];
-    concerns: string[];
-    interviewRecommendation: 'strong_yes' | 'yes' | 'maybe' | 'no';
-  }>;
-};
-```
-
-HR chunking behavior in the current implementation:
-
-- Send one request when the payload stays within thresholds.
-- Split requests when CV count is above 8 or extracted text exceeds about 50,000 characters.
-- Process chunks sequentially and merge partial rankings deterministically.
-- Merge ordering is score descending, then filename ascending, then candidate ID ascending.
-- If a provider response omits a candidate, include a fallback entry with score `0.0` and a clear justification.
-
-Reusable HR metrics summary:
-
-- Build a plain data summary from `HrRankingResult` for future CSV or JSON export.
-- Include candidate count, average score, top score, lowest score, score spread, top candidate, and recommendation counts.
-- Keep the summary free of presentation details so the same data can feed UI, exports, or tests.
-
-## Storage
-
-Store provider config in `localStorage` using:
-
-```text
-curriculum-tools.aiConfig.v1
-```
-
-Storage module responsibilities:
-
-- Read config.
-- Validate object shape.
-- Save config after successful provider test.
-- Clear config.
-- Never log config.
-- Mask key in UI, for example `sk-...abcd`.
-
-Do not treat the presence of localStorage data as proof that the provider still works. It only means the config was previously saved after a successful test. Retesting should be user-triggered from the provider status area.
-
-## Provider Setup Gate
-
-Startup algorithm:
-
-1. Read config from storage.
-2. If config exists and matches expected shape, show the main app.
-3. If config is missing or invalid, show setup.
-4. On setup submit, call `testConnection`.
-5. Save only after success.
-6. On failure, show the provider error and remain on setup.
-
-`Test and Save` prompt:
-
-```text
-Reply with only this exact word: hello
-```
-
-Success condition:
-
-- HTTP request succeeds.
-- Provider response contains text.
-- Text includes or equals `hello` after trimming and case normalization.
-
-Be tolerant of punctuation or extra whitespace, but not empty responses.
-
-## Provider API Notes
-
-These notes were checked against official docs on 2026-05-15. Recheck during implementation.
-
-### OpenAI
-
-Use the Responses API:
-
-```http
-POST https://api.openai.com/v1/responses
-Authorization: Bearer <api-key>
-Content-Type: application/json
-```
-
-Minimal payload shape:
-
-```json
-{
-  "model": "gpt-5.4-mini",
-  "input": "Reply with only this exact word: hello"
-}
-```
-
-For structured results, use `text.format` with `type: "json_schema"` where the selected model supports it. Keep a fallback parser in the app for unexpected non-schema responses.
-
-Reference: https://platform.openai.com/docs/api-reference/responses/create
-
-### Gemini
-
-Use REST `generateContent`:
-
-```http
-POST https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent
-x-goog-api-key: <api-key>
-Content-Type: application/json
-```
-
-Minimal payload shape:
-
-```json
-{
-  "contents": [
-    {
-      "parts": [
-        {
-          "text": "Reply with only this exact word: hello"
-        }
-      ]
-    }
-  ]
-}
-```
-
-Default model should be defined in a constant and rechecked during implementation. The implementation uses stable `gemini-3.1-flash-lite` as the default.
-
-Reference: https://ai.google.dev/gemini-api/docs
-
-### DeepSeek
-
-Use the OpenAI-compatible chat completions endpoint:
-
-```http
-POST https://api.deepseek.com/chat/completions
-Authorization: Bearer <api-key>
-Content-Type: application/json
-```
-
-Minimal payload shape:
-
-```json
-{
-  "model": "deepseek-v4-flash",
-  "messages": [
-    {
-      "role": "user",
-      "content": "Reply with only this exact word: hello"
-    }
-  ]
-}
-```
-
-For structured output, request JSON in the prompt and, if supported by the selected DeepSeek model/API mode, enable JSON output according to current DeepSeek docs.
-
-Reference: https://api-docs.deepseek.com/api/create-chat-completion
-
-## Prompt Design
-
-Prompts should be strict and role-specific.
-
-Candidate system/developer instruction:
-
-```text
-You are an expert CV reviewer. Evaluate the CV only against the provided job title and job description. Return valid JSON matching the requested schema. Do not invent experience that is not present in the CV.
-```
-
-Candidate user content should include:
-
-- Job title.
-- Job description.
-- CV text.
-- Required JSON schema.
-
-HR system/developer instruction:
-
-```text
-You are an HR screening assistant. Rank candidates only against the provided job title and job description. Return valid JSON matching the requested schema. Be specific and fair. Do not infer protected characteristics.
-```
-
-HR user content should include:
-
-- Job title.
-- Job description.
-- Candidate list with stable IDs, filenames, and extracted CV text.
-- Required JSON schema.
-
-Scoring rules:
-
-- Use `0.0` to `10.0`.
-- `10.0` means exceptionally strong match.
-- `7.0` to `8.9` means good match with manageable gaps.
-- `5.0` to `6.9` means partial match.
-- Below `5.0` means weak match.
-- Score must be based on evidence in the CV.
-
-## Response Parsing And Validation
-
-Provider responses can vary. Add a single parser that:
-
-- Extracts text from provider-specific response bodies.
-- Removes Markdown code fences.
-- Parses JSON.
-- Validates required keys.
-- Coerces scores to numbers.
-- Clamps scores to `0.0` through `10.0`.
-- Converts missing arrays to empty arrays.
-- Uses deterministic fallback IDs for HR candidates when providers omit IDs.
-- Returns actionable errors when parsing fails.
-
-Do not render raw JSON parser errors directly to users. Show a message such as:
-
-```text
-The provider responded, but the result was not in the expected format. Try again or use a different model.
-```
-
-## File Extraction
-
-Supported file types:
-
-- `.txt`: use `File.text()`.
-- `.pdf`: use `pdfjs-dist` to read pages and concatenate text.
-- `.docx`: use `mammoth` to extract raw text.
-
-Legacy `.doc`:
-
-- Do not promise reliable support in v1.
-- Show a clear message asking the user to convert to `.docx`, `.pdf`, or paste text.
-
-Extraction behavior:
-
-- Store extracted text in component state only.
-- Candidate shows a single file status message while extraction runs and then shows the ready filename.
-- HR shows a per-file ready/error list and a separate processing banner while the ranking request is in flight.
-- Do not send extracted text to a provider until the user clicks `Process`.
-
-## Error Handling
-
-Normalize provider errors into these categories:
-
-- `auth`: invalid or unauthorized API key.
-- `quota`: insufficient quota, billing, or rate limit.
-- `network`: failed request, CORS, timeout, or offline.
-- `provider`: provider returned an API-level error.
-- `parse`: provider responded but not in expected format.
-- `validation`: user input is missing or invalid.
-
-Each category should map to a clear UI message and optional next action.
-
-## UI States
-
-Provider setup:
-
-- Empty form.
-- Testing.
-- Success and saving.
-- Error.
-
-Main app:
-
-- Provider status visible.
-- Candidate tab.
-- HR tab.
-- Retest provider.
-- Edit provider.
-- Clear provider.
-
-Candidate:
-
-- Empty form.
-- File extracting.
-- Ready.
-- Processing.
-- Result.
-- Error.
-
-HR:
-
-- Empty form.
-- Files extracting.
-- Ready list.
-- Processing batch.
-- Ranked result.
-- Partial file errors.
-
-## Testing Strategy
-
-Unit tests:
-
-- `aiConfigStorage` saves, reads, validates, and clears v1 config.
-- Provider adapters create correct `fetch` calls.
-- Provider adapters normalize HTTP and provider errors.
-- Response parser handles plain JSON, fenced JSON, malformed JSON, missing arrays, and out-of-range scores.
-- File extraction handles `.txt`, `.pdf`, `.docx`, and `.doc` errors.
-
-Component tests:
-
-- Setup gate blocks tools without config.
-- Successful `Test and Save` unlocks tools.
-- Failed provider test shows error and does not save.
-- Candidate form validates required fields.
-- Candidate result renders score and recommendations.
-- Shared result panel renders empty, loading, and ready states.
-- HR form accepts multiple files and renders per-file statuses.
-- HR ranking renders sorted results.
-
-E2E tests:
-
-- First-run setup screen.
-- Mocked provider test unlocks app.
-- Candidate mocked review renders score and recommendation sections.
-- Candidate uploaded file flow shows extraction status before processing.
-- HR mocked ranking renders sorted candidate cards.
-- HR uploaded file flow keeps extraction errors visible while valid files still process.
-- Playwright journey screenshots are saved in `tests/e2e/evidence/` to document the current user paths.
-
-Current validation commands:
-
-- `pnpm test`
-- `pnpm test:coverage`
-- `pnpm run test:e2e`
-- `pnpm run build`
-- `pnpm run lint`
-
-Mocking approach:
-
-- Use mocked `fetch` for Vitest.
-- Use Playwright route interception for E2E.
-- Never require real API keys in automated tests.
-
-## Implementation Order
-
-1. Scaffold project and quality tooling.
-2. Add domain types and storage module.
-3. Build provider setup gate with mocked adapter.
-4. Implement provider adapters.
-5. Add response parsing and validation.
-6. Build Candidate tool.
-7. Add file extraction utilities.
-8. Build HR tool.
-9. Add tests and E2E smoke coverage.
-10. Polish UI copy, privacy warnings, and documentation.
-
-## Future Enhancements
-
-- Optional backend proxy to avoid exposing API keys to browser runtime.
-- CSV export for HR ranking.
-- Local-only result history.
-- More file formats.
-- Token estimation before sending large HR batches.
-- Model presets by quality, speed, and cost.
-- Internationalization for English, Portuguese, and Spanish.
+- `docs/adr/0001-provider-workflow-standardization.md`
+- `docs/adr/0002-layer-boundaries-and-application-gateways.md`
+- `docs/adr/0003-testing-strategy-and-coverage-gates.md`
