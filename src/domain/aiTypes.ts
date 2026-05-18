@@ -101,6 +101,7 @@ export class ProviderError extends Error {
 
 export type AiProviderAdapter = {
   testConnection(config: AiConfig): Promise<TestResult>;
+  listModels?(config: AiConfig): Promise<string[]>;
   reviewCandidateCv(
     config: AiConfig,
     input: CandidateReviewInput,

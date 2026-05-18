@@ -25,6 +25,7 @@ import { parseJsonResult } from '@/providers/responseParsing';
 
 const POLLINATIONS_CHAT_URL =
   'https://text.pollinations.ai/openai/chat/completions';
+const POLLINATIONS_MODELS_URL = 'https://text.pollinations.ai/openai/models';
 
 export const pollinationsProvider: AiProviderAdapter = {
   async testConnection(config): Promise<TestResult> {
@@ -32,6 +33,27 @@ export const pollinationsProvider: AiProviderAdapter = {
       const text = await createChatCompletion(config, TEST_PROMPT);
       ensureNonEmptyResponse(text);
       return { ok: true, message: 'Pollinations responded successfully.' };
+    } catch (error) {
+      throw toProviderError(error);
+    }
+  },
+
+  async listModels(): Promise<string[]> {
+    try {
+      const response = await fetch(POLLINATIONS_MODELS_URL, {
+        method: 'GET',
+      });
+
+      await assertSuccessfulResponse(response);
+
+      const body = (await response.json()) as {
+        data?: Array<{ id?: string }>;
+      };
+
+      return (body.data ?? [])
+        .map(model => model.id?.trim() ?? '')
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b));
     } catch (error) {
       throw toProviderError(error);
     }

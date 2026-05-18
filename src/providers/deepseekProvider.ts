@@ -24,6 +24,7 @@ import {
 import { parseJsonResult } from '@/providers/responseParsing';
 
 const DEEPSEEK_CHAT_URL = 'https://api.deepseek.com/chat/completions';
+const DEEPSEEK_MODELS_URL = 'https://api.deepseek.com/models';
 
 export const deepseekProvider: AiProviderAdapter = {
   async testConnection(config): Promise<TestResult> {
@@ -31,6 +32,31 @@ export const deepseekProvider: AiProviderAdapter = {
       const text = await createChatCompletion(config, TEST_PROMPT);
       ensureHello(text);
       return { ok: true, message: 'DeepSeek responded successfully.' };
+    } catch (error) {
+      throw toProviderError(error);
+    }
+  },
+
+  async listModels(config): Promise<string[]> {
+    try {
+      const response = await fetch(DEEPSEEK_MODELS_URL, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${config.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      await assertSuccessfulResponse(response);
+
+      const body = (await response.json()) as {
+        data?: Array<{ id?: string }>;
+      };
+
+      return (body.data ?? [])
+        .map(model => model.id?.trim() ?? '')
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b));
     } catch (error) {
       throw toProviderError(error);
     }

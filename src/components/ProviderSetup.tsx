@@ -20,6 +20,7 @@ type ProviderSetupProps = {
 
 export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
   const { t } = useI18n();
+  const modelOptionsId = 'provider-model-options';
   const [provider, setProvider] = useState<AiProviderId>(
     initialConfig?.provider ?? 'openai',
   );
@@ -30,8 +31,10 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
   const [redactSensitiveData, setRedactSensitiveData] = useState(
     initialConfig?.redactSensitiveData ?? true,
   );
+  const [availableModels, setAvailableModels] = useState<string[]>([]);
   const [status, setStatus] = useState<string | null>(null);
   const [isTesting, setIsTesting] = useState(false);
+  const [isFetchingModels, setIsFetchingModels] = useState(false);
 
   const apiKeyRequired = providerRequiresApiKey(provider);
 
@@ -41,7 +44,58 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
   const handleProviderChange = (nextProvider: AiProviderId) => {
     setProvider(nextProvider);
     setModel(DEFAULT_MODELS[nextProvider]);
+    setAvailableModels([]);
     setStatus(null);
+  };
+
+  const handleFetchModels = async () => {
+    setStatus(null);
+
+    if (apiKeyRequired && !apiKey.trim()) {
+      setStatus(t('provider.setup.validation'));
+      return;
+    }
+
+    const config: AiConfig = {
+      provider,
+      apiKey: apiKey.trim(),
+      model: model.trim(),
+      savedAt: new Date().toISOString(),
+      redactSensitiveData,
+    };
+
+    const adapter = getProviderAdapter(provider);
+
+    if (!adapter.listModels) {
+      setStatus(t('provider.setup.modelsUnsupported'));
+      return;
+    }
+
+    setIsFetchingModels(true);
+
+    try {
+      const models = await adapter.listModels(config);
+      setAvailableModels(models);
+
+      if (models.length === 0) {
+        setStatus(t('provider.setup.modelsEmpty'));
+        return;
+      }
+
+      if (!models.includes(model.trim())) {
+        setModel(models[0]);
+      }
+
+      setStatus(
+        t('provider.setup.modelsFetched', { count: String(models.length) }),
+      );
+    } catch (error) {
+      setStatus(
+        error instanceof Error ? error.message : t('provider.status.failed'),
+      );
+    } finally {
+      setIsFetchingModels(false);
+    }
   };
 
   const handleSubmit = async (event: React.SyntheticEvent<HTMLFormElement>) => {
@@ -190,15 +244,35 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
             ) : null}
 
             <div className='space-y-2'>
-              <label className='text-sm font-bold' htmlFor='model'>
-                {t('provider.setup.model')}
-              </label>
+              <div className='flex items-center justify-between gap-3'>
+                <label className='text-sm font-bold' htmlFor='model'>
+                  {t('provider.setup.model')}
+                </label>
+                <button
+                  className='rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-bold text-slate-700 transition hover:border-cyan-600 hover:text-cyan-700 disabled:cursor-not-allowed disabled:opacity-60'
+                  type='button'
+                  onClick={handleFetchModels}
+                  disabled={isFetchingModels || isTesting}
+                >
+                  {isFetchingModels
+                    ? t('provider.setup.fetchingModels')
+                    : t('provider.setup.fetchModels')}
+                </button>
+              </div>
               <input
                 id='model'
                 className='w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-cyan-600 focus:ring-4 focus:ring-cyan-100'
                 value={model}
                 onChange={event => setModel(event.target.value)}
+                list={availableModels.length > 0 ? modelOptionsId : undefined}
               />
+              {availableModels.length > 0 ? (
+                <datalist id={modelOptionsId}>
+                  {availableModels.map(option => (
+                    <option key={option} value={option} />
+                  ))}
+                </datalist>
+              ) : null}
             </div>
 
             <label className='flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3'>

@@ -1,5 +1,4 @@
 import {
-  ProviderError,
   AiConfig,
   AiProviderAdapter,
   CandidateReview,
@@ -26,7 +25,8 @@ import { parseJsonResult } from '@/providers/responseParsing';
 
 const OVH_CHAT_URL =
   'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/chat/completions';
-const OVH_MODELS_URL = 'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/models';
+const OVH_MODELS_URL =
+  'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/models';
 
 export const ovhProvider: AiProviderAdapter = {
   async testConnection(config): Promise<TestResult> {
@@ -50,6 +50,14 @@ export const ovhProvider: AiProviderAdapter = {
       }
 
       throw providerError;
+    }
+  },
+
+  async listModels(config): Promise<string[]> {
+    try {
+      return await fetchModels(config);
+    } catch (error) {
+      throw toProviderError(error);
     }
   },
 
@@ -118,6 +126,10 @@ const extractText = (body: unknown): string => {
 };
 
 const verifyModelsEndpoint = async (config: AiConfig) => {
+  await fetchModels(config);
+};
+
+const fetchModels = async (config: AiConfig): Promise<string[]> => {
   const headers: Record<string, string> = {};
 
   if (config.apiKey.trim()) {
@@ -129,12 +141,14 @@ const verifyModelsEndpoint = async (config: AiConfig) => {
     headers,
   });
 
-  try {
-    await assertSuccessfulResponse(response);
-  } catch (error) {
-    throw new ProviderError(
-      'quota',
-      'The provider reported quota, billing, or rate limit trouble.',
-    );
-  }
+  await assertSuccessfulResponse(response);
+
+  const body = (await response.json()) as {
+    data?: Array<{ id?: string }>;
+  };
+
+  return (body.data ?? [])
+    .map(model => model.id?.trim() ?? '')
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b));
 };

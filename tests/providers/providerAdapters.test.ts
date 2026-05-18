@@ -84,6 +84,23 @@ describe('provider adapters', () => {
     );
   });
 
+  it('lists OpenAI models', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({ data: [{ id: 'gpt-5.4-mini' }, { id: 'gpt-4o' }] }),
+    } as Response);
+
+    await expect(openaiProvider.listModels?.(config)).resolves.toEqual([
+      'gpt-4o',
+      'gpt-5.4-mini',
+    ]);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.openai.com/v1/models',
+      expect.objectContaining({ method: 'GET' }),
+    );
+  });
+
   it('sends a valid structured-output schema for OpenAI result parsing', async () => {
     const fetchMock = vi
       .spyOn(globalThis, 'fetch')
@@ -266,6 +283,33 @@ describe('provider adapters', () => {
     );
   });
 
+  it('lists Gemini models that support generateContent', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        models: [
+          {
+            name: 'models/gemini-3.1-flash-lite',
+            supportedGenerationMethods: ['generateContent'],
+          },
+          {
+            name: 'models/text-embedding-004',
+            supportedGenerationMethods: ['embedContent'],
+          },
+        ],
+      }),
+    } as Response);
+
+    await expect(
+      geminiProvider.listModels?.({ ...config, provider: 'gemini' }),
+    ).resolves.toEqual(['gemini-3.1-flash-lite']);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://generativelanguage.googleapis.com/v1beta/models?key=test-key',
+      expect.objectContaining({ method: 'GET' }),
+    );
+  });
+
   it('calls DeepSeek chat completions for connection tests', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
       ok: true,
@@ -277,6 +321,22 @@ describe('provider adapters', () => {
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.deepseek.com/chat/completions',
       expect.objectContaining({ method: 'POST' }),
+    );
+  });
+
+  it('lists DeepSeek models', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({ data: [{ id: 'deepseek-v4-flash' }] }),
+    } as Response);
+
+    await expect(
+      deepseekProvider.listModels?.({ ...config, provider: 'deepseek' }),
+    ).resolves.toEqual(['deepseek-v4-flash']);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.deepseek.com/models',
+      expect.objectContaining({ method: 'GET' }),
     );
   });
 
@@ -339,6 +399,24 @@ describe('provider adapters', () => {
     );
   });
 
+  it('lists OVH models', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        data: [{ id: 'Qwen3-32B' }, { id: 'gpt-oss-20b' }],
+      }),
+    } as Response);
+
+    await expect(
+      ovhProvider.listModels?.({ ...config, provider: 'ovh', apiKey: '' }),
+    ).resolves.toEqual(['gpt-oss-20b', 'Qwen3-32B']);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/models',
+      expect.objectContaining({ method: 'GET' }),
+    );
+  });
+
   it('calls LLM7 chat completions and sends auth only when key exists', async () => {
     const fetchMock = vi
       .spyOn(globalThis, 'fetch')
@@ -374,6 +452,25 @@ describe('provider adapters', () => {
 
     expect(firstHeaders.Authorization).toBeUndefined();
     expect(secondHeaders.Authorization).toBe('Bearer llm7-token');
+  });
+
+  it('lists LLM7 models from array responses', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => [
+        { id: 'deepseek-v3-0324' },
+        { id: 'codestral-latest' },
+      ],
+    } as Response);
+
+    await expect(
+      llm7Provider.listModels?.({ ...config, provider: 'llm7', apiKey: '' }),
+    ).resolves.toEqual(['codestral-latest', 'deepseek-v3-0324']);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.llm7.io/v1/models',
+      expect.objectContaining({ method: 'GET' }),
+    );
   });
 
   it('calls Pollinations chat completions without api key', async () => {
@@ -418,6 +515,28 @@ describe('provider adapters', () => {
     });
   });
 
+  it('lists Pollinations models', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        data: [{ id: 'openai-fast' }, { id: 'openai-large' }],
+      }),
+    } as Response);
+
+    await expect(
+      pollinationsProvider.listModels?.({
+        ...config,
+        provider: 'pollinations',
+        apiKey: '',
+      }),
+    ).resolves.toEqual(['openai-fast', 'openai-large']);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://text.pollinations.ai/openai/models',
+      expect.objectContaining({ method: 'GET' }),
+    );
+  });
+
   it('calls Kilo chat completions and sends auth only when key exists', async () => {
     const fetchMock = vi
       .spyOn(globalThis, 'fetch')
@@ -455,6 +574,24 @@ describe('provider adapters', () => {
 
     expect(firstHeaders.Authorization).toBeUndefined();
     expect(secondHeaders.Authorization).toBe('Bearer kilo-token');
+  });
+
+  it('lists Kilo models', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        data: [{ id: 'kilo-auto/free' }, { id: 'foo/bar' }],
+      }),
+    } as Response);
+
+    await expect(
+      kiloProvider.listModels?.({ ...config, provider: 'kilo', apiKey: '' }),
+    ).resolves.toEqual(['foo/bar', 'kilo-auto/free']);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.kilo.ai/api/gateway/models',
+      expect.objectContaining({ method: 'GET' }),
+    );
   });
 
   it('redacts sensitive data before sending prompts to OpenAI', async () => {

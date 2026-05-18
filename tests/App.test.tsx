@@ -111,6 +111,47 @@ describe('App', () => {
     ).toBeVisible();
   });
 
+  it('fetches OpenAI models and updates the model input', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        data: [{ id: 'gpt-4o-mini' }, { id: 'gpt-5.4-mini' }],
+      }),
+    } as Response);
+
+    renderApp();
+
+    await user.selectOptions(screen.getByLabelText('Provider'), 'openai');
+    await user.type(screen.getByLabelText('API key'), 'sk-test-key');
+    await user.click(screen.getByRole('button', { name: 'Fetch models' }));
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('gpt-4o-mini')).toBeVisible();
+    });
+
+    expect(await screen.findByText('2 models fetched.')).toBeVisible();
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.openai.com/v1/models',
+      expect.objectContaining({ method: 'GET' }),
+    );
+  });
+
+  it('validates key before fetching models for key-required providers', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.spyOn(globalThis, 'fetch');
+
+    renderApp();
+
+    await user.selectOptions(screen.getByLabelText('Provider'), 'openai');
+    await user.click(screen.getByRole('button', { name: 'Fetch models' }));
+
+    expect(
+      await screen.findByText('Enter an API key and model before testing.'),
+    ).toBeVisible();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('keeps setup locked when provider test fails', async () => {
     const user = userEvent.setup();
     vi.spyOn(globalThis, 'fetch').mockResolvedValue({

@@ -24,6 +24,7 @@ import {
 import { parseJsonResult } from '@/providers/responseParsing';
 
 const OPENAI_RESPONSES_URL = 'https://api.openai.com/v1/responses';
+const OPENAI_MODELS_URL = 'https://api.openai.com/v1/models';
 
 export const openaiProvider: AiProviderAdapter = {
   async testConnection(config): Promise<TestResult> {
@@ -31,6 +32,30 @@ export const openaiProvider: AiProviderAdapter = {
       const text = await createResponse(config, TEST_PROMPT, null);
       ensureHello(text);
       return { ok: true, message: 'OpenAI responded successfully.' };
+    } catch (error) {
+      throw toProviderError(error);
+    }
+  },
+
+  async listModels(config): Promise<string[]> {
+    try {
+      const response = await fetch(OPENAI_MODELS_URL, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${config.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      await assertSuccessfulResponse(response);
+      const body = (await response.json()) as {
+        data?: Array<{ id?: string }>;
+      };
+
+      return (body.data ?? [])
+        .map(model => model.id?.trim() ?? '')
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b));
     } catch (error) {
       throw toProviderError(error);
     }

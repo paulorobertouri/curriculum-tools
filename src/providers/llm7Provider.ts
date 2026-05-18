@@ -24,6 +24,7 @@ import {
 import { parseJsonResult } from '@/providers/responseParsing';
 
 const LLM7_CHAT_URL = 'https://api.llm7.io/v1/chat/completions';
+const LLM7_MODELS_URL = 'https://api.llm7.io/v1/models';
 
 export const llm7Provider: AiProviderAdapter = {
   async testConnection(config): Promise<TestResult> {
@@ -31,6 +32,38 @@ export const llm7Provider: AiProviderAdapter = {
       const text = await createChatCompletion(config, TEST_PROMPT);
       ensureHello(text);
       return { ok: true, message: 'LLM7 responded successfully.' };
+    } catch (error) {
+      throw toProviderError(error);
+    }
+  },
+
+  async listModels(config): Promise<string[]> {
+    try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+
+      if (config.apiKey.trim()) {
+        headers.Authorization = `Bearer ${config.apiKey.trim()}`;
+      }
+
+      const response = await fetch(LLM7_MODELS_URL, {
+        method: 'GET',
+        headers,
+      });
+
+      await assertSuccessfulResponse(response);
+
+      const body = (await response.json()) as
+        | { data?: Array<{ id?: string }> }
+        | Array<{ id?: string }>;
+
+      const models = Array.isArray(body) ? body : (body.data ?? []);
+
+      return models
+        .map(model => model.id?.trim() ?? '')
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b));
     } catch (error) {
       throw toProviderError(error);
     }

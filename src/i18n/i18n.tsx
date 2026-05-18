@@ -54,6 +54,13 @@ const dictionaries: Record<Locale, Dictionary> = {
       'Optional: paste a key for higher limits',
     'provider.setup.validation': 'Enter an API key and model before testing.',
     'provider.setup.validationModel': 'Enter a model before testing.',
+    'provider.setup.fetchModels': 'Fetch models',
+    'provider.setup.fetchingModels': 'Fetching models...',
+    'provider.setup.modelsUnsupported':
+      'Model listing is not available for this provider.',
+    'provider.setup.modelsEmpty':
+      'No models were returned by this provider endpoint.',
+    'provider.setup.modelsFetched': '{count} models fetched.',
     'provider.setup.risk.title': 'Risk notice:',
     'provider.setup.risk.ovh':
       'Anonymous free tier is heavily rate-limited and can be unstable. Do not send sensitive CV data.',
@@ -226,6 +233,13 @@ const dictionaries: Record<Locale, Dictionary> = {
     'provider.setup.validation':
       'Informe uma chave de API e um modelo antes de testar.',
     'provider.setup.validationModel': 'Informe um modelo antes de testar.',
+    'provider.setup.fetchModels': 'Buscar modelos',
+    'provider.setup.fetchingModels': 'Buscando modelos...',
+    'provider.setup.modelsUnsupported':
+      'A listagem de modelos nao esta disponivel para este provedor.',
+    'provider.setup.modelsEmpty':
+      'Nenhum modelo foi retornado por este endpoint do provedor.',
+    'provider.setup.modelsFetched': '{count} modelos carregados.',
     'provider.setup.risk.title': 'Aviso de risco:',
     'provider.setup.risk.ovh':
       'O modo anonimo gratuito tem limite de taxa forte e pode ser instavel. Nao envie dados sensiveis de CV.',
@@ -399,6 +413,13 @@ const dictionaries: Record<Locale, Dictionary> = {
     'provider.setup.validation':
       'Introduce una clave API y un modelo antes de probar.',
     'provider.setup.validationModel': 'Introduce un modelo antes de probar.',
+    'provider.setup.fetchModels': 'Obtener modelos',
+    'provider.setup.fetchingModels': 'Obteniendo modelos...',
+    'provider.setup.modelsUnsupported':
+      'La lista de modelos no esta disponible para este proveedor.',
+    'provider.setup.modelsEmpty':
+      'Este endpoint del proveedor no devolvio modelos.',
+    'provider.setup.modelsFetched': '{count} modelos cargados.',
     'provider.setup.risk.title': 'Aviso de riesgo:',
     'provider.setup.risk.ovh':
       'El modo anonimo gratuito tiene limite de tasa estricto y puede ser inestable. No envies datos sensibles del CV.',

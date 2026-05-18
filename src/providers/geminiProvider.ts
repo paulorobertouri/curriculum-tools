@@ -34,6 +34,38 @@ export const geminiProvider: AiProviderAdapter = {
     }
   },
 
+  async listModels(config): Promise<string[]> {
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(
+          config.apiKey,
+        )}`,
+        {
+          method: 'GET',
+        },
+      );
+
+      await assertSuccessfulResponse(response);
+
+      const body = (await response.json()) as {
+        models?: Array<{
+          name?: string;
+          supportedGenerationMethods?: string[];
+        }>;
+      };
+
+      return (body.models ?? [])
+        .filter(model =>
+          (model.supportedGenerationMethods ?? []).includes('generateContent'),
+        )
+        .map(model => (model.name ?? '').replace(/^models\//, '').trim())
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b));
+    } catch (error) {
+      throw toProviderError(error);
+    }
+  },
+
   async reviewCandidateCv(config, input): Promise<CandidateReview> {
     const reviewText = await generateContent(
       config,
