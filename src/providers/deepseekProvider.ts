@@ -1,18 +1,4 @@
-import {
-  AiConfig,
-  AiProviderAdapter,
-  CandidateReview,
-  HrRankingResult,
-  TestResult,
-} from '@/domain/aiTypes';
-import {
-  normalizeCandidateCareerToolkit,
-  normalizeCandidateReview,
-  normalizeHrRanking,
-} from '@/domain/validation';
-import { buildCandidatePrompt } from '@/prompts/candidatePrompt';
-import { buildCandidateToolkitPrompt } from '@/prompts/candidateToolkitPrompt';
-import { buildHrPrompt } from '@/prompts/hrPrompt';
+import { AiConfig, AiProviderAdapter, TestResult } from '@/domain/aiTypes';
 import {
   TEST_PROMPT,
   assertSuccessfulResponse,
@@ -21,7 +7,8 @@ import {
   sanitizePromptForProvider,
   toProviderError,
 } from '@/providers/providerUtils';
-import { parseJsonResult } from '@/providers/responseParsing';
+import { createStandardWorkflows } from '@/providers/providerWorkflows';
+import { extractChatCompletionText } from '@/providers/responseParsing';
 
 const DEEPSEEK_CHAT_URL = 'https://api.deepseek.com/chat/completions';
 const DEEPSEEK_MODELS_URL = 'https://api.deepseek.com/models';
@@ -62,32 +49,9 @@ export const deepseekProvider: AiProviderAdapter = {
     }
   },
 
-  async reviewCandidateCv(config, input): Promise<CandidateReview> {
-    const reviewText = await createChatCompletion(
-      config,
-      buildCandidatePrompt(input),
-    );
-    const toolkitText = await createChatCompletion(
-      config,
-      buildCandidateToolkitPrompt(input),
-    );
-
-    const review = parseJsonResult(reviewText, normalizeCandidateReview);
-    const toolkit = parseJsonResult(
-      toolkitText,
-      normalizeCandidateCareerToolkit,
-    );
-
-    return {
-      ...review,
-      ...toolkit,
-    };
-  },
-
-  async rankHrCvs(config, input): Promise<HrRankingResult> {
-    const text = await createChatCompletion(config, buildHrPrompt(input));
-    return parseJsonResult(text, normalizeHrRanking);
-  },
+  ...createStandardWorkflows((config, prompt) =>
+    createChatCompletion(config, prompt),
+  ),
 };
 
 const createChatCompletion = async (config: AiConfig, prompt: string) => {
@@ -111,13 +75,5 @@ const createChatCompletion = async (config: AiConfig, prompt: string) => {
   await assertSuccessfulResponse(response);
 
   const body = await response.json();
-  return extractDeepSeekText(body);
-};
-
-const extractDeepSeekText = (body: unknown): string => {
-  const response = body as {
-    choices?: Array<{ message?: { content?: string } }>;
-  };
-
-  return response.choices?.[0]?.message?.content ?? '';
+  return extractChatCompletionText(body);
 };

@@ -8,6 +8,10 @@ import {
   useState,
 } from 'react';
 
+import {
+  loadCandidateCvDraft,
+  persistCandidateCvDraft,
+} from '@/application/candidate/candidateDraftGateway';
 import { runCandidateReviewUseCase } from '@/application/candidate/runCandidateReviewUseCase';
 import { ProviderFallbackNotice } from '@/application/providerFallback';
 import { AiConfig, CandidateReview } from '@/domain/aiTypes';
@@ -18,10 +22,6 @@ import {
 } from '@/files/exportResults';
 import { SUPPORTED_FILE_TYPES, extractTextFromFile } from '@/files/extractText';
 import { useI18n } from '@/i18n/i18n';
-import {
-  readCandidateCvDraft,
-  saveCandidateCvDraft,
-} from '@/storage/candidateDraftStorage';
 
 type CandidateReviewerProps = {
   config: AiConfig;
@@ -31,7 +31,7 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
   const { locale, t } = useI18n();
   const [jobTitle, setJobTitle] = useState('');
   const [jobDescription, setJobDescription] = useState('');
-  const [cvText, setCvText] = useState(() => readCandidateCvDraft());
+  const [cvText, setCvText] = useState(() => loadCandidateCvDraft());
   const [fileStatus, setFileStatus] = useState<string | null>(null);
   const [result, setResult] = useState<CandidateReview | null>(null);
   const [previousResult, setPreviousResult] = useState<CandidateReview | null>(
@@ -56,7 +56,7 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
     try {
       const text = await extractTextFromFile(file);
       setCvText(text);
-      saveCandidateCvDraft(text);
+      persistCandidateCvDraft(text);
       setFileStatus(t('candidate.ready', { filename: file.name }));
     } catch (extractError) {
       setFileStatus(null);
@@ -145,7 +145,7 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
           value={cvText}
           onChange={value => {
             setCvText(value);
-            saveCandidateCvDraft(value);
+            persistCandidateCvDraft(value);
           }}
           rows={10}
         />

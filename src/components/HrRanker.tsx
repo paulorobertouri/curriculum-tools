@@ -1,6 +1,10 @@
 import { Download, Loader2, Sparkles } from 'lucide-react';
 import { ChangeEvent, useMemo, useState } from 'react';
 
+import {
+  loadHrDecisions,
+  persistHrDecisions,
+} from '@/application/hr/hrDecisionsGateway';
 import { runHrRankingUseCase } from '@/application/hr/runHrRankingUseCase';
 import { ProviderFallbackNotice } from '@/application/providerFallback';
 import {
@@ -32,8 +36,6 @@ import {
   HrDecision,
   HrDecisionMap,
   HrDecisionStatus,
-  readHrDecisions,
-  saveHrDecisions,
 } from '@/storage/hrDecisionsStorage';
 
 type HrRankerProps = {
@@ -56,7 +58,7 @@ export function HrRanker({ config }: HrRankerProps) {
   );
   const [rawCvById, setRawCvById] = useState<Record<string, string>>({});
   const [decisions, setDecisions] = useState<HrDecisionMap>(() =>
-    readHrDecisions(),
+    loadHrDecisions(),
   );
   const [error, setError] = useState<string | null>(null);
   const [isExtracting, setIsExtracting] = useState(false);
@@ -91,7 +93,7 @@ export function HrRanker({ config }: HrRankerProps) {
         [candidateId]: next,
       };
 
-      saveHrDecisions(merged);
+      persistHrDecisions(merged);
       return merged;
     });
   };

@@ -4,7 +4,12 @@ import {
   normalizeCandidateReview,
   normalizeHrRanking,
 } from '@/domain/validation';
-import { parseJsonResult } from '@/providers/responseParsing';
+import {
+  extractChatCompletionText,
+  extractGeminiText,
+  extractOpenAiResponseText,
+  parseJsonResult,
+} from '@/providers/responseParsing';
 
 describe('responseParsing', () => {
   it('parses fenced candidate JSON and normalizes score', () => {
@@ -58,5 +63,45 @@ describe('responseParsing', () => {
     expect(() => parseJsonResult('not json', normalizeCandidateReview)).toThrow(
       'expected format',
     );
+  });
+
+  it('extracts text from OpenAI output_text responses', () => {
+    expect(extractOpenAiResponseText({ output_text: 'primary text' })).toBe(
+      'primary text',
+    );
+  });
+
+  it('extracts text from OpenAI content array responses', () => {
+    expect(
+      extractOpenAiResponseText({
+        output: [
+          {
+            content: [{ text: 'line one' }, { text: 'line two' }],
+          },
+        ],
+      }),
+    ).toBe('line one\nline two');
+  });
+
+  it('extracts text from Gemini candidate parts', () => {
+    expect(
+      extractGeminiText({
+        candidates: [
+          {
+            content: {
+              parts: [{ text: 'alpha' }, { text: 'beta' }],
+            },
+          },
+        ],
+      }),
+    ).toBe('alpha\nbeta');
+  });
+
+  it('extracts text from chat completion payloads', () => {
+    expect(
+      extractChatCompletionText({
+        choices: [{ message: { content: 'chat response' } }],
+      }),
+    ).toBe('chat response');
   });
 });

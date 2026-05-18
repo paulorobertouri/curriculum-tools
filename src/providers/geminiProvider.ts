@@ -1,18 +1,4 @@
-import {
-  AiConfig,
-  AiProviderAdapter,
-  CandidateReview,
-  HrRankingResult,
-  TestResult,
-} from '@/domain/aiTypes';
-import {
-  normalizeCandidateCareerToolkit,
-  normalizeCandidateReview,
-  normalizeHrRanking,
-} from '@/domain/validation';
-import { buildCandidatePrompt } from '@/prompts/candidatePrompt';
-import { buildCandidateToolkitPrompt } from '@/prompts/candidateToolkitPrompt';
-import { buildHrPrompt } from '@/prompts/hrPrompt';
+import { AiConfig, AiProviderAdapter, TestResult } from '@/domain/aiTypes';
 import {
   TEST_PROMPT,
   assertSuccessfulResponse,
@@ -21,7 +7,8 @@ import {
   sanitizePromptForProvider,
   toProviderError,
 } from '@/providers/providerUtils';
-import { parseJsonResult } from '@/providers/responseParsing';
+import { createStandardWorkflows } from '@/providers/providerWorkflows';
+import { extractGeminiText } from '@/providers/responseParsing';
 
 export const geminiProvider: AiProviderAdapter = {
   async testConnection(config): Promise<TestResult> {
@@ -66,32 +53,9 @@ export const geminiProvider: AiProviderAdapter = {
     }
   },
 
-  async reviewCandidateCv(config, input): Promise<CandidateReview> {
-    const reviewText = await generateContent(
-      config,
-      buildCandidatePrompt(input),
-    );
-    const toolkitText = await generateContent(
-      config,
-      buildCandidateToolkitPrompt(input),
-    );
-
-    const review = parseJsonResult(reviewText, normalizeCandidateReview);
-    const toolkit = parseJsonResult(
-      toolkitText,
-      normalizeCandidateCareerToolkit,
-    );
-
-    return {
-      ...review,
-      ...toolkit,
-    };
-  },
-
-  async rankHrCvs(config, input): Promise<HrRankingResult> {
-    const text = await generateContent(config, buildHrPrompt(input));
-    return parseJsonResult(text, normalizeHrRanking);
-  },
+  ...createStandardWorkflows((config, prompt) =>
+    generateContent(config, prompt),
+  ),
 };
 
 const generateContent = async (config: AiConfig, prompt: string) => {
@@ -120,19 +84,4 @@ const generateContent = async (config: AiConfig, prompt: string) => {
 
   const body = await response.json();
   return extractGeminiText(body);
-};
-
-const extractGeminiText = (body: unknown): string => {
-  const response = body as {
-    candidates?: Array<{
-      content?: { parts?: Array<{ text?: string }> };
-    }>;
-  };
-
-  return (
-    response.candidates?.[0]?.content?.parts
-      ?.map(part => part.text)
-      .filter(Boolean)
-      .join('\n') ?? ''
-  );
 };

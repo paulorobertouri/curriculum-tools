@@ -1,18 +1,4 @@
-import {
-  AiConfig,
-  AiProviderAdapter,
-  CandidateReview,
-  HrRankingResult,
-  TestResult,
-} from '@/domain/aiTypes';
-import {
-  normalizeCandidateCareerToolkit,
-  normalizeCandidateReview,
-  normalizeHrRanking,
-} from '@/domain/validation';
-import { buildCandidatePrompt } from '@/prompts/candidatePrompt';
-import { buildCandidateToolkitPrompt } from '@/prompts/candidateToolkitPrompt';
-import { buildHrPrompt } from '@/prompts/hrPrompt';
+import { AiConfig, AiProviderAdapter, TestResult } from '@/domain/aiTypes';
 import {
   TEST_PROMPT,
   assertSuccessfulResponse,
@@ -21,7 +7,11 @@ import {
   sanitizePromptForProvider,
   toProviderError,
 } from '@/providers/providerUtils';
-import { parseJsonResult } from '@/providers/responseParsing';
+import {
+  ProviderPromptContext,
+  createStandardWorkflows,
+} from '@/providers/providerWorkflows';
+import { extractOpenAiResponseText } from '@/providers/responseParsing';
 
 const OPENAI_RESPONSES_URL = 'https://api.openai.com/v1/responses';
 const OPENAI_MODELS_URL = 'https://api.openai.com/v1/models';
@@ -61,38 +51,9 @@ export const openaiProvider: AiProviderAdapter = {
     }
   },
 
-  async reviewCandidateCv(config, input): Promise<CandidateReview> {
-    const reviewText = await createResponse(
-      config,
-      buildCandidatePrompt(input),
-      candidateReviewSchema,
-    );
-    const toolkitText = await createResponse(
-      config,
-      buildCandidateToolkitPrompt(input),
-      candidateToolkitSchema,
-    );
-
-    const review = parseJsonResult(reviewText, normalizeCandidateReview);
-    const toolkit = parseJsonResult(
-      toolkitText,
-      normalizeCandidateCareerToolkit,
-    );
-
-    return {
-      ...review,
-      ...toolkit,
-    };
-  },
-
-  async rankHrCvs(config, input): Promise<HrRankingResult> {
-    const text = await createResponse(
-      config,
-      buildHrPrompt(input),
-      hrRankingSchema,
-    );
-    return parseJsonResult(text, normalizeHrRanking);
-  },
+  ...createStandardWorkflows((config, prompt, context) =>
+    createResponse(config, prompt, schemaByContext[context]),
+  ),
 };
 
 const createResponse = async (
@@ -131,26 +92,7 @@ const createResponse = async (
   await assertSuccessfulResponse(response);
 
   const body = await response.json();
-  return extractOpenAiText(body);
-};
-
-const extractOpenAiText = (body: unknown): string => {
-  const response = body as {
-    output_text?: string;
-    output?: Array<{ content?: Array<{ text?: string }> }>;
-  };
-
-  if (response.output_text) {
-    return response.output_text;
-  }
-
-  const text = response.output
-    ?.flatMap(item => item.content ?? [])
-    .map(content => content.text)
-    .filter(Boolean)
-    .join('\n');
-
-  return text ?? '';
+  return extractOpenAiResponseText(body);
 };
 
 type JsonSchema = Record<string, unknown>;
@@ -243,4 +185,10 @@ const hrRankingSchema: JsonSchema = {
   },
   required: ['candidates'],
   additionalProperties: false,
+};
+
+const schemaByContext: Record<ProviderPromptContext, JsonSchema> = {
+  candidateReview: candidateReviewSchema,
+  candidateToolkit: candidateToolkitSchema,
+  hrRanking: hrRankingSchema,
 };
