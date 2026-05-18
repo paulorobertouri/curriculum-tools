@@ -38,6 +38,34 @@ API keys are stored in this browser's `localStorage`. CV content is sent directl
 - There is no backend proxy in v1, so provider calls are made directly from the browser.
 - Legacy `.doc` parsing is not reliably supported. Convert files to `.docx` or `.pdf`, or paste CV text.
 
+## Screenshots
+
+### Provider Setup
+
+Connect your Gemini, OpenAI, or DeepSeek API key before using any tool.
+
+![Provider setup gate — first run](tests/e2e/evidence/setup-00-first-run.png)
+
+### Candidate CV Reviewer
+
+Review one CV against a target role and receive a score, strengths, gaps, rewritten bullets, a cover letter draft, and suggested interview questions.
+
+![Candidate CV Reviewer — file upload ready](tests/e2e/evidence/candidate-01-upload-ready.png)
+
+![Candidate CV Reviewer — review result with score and metrics](tests/e2e/evidence/candidate-00-review-result.png)
+
+### HR CV Ranking
+
+Upload multiple CVs for one role, compare candidates by score, and capture hiring decisions with shortlist, hold, reject, or interview tags.
+
+![HR CV Ranking — ranking result with metrics and candidate cards](tests/e2e/evidence/hr-00-ranking-result.png)
+
+### Quality Evaluation Harness
+
+Run fixed fixture packs to track prompt quality, score drift, and ranking stability across model or prompt changes.
+
+![Quality Evaluation Harness — harness run with delta and drift metrics](tests/e2e/evidence/quality-00-harness-run.png)
+
 ## Documentation
 
 - [Product Plan](docs/PRODUCT_PLAN.md)
