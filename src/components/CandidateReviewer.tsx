@@ -160,7 +160,6 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
       <ResultPanel
         title={t('candidate.resultTitle')}
         empty={t('candidate.resultEmpty')}
-        className='lg:sticky lg:top-32'
         status={isProcessing ? 'loading' : result ? 'ready' : 'empty'}
         statusMessage={
           isProcessing ? t('candidate.processing') : t('result.ready')

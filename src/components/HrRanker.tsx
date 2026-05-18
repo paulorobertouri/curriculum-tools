@@ -273,7 +273,6 @@ export function HrRanker({ config }: HrRankerProps) {
       <ResultPanel
         title={t('hr.resultTitle')}
         empty={t('hr.resultEmpty')}
-        className='lg:sticky lg:top-32'
         status={isProcessing ? 'loading' : result ? 'ready' : 'empty'}
         statusMessage={
           isProcessing
