@@ -85,30 +85,15 @@ describe('App', () => {
     );
   });
 
-  it('shows risk notice when selecting anonymous providers', async () => {
-    const user = userEvent.setup();
+  it('does not list disabled anonymous providers in setup', () => {
     renderApp();
 
-    await user.selectOptions(screen.getByLabelText('Provider'), 'ovh');
-    expect(
-      screen.getByText(
-        'Anonymous free tier is heavily rate-limited and can be unstable. Do not send sensitive CV data.',
-      ),
-    ).toBeVisible();
-
-    await user.selectOptions(screen.getByLabelText('Provider'), 'llm7');
-    expect(
-      screen.getByText(
-        'No-signup access may route through third-party infrastructure with changing limits and availability. Do not send sensitive CV data.',
-      ),
-    ).toBeVisible();
-
-    await user.selectOptions(screen.getByLabelText('Provider'), 'kilo');
-    expect(
-      screen.getByText(
-        'Anonymous routing and free-model availability can change without notice. Do not send sensitive CV data.',
-      ),
-    ).toBeVisible();
+    const providerSelect = screen.getByLabelText('Provider');
+    expect(screen.queryByRole('option', { name: /OVHcloud/i })).toBeNull();
+    expect(screen.queryByRole('option', { name: /LLM7/i })).toBeNull();
+    expect(screen.queryByRole('option', { name: /Pollinations/i })).toBeNull();
+    expect(screen.queryByRole('option', { name: /Kilo/i })).toBeNull();
+    expect(providerSelect).toBeVisible();
   });
 
   it('fetches OpenAI models and updates the model input', async () => {

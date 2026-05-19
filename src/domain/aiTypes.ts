@@ -136,6 +136,20 @@ export const PROVIDER_RISK_I18N_KEY: Partial<Record<AiProviderId, string>> = {
   kilo: 'provider.setup.risk.kilo',
 };
 
+export const DISABLED_PROVIDER_IDS: AiProviderId[] = [
+  'ovh',
+  'llm7',
+  'pollinations',
+  'kilo',
+];
+
+export const providerIsEnabled = (provider: AiProviderId): boolean =>
+  !DISABLED_PROVIDER_IDS.includes(provider);
+
+export const ENABLED_PROVIDER_IDS: AiProviderId[] = (
+  Object.keys(PROVIDER_LABELS) as AiProviderId[]
+).filter(providerIsEnabled);
+
 export const PROVIDERS_WITH_OPTIONAL_API_KEY: AiProviderId[] = [
   'ovh',
   'llm7',

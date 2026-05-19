@@ -7,7 +7,7 @@ import { LanguageSelector } from '@/components/LanguageSelector';
 import { ProviderSetup } from '@/components/ProviderSetup';
 import { ProviderStatus } from '@/components/ProviderStatus';
 import { QualityHarness } from '@/components/QualityHarness';
-import { AiConfig } from '@/domain/aiTypes';
+import { AiConfig, providerIsEnabled } from '@/domain/aiTypes';
 import { useI18n } from '@/i18n/i18n';
 import { getProviderAdapter } from '@/providers';
 import {
@@ -28,7 +28,10 @@ function App() {
   const [undoClearConfig, setUndoClearConfig] = useState<AiConfig | null>(null);
   const clearTimeoutRef = useRef<number | null>(null);
 
-  const shouldShowSetup = !config || editingConfig;
+  const hasDisabledProvider = config
+    ? !providerIsEnabled(config.provider)
+    : false;
+  const shouldShowSetup = !config || hasDisabledProvider || editingConfig;
   const isRedactionEnabled = config?.redactSensitiveData !== false;
 
   const activeToolGuide = useMemo(() => {
@@ -146,7 +149,7 @@ function App() {
   };
 
   const handleRetest = async () => {
-    if (!config) {
+    if (!config || !providerIsEnabled(config.provider)) {
       return;
     }
 
@@ -168,7 +171,12 @@ function App() {
   };
 
   if (shouldShowSetup) {
-    return <ProviderSetup initialConfig={config} onSave={handleSave} />;
+    return (
+      <ProviderSetup
+        initialConfig={hasDisabledProvider ? null : config}
+        onSave={handleSave}
+      />
+    );
   }
 
   return (

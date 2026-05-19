@@ -10,8 +10,10 @@ import {
   AiConfig,
   AiProviderId,
   DEFAULT_MODELS,
+  ENABLED_PROVIDER_IDS,
   PROVIDER_LABELS,
   PROVIDER_RISK_I18N_KEY,
+  providerIsEnabled,
   providerRequiresApiKey,
 } from '@/domain/aiTypes';
 import { useI18n } from '@/i18n/i18n';
@@ -24,12 +26,18 @@ type ProviderSetupProps = {
 export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
   const { t } = useI18n();
   const modelOptionsId = 'provider-model-options';
-  const [provider, setProvider] = useState<AiProviderId>(
-    initialConfig?.provider ?? 'openai',
+  const initialProvider: AiProviderId =
+    initialConfig && providerIsEnabled(initialConfig.provider)
+      ? initialConfig.provider
+      : 'openai';
+  const [provider, setProvider] = useState<AiProviderId>(initialProvider);
+  const [apiKey, setApiKey] = useState(
+    initialConfig?.provider === initialProvider ? initialConfig.apiKey : '',
   );
-  const [apiKey, setApiKey] = useState(initialConfig?.apiKey ?? '');
   const [model, setModel] = useState(
-    initialConfig?.model ?? DEFAULT_MODELS.openai,
+    initialConfig?.provider === initialProvider
+      ? initialConfig.model
+      : DEFAULT_MODELS[initialProvider],
   );
   const [redactSensitiveData, setRedactSensitiveData] = useState(
     initialConfig?.redactSensitiveData ?? true,
@@ -206,9 +214,9 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
                   handleProviderChange(event.target.value as AiProviderId)
                 }
               >
-                {Object.entries(PROVIDER_LABELS).map(([id, label]) => (
+                {ENABLED_PROVIDER_IDS.map(id => (
                   <option key={id} value={id}>
-                    {label}
+                    {PROVIDER_LABELS[id]}
                   </option>
                 ))}
               </select>
