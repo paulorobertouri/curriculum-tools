@@ -155,6 +155,7 @@ const dictionaries: Record<Locale, Dictionary> = {
     'hr.processHint':
       'Each candidate is evaluated separately to reduce context collisions and improve ranking consistency.',
     'hr.resultTitle': 'Ranking Result',
+    'hr.rankList': 'Ranked Candidates',
     'hr.resultEmpty': 'Upload CVs and process them to see a ranked shortlist.',
     'hr.recommendation': 'Recommendation',
     'hr.recommendationDistribution': 'Recommendation distribution',
@@ -172,6 +173,7 @@ const dictionaries: Record<Locale, Dictionary> = {
     'hr.dashboard.deviation': 'Score deviation',
     'hr.dashboard.yesRate': 'Yes or better',
     'hr.dashboard.comparison': 'Average vs top candidate',
+    'hr.dashboard.comparisonHint': 'The top candidate sets the benchmark (10.0) while the average reflects general pool quality.',
     'hr.dashboard.spread': 'Score spread',
     'hr.list.interviewQuestions': 'Interview questions',
     // HR Matrix
@@ -439,6 +441,7 @@ const dictionaries: Record<Locale, Dictionary> = {
     'hr.processHint':
       'Cada candidato e avaliado separadamente para reduzir colisoes de contexto e melhorar consistencia.',
     'hr.resultTitle': 'Resultado do Ranking',
+    'hr.rankList': 'Candidatos Classificados',
     'hr.resultEmpty': 'Envie CVs e processe para ver a lista classificada.',
     'hr.recommendation': 'Recomendacao',
     'hr.recommendationDistribution': 'Distribuicao de recomendacoes',
@@ -456,6 +459,7 @@ const dictionaries: Record<Locale, Dictionary> = {
     'hr.dashboard.deviation': 'Desvio de notas',
     'hr.dashboard.yesRate': 'Sim ou melhor',
     'hr.dashboard.comparison': 'Media vs melhor candidato',
+    'hr.dashboard.comparisonHint': 'O melhor candidato define a referencia (10.0), enquanto a media reflete a qualidade geral do grupo.',
     'hr.dashboard.spread': 'Diferença de notas',
     'hr.list.interviewQuestions': 'Perguntas de entrevista',
     // HR Matrix
@@ -535,8 +539,8 @@ const dictionaries: Record<Locale, Dictionary> = {
     'candidate.scoreDelta': 'Delta da nota',
     'candidate.strengthItems': 'Itens de forca',
     'candidate.gapItems': 'Itens de lacuna',
-    'candidate.quality.reliabilityChecks': 'Verificacoes de confiabilidade',
-    'candidate.quality.unsupportedGuard': 'Guarda contra alegacoes sem suporte',
+    'candidate.quality.reliabilityChecks': 'Controles de confiabilidade',
+    'candidate.quality.unsupportedGuard': 'Filtro de afirmacoes sem suporte',
     'candidate.quality.allVerified':
       'Todas as alegacoes verificadas com dados do CV.',
     'candidate.quality.unsupportedClaims':
@@ -726,6 +730,7 @@ const dictionaries: Record<Locale, Dictionary> = {
     'hr.processHint':
       'Cada candidato se evalua por separado para reducir colisiones de contexto y mejorar consistencia.',
     'hr.resultTitle': 'Resultado de Ranking',
+    'hr.rankList': 'Candidatos Clasificados',
     'hr.resultEmpty': 'Sube CVs y procesa para ver la lista ordenada.',
     'hr.recommendation': 'Recomendacion',
     'hr.recommendationDistribution': 'Distribucion de recomendaciones',
@@ -743,6 +748,7 @@ const dictionaries: Record<Locale, Dictionary> = {
     'hr.dashboard.deviation': 'Desviacion de puntuacion',
     'hr.dashboard.yesRate': 'Si o mejor',
     'hr.dashboard.comparison': 'Promedio vs mejor candidato',
+    'hr.dashboard.comparisonHint': 'El mejor candidato establece la referencia (10.0) mientras que el promedio refleja la calidad general del grupo.',
     'hr.dashboard.spread': 'Diferencia de puntuacion',
     'hr.list.interviewQuestions': 'Preguntas de entrevista',
     // HR Matrix
