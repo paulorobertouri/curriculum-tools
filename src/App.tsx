@@ -195,7 +195,7 @@ function App() {
         onClear={handleClear}
       />
 
-      <div className='relative mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8'>
+      <div className='relative mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8'>
         <header className='rounded-4xl border border-white/70 bg-white/85 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8'>
           <div className='flex flex-col gap-6'>
             <div className='flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between'>

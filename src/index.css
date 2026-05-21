@@ -119,7 +119,7 @@
   }
 
   .tool-stack {
-    @apply flex flex-col gap-6 mx-auto w-full max-w-4xl;
+    @apply flex w-full flex-col gap-6;
   }
 
   .tool-panel {
