@@ -181,7 +181,7 @@ export function HrPipelineRoiCalculator() {
           </div>
 
           {/* Core Telemetry metrics summary */}
-          <div className='grid gap-3 grid-cols-3 text-center pt-2'>
+          <div className='grid gap-2 grid-cols-3 text-center pt-2'>
             <div className='rounded-xl border border-slate-100 bg-slate-50/50 p-2.5 space-y-0.5'>
               <Users className='h-4 w-4 text-cyan-600 mx-auto' />
               <span className='block text-[10px] font-bold text-slate-500 uppercase tracking-wider'>
@@ -213,13 +213,13 @@ export function HrPipelineRoiCalculator() {
         </div>
 
         {/* Right Cost Comparison Visual Graphic */}
-        <div className='rounded-2xl border border-slate-200 p-5 space-y-4 flex flex-col justify-between items-center bg-slate-50/20'>
+        <div className='rounded-2xl border border-slate-200 p-3 space-y-2 flex flex-col justify-between items-center bg-slate-50/20'>
           <span className='block text-xs font-bold text-slate-700 uppercase tracking-wider text-center'>
             {t('hr.roi.costProjection')}
           </span>
 
           {/* SVG Visual Bars */}
-          <div className='h-[180px] w-full flex items-end justify-center gap-8 relative border-b border-slate-200 pb-2 px-2'>
+          <div className='h-[180px] w-full flex items-end justify-center gap-2 relative border-b border-slate-200 pb-2 px-2'>
             {/* Traditional bar */}
             <div className='flex flex-col items-center gap-1.5 w-16'>
               <span className='text-[10px] font-bold text-slate-600'>

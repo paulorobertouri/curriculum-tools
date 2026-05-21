@@ -195,18 +195,18 @@ function App() {
         onClear={handleClear}
       />
 
-      <div className='relative mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8'>
-        <header className='rounded-4xl border border-white/70 bg-white/85 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8'>
-          <div className='flex flex-col gap-6'>
-            <div className='flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between'>
-              <div className='max-w-3xl space-y-4'>
-                <div className='flex flex-wrap items-center gap-3'>
+      <div className='relative mx-auto w-full max-w-6xl px-4 py-2 sm:px-6 lg:px-8 lg:py-2'>
+        <header className='rounded-4xl border border-white/70 bg-white/85 p-3 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur sm:p-3'>
+          <div className='flex flex-col gap-2'>
+            <div className='flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between'>
+              <div className='max-w-3xl space-y-2'>
+                <div className='flex flex-wrap items-center gap-2'>
                   <p className='eyebrow'>{t('app.kicker')}</p>
                   <span className='rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-bold text-slate-600'>
                     Browser-first workflow
                   </span>
                 </div>
-                <div className='space-y-3'>
+                <div className='space-y-2'>
                   <h1 className='text-3xl font-black tracking-tight text-slate-950 sm:text-4xl lg:text-5xl'>
                     {t('app.title')}
                   </h1>
@@ -215,7 +215,7 @@ function App() {
                   </p>
                 </div>
               </div>
-              <div className='flex flex-col items-start gap-3 sm:items-end'>
+              <div className='flex flex-col items-start gap-2 sm:items-end'>
                 <LanguageSelector compact />
               </div>
             </div>
@@ -274,7 +274,7 @@ function App() {
 
         {undoClearConfig ? (
           <section
-            className='mt-6 flex flex-col gap-3 rounded-3xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 shadow-sm sm:flex-row sm:items-center sm:justify-between'
+            className='mt-2 flex flex-col gap-2 rounded-3xl border border-amber-200 bg-amber-50 p-2 text-sm text-amber-900 shadow-sm sm:flex-row sm:items-center sm:justify-between'
             role='status'
             aria-live='polite'
           >
@@ -289,7 +289,7 @@ function App() {
           </section>
         ) : null}
 
-        <section className='mt-6 rounded-3xl border border-amber-200/70 bg-amber-50/90 p-4 text-sm leading-6 text-amber-900 shadow-sm'>
+        <section className='mt-2 rounded-3xl border border-amber-200/70 bg-amber-50/90 p-2 text-sm leading-6 text-amber-900 shadow-sm'>
           {t('app.privacy', {
             provider: config.provider,
             redaction: isRedactionEnabled
@@ -298,7 +298,7 @@ function App() {
           })}
         </section>
 
-        <section className='mt-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm'>
+        <section className='mt-2 rounded-3xl border border-slate-200 bg-white p-3 shadow-sm'>
           <p className='text-xs font-bold uppercase tracking-wide text-slate-500'>
             {t('app.toolIntro.title')}
           </p>
@@ -308,13 +308,13 @@ function App() {
           <p className='mt-2 text-sm leading-6 text-slate-700'>
             {activeToolGuide.description}
           </p>
-          <p className='mt-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700'>
+          <p className='mt-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700'>
             {activeToolGuide.steps}
           </p>
         </section>
 
         <div
-          className='mt-6'
+          className='mt-2'
           role='tabpanel'
           id={`panel-${activeTool}`}
           aria-labelledby={`tab-${activeTool}`}

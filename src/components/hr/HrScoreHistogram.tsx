@@ -25,16 +25,16 @@ export function HrScoreHistogram({ result }: HrScoreHistogramProps) {
   const maxCount = Math.max(...metrics.scoreDistribution.map(b => b.count), 1);
 
   return (
-    <section className='rounded-3xl border border-slate-200 bg-slate-50 p-4 shadow-sm'>
+    <section className='rounded-3xl border border-slate-200 bg-slate-50 p-3 shadow-sm'>
       <p className='text-sm font-bold text-slate-900'>
         {t('hr.pipeline.scoreDistribution')}
       </p>
-      <div className='mt-3 space-y-2'>
+      <div className='mt-2 space-y-2'>
         {metrics.scoreDistribution.map((bucket, index) => {
           const percentage = (bucket.count / maxCount) * 100;
 
           return (
-            <div key={bucket.label} className='flex items-center gap-3'>
+            <div key={bucket.label} className='flex items-center gap-2'>
               <span className='w-10 text-right text-xs font-semibold text-slate-600'>
                 {bucket.label}
               </span>
@@ -56,7 +56,7 @@ export function HrScoreHistogram({ result }: HrScoreHistogramProps) {
           );
         })}
       </div>
-      <div className='mt-3 flex items-center justify-between text-xs text-slate-500'>
+      <div className='mt-2 flex items-center justify-between text-xs text-slate-500'>
         <span>
           {t('hr.pipeline.shortlistEfficiency')}: {metrics.shortlistEfficiency}%
         </span>

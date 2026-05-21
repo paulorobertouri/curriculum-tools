@@ -8,7 +8,7 @@ export function Score({ value }: { value: number }) {
   });
 
   return (
-    <div className='rounded-lg border border-cyan-200 bg-cyan-50 p-4'>
+    <div className='rounded-lg border border-cyan-200 bg-cyan-50 p-3'>
       <p className='text-sm font-bold uppercase text-cyan-800'>
         {t('result.score')}
       </p>

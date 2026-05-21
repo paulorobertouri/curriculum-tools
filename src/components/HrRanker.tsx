@@ -231,7 +231,7 @@ export function HrRanker({ config }: HrRankerProps) {
         </button>
 
         {!isFormCollapsed && (
-          <form className='mt-6 grid gap-5' onSubmit={handleSubmit}>
+          <form className='mt-2 grid gap-2' onSubmit={handleSubmit}>
             <p className='text-sm leading-6 text-slate-600'>
               {t('hr.description')}
             </p>
@@ -301,7 +301,7 @@ export function HrRanker({ config }: HrRankerProps) {
             {error && <p className='error-message'>{error}</p>}
 
             <button
-              className='submit-button touch-target group mt-2'
+              className='submit-button touch-target group mt-2 w-full'
               type='submit'
               disabled={isProcessing || isExtracting || files.length === 0}
             >
@@ -326,7 +326,7 @@ export function HrRanker({ config }: HrRankerProps) {
         statusMessage={processingLabel ?? t('result.ready')}
       >
         {result && metrics && (
-          <div className='animate-fade-in space-y-6'>
+          <div className='animate-fade-in space-y-2'>
             {/* Dashboard metrics */}
             <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-4'>
               <MetricCard
@@ -348,7 +348,7 @@ export function HrRanker({ config }: HrRankerProps) {
             </div>
 
             {rankDiff && (
-              <div className='rounded-3xl border border-slate-200 bg-emerald-50 p-4 shadow-sm'>
+              <div className='rounded-3xl border border-slate-200 bg-emerald-50 p-3 shadow-sm'>
                 <p className='text-xs font-bold uppercase tracking-wide text-emerald-800'>
                   {t('quality.rankStability')}
                 </p>
@@ -375,8 +375,8 @@ export function HrRanker({ config }: HrRankerProps) {
               </div>
             )}
 
-            <div className='grid gap-6 lg:grid-cols-2'>
-              <div className='space-y-6'>
+            <div className='grid gap-2 lg:grid-cols-2'>
+              <div className='space-y-2'>
                 <HrFunnelChart result={result} />
                 <HrScoreHistogram result={result} />
               </div>
@@ -385,7 +385,7 @@ export function HrRanker({ config }: HrRankerProps) {
                 <h3 className='text-xs font-bold uppercase tracking-wide text-slate-700'>
                   {t('hr.dashboard.comparison')}
                 </h3>
-                <div className='mt-3 space-y-3'>
+                <div className='mt-2 space-y-2'>
                   <MetricBar
                     label={t('hr.dashboard.average')}
                     value={metrics.averageScore}
@@ -395,7 +395,7 @@ export function HrRanker({ config }: HrRankerProps) {
                     value={metrics.topScore}
                   />
                 </div>
-                <p className='mt-3 text-[10px] leading-4 text-slate-500'>
+                <p className='mt-2 text-[10px] leading-4 text-slate-500'>
                   {t('hr.dashboard.comparisonHint')}
                 </p>
               </div>
@@ -434,7 +434,7 @@ export function HrRanker({ config }: HrRankerProps) {
               </div>
             </div>
 
-            <div className='space-y-4'>
+            <div className='space-y-2'>
               {result.candidates.map(candidate => (
                 <HrCandidateCard
                   key={candidate.id}
@@ -491,7 +491,7 @@ function HrCandidateCard({
   );
 
   return (
-    <article className='rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md'>
+    <article className='rounded-3xl border border-slate-200 bg-white p-3 shadow-sm transition-shadow hover:shadow-md'>
       <div className='flex flex-wrap items-start justify-between gap-4'>
         <div className='flex-1 min-w-[200px]'>
           <div className='flex items-center gap-2'>
@@ -519,7 +519,7 @@ function HrCandidateCard({
         </div>
       </div>
 
-      <div className='mt-5 flex flex-wrap gap-2'>
+      <div className='mt-2 flex flex-wrap gap-2'>
         <button
           className='status-button touch-target'
           onClick={() => setIsExpanded(!isExpanded)}
@@ -541,8 +541,8 @@ function HrCandidateCard({
       </div>
 
       {isExpanded && (
-        <div className='mt-6 space-y-6 border-t border-slate-100 pt-6 animate-fade-in'>
-          <div className='grid gap-6 lg:grid-cols-2'>
+        <div className='mt-2 space-y-2 border-t border-slate-100 pt-2 animate-fade-in'>
+          <div className='grid gap-2 lg:grid-cols-2'>
             <List
               title={t('candidate.list.strengths')}
               items={candidate.strengths}
@@ -553,11 +553,11 @@ function HrCandidateCard({
             />
           </div>
 
-          <div className='rounded-2xl border border-slate-200 bg-slate-50 p-4'>
+          <div className='rounded-2xl border border-slate-200 bg-slate-50 p-3'>
             <p className='text-xs font-bold uppercase tracking-wide text-slate-500'>
               {t('candidate.metric.evidenceCoverage')}
             </p>
-            <div className='mt-3 grid gap-4 sm:grid-cols-2'>
+            <div className='mt-2 grid gap-2 sm:grid-cols-2'>
               <MetricBar
                 label={t('candidate.metric.evidenceCoverage')}
                 value={quality.confidenceScore / 10}

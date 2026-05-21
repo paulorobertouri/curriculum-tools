@@ -51,7 +51,7 @@ export function InterviewSimulator({ questions }: InterviewSimulatorProps) {
 
   if (questions.length === 0) {
     return (
-      <div className='flex items-center gap-3 rounded-3xl border border-slate-200 bg-slate-50 p-6'>
+      <div className='flex items-center gap-2 rounded-3xl border border-slate-200 bg-slate-50 p-2'>
         <MessageSquare className='h-6 w-6 text-slate-400' />
         <p className='text-sm font-bold text-slate-800'>
           {t('candidate.interview.noQuestions')}
@@ -80,7 +80,7 @@ export function InterviewSimulator({ questions }: InterviewSimulatorProps) {
   const results = feedback();
 
   return (
-    <section className='tool-panel space-y-6'>
+    <section className='tool-panel space-y-2'>
       <div className='flex items-center justify-between'>
         <div>
           <p className='eyebrow'>{t('candidate.interview.eyebrow')}</p>
@@ -109,8 +109,8 @@ export function InterviewSimulator({ questions }: InterviewSimulatorProps) {
         </div>
       </div>
 
-      <div className='space-y-4'>
-        <div className='rounded-3xl bg-cyan-600 p-6 text-white shadow-lg shadow-cyan-200/50'>
+      <div className='space-y-2'>
+        <div className='rounded-3xl bg-cyan-600 p-3 text-white shadow-lg shadow-cyan-200/50'>
           <p className='text-[10px] font-bold uppercase tracking-widest opacity-80'>
             {t('candidate.interview.questionPrefix')}
             {currentIndex + 1}
@@ -152,8 +152,8 @@ export function InterviewSimulator({ questions }: InterviewSimulatorProps) {
       </div>
 
       {showFeedback && (
-        <div className='animate-fade-in space-y-4 border-t border-slate-100 pt-6'>
-          <div className='rounded-2xl border border-emerald-200 bg-emerald-50 p-4'>
+        <div className='animate-fade-in space-y-2 border-t border-slate-100 pt-2'>
+          <div className='rounded-2xl border border-emerald-200 bg-emerald-50 p-2'>
             <div className='flex items-center gap-2 text-emerald-800'>
               <CheckCircle2 className='h-5 w-5' />
               <p className='text-sm font-bold'>
@@ -165,7 +165,7 @@ export function InterviewSimulator({ questions }: InterviewSimulatorProps) {
             </p>
           </div>
 
-          <div className='space-y-3'>
+          <div className='space-y-2'>
             <p className='text-xs font-bold uppercase tracking-wide text-slate-500'>
               {t('candidate.interview.contentMatch', {
                 score: Math.round(results.score),

@@ -119,11 +119,11 @@
   }
 
   .tool-stack {
-    @apply flex w-full flex-col gap-6;
+    @apply w-full;
   }
 
   .tool-panel {
-    @apply grid gap-5 border bg-white/90 p-5 backdrop-blur sm:p-6;
+    @apply mt-2 border bg-white/90 p-2 backdrop-blur sm:p-4;
     border-color: color-mix(
       in oklab,
       var(--color-bg-surface) 60%,
@@ -199,58 +199,25 @@
     box-shadow: 0 0 0 4px var(--color-focus-ring);
   }
 
-  .primary-button {
-    @apply inline-flex items-center justify-center gap-2 bg-slate-950 px-5 py-3 text-sm font-bold text-white;
-    @apply transition duration-200;
-    border-radius: var(--radius-pill);
+  .primary-button,
+  .submit-button {
+    @apply inline-flex items-center justify-center gap-2 bg-slate-950 px-6 py-3 text-sm font-bold text-white shadow-md transition-all duration-200;
+    @apply hover:bg-slate-800 hover:shadow-lg hover:-translate-y-0.5;
+    @apply active:translate-y-0 active:shadow-sm;
+    @apply disabled:cursor-not-allowed disabled:bg-slate-400 disabled:shadow-none disabled:transform-none;
+    border-radius: var(--radius-control);
     min-height: 2.75rem;
-  }
-
-  .primary-button:hover {
-    background: var(--color-accent-primary-hover);
-    transform: translateY(-1px);
-  }
-
-  .primary-button:active {
-    transform: translateY(0);
-  }
-
-  .primary-button:focus-visible {
-    @apply outline-none;
-    box-shadow: 0 0 0 4px var(--color-focus-ring);
-  }
-
-  .primary-button:disabled {
-    @apply cursor-not-allowed;
-    background: var(--color-slate-500);
-    transform: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .status-button {
     @apply inline-flex items-center justify-center gap-2 border bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm;
-    @apply transition duration-200;
+    @apply transition-all duration-200;
+    @apply hover:bg-slate-50 hover:border-slate-400 hover:-translate-y-0.5;
+    @apply active:translate-y-0 active:shadow-none;
     border-color: var(--color-border-strong);
     border-radius: var(--radius-pill);
     min-height: 2.75rem;
-  }
-
-  .status-button:hover {
-    @apply bg-slate-100;
-    transform: translateY(-1px);
-  }
-
-  .status-button:focus-visible {
-    @apply outline-none;
-    box-shadow: 0 0 0 4px var(--color-focus-ring);
-  }
-
-  .status-button:active {
-    transform: translateY(0);
-  }
-
-  .status-button:disabled {
-    @apply cursor-not-allowed opacity-60;
-    transform: none;
   }
 
   .error-message {

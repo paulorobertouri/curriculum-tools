@@ -27,7 +27,7 @@ export function SkillGapPanel({ jobDescription, cvText }: SkillGapPanelProps) {
   }
 
   return (
-    <section className='rounded-3xl border border-slate-200 bg-slate-50 p-5 shadow-sm'>
+    <section className='rounded-3xl border border-slate-200 bg-slate-50 p-3 shadow-sm'>
       <div className='flex items-center justify-between'>
         <div>
           <p className='text-xs font-bold uppercase tracking-wide text-slate-500'>
@@ -41,7 +41,7 @@ export function SkillGapPanel({ jobDescription, cvText }: SkillGapPanelProps) {
       </div>
 
       {/* Match rate bar */}
-      <div className='mt-4'>
+      <div className='mt-2'>
         <div className='flex items-center justify-between text-xs font-semibold text-slate-700'>
           <span>{t('skillGap.matchRate')}</span>
           <span>{skillGap.keywordMatchRate}%</span>
@@ -54,7 +54,7 @@ export function SkillGapPanel({ jobDescription, cvText }: SkillGapPanelProps) {
         </div>
       </div>
 
-      <div className='mt-4 grid gap-4 md:grid-cols-2'>
+      <div className='mt-2 grid gap-2 md:grid-cols-2'>
         {/* Matched skills */}
         {skillGap.matchedSkills.length > 0 ? (
           <div>
@@ -179,7 +179,7 @@ function CategoryBreakdown({ skillGap }: { skillGap: SkillGapResult }) {
   }
 
   return (
-    <details className='mt-4 rounded-xl border border-slate-200 bg-white p-3'>
+    <details className='mt-2 rounded-xl border border-slate-200 bg-white p-3'>
       <summary className='cursor-pointer text-sm font-bold text-slate-900'>
         {t('skillGap.categoryBreakdown')}
       </summary>

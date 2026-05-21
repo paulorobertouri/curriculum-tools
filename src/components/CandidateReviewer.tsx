@@ -149,7 +149,7 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
         </button>
 
         {!isFormCollapsed && (
-          <form className='mt-6 grid gap-5' onSubmit={handleSubmit}>
+          <form className='mt-2 grid gap-2' onSubmit={handleSubmit}>
             <p className='text-sm leading-6 text-slate-600'>
               {t('candidate.description')}
             </p>
@@ -195,7 +195,7 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
             {error ? <p className='error-message'>{error}</p> : null}
 
             <button
-              className='submit-button touch-target group mt-2'
+              className='submit-button touch-target group mt-2 w-full'
               type='submit'
               disabled={isProcessing}
             >
@@ -223,7 +223,7 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
           isProcessing ? t('candidate.processing') : t('result.ready')
         }
       >
-        <div className='mb-6 flex gap-2'>
+        <div className='mb-2 flex gap-2'>
           {[
             { id: 'overview', label: t('candidate.tab.overview') },
             { id: 'toolkit', label: t('candidate.tab.toolkit') },
@@ -243,7 +243,7 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
           ))}
         </div>
 
-        <div className='flex gap-2 mb-6'>
+        <div className='flex gap-2 mb-2'>
           <button
             className='status-button touch-target text-xs'
             type='button'
@@ -263,7 +263,7 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
         </div>
 
         {activeTab === 'overview' && result && quality && (
-          <div className='space-y-5 animate-fade-in'>
+          <div className='space-y-2 animate-fade-in'>
             <Score value={result.score} />
             {previousResult ? (
               <div className='rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700'>
@@ -308,7 +308,7 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
         )}
 
         {activeTab === 'toolkit' && result && (
-          <div className='space-y-8 animate-fade-in'>
+          <div className='space-y-2 animate-fade-in'>
             <ResumeBulletPlayground
               originalBullets={result.strengths}
               suggestedBullets={result.rewrittenBullets}
@@ -345,11 +345,11 @@ function CandidateMetricsChart({
   const interviewReadiness = Math.min(10, result.interviewQa.length * 1.5);
 
   return (
-    <div className='rounded-3xl border border-slate-200 bg-slate-50 p-4 shadow-sm'>
+    <div className='rounded-3xl border border-slate-200 bg-slate-50 p-3 shadow-sm'>
       <p className='text-sm font-bold text-slate-900'>
         {t('candidate.summaryChart')}
       </p>
-      <div className='mt-3 space-y-3'>
+      <div className='mt-2 space-y-2'>
         <MetricBar label={t('candidate.metric.overall')} value={result.score} />
         <MetricBar
           label={t('candidate.metric.strengths')}
@@ -381,11 +381,11 @@ function CandidateQualityPanel({
   const { t } = useI18n();
 
   return (
-    <div className='rounded-3xl border border-slate-200 bg-white p-4 shadow-sm'>
+    <div className='rounded-3xl border border-slate-200 bg-white p-3 shadow-sm'>
       <p className='text-sm font-bold text-slate-900'>
         {t('candidate.quality.reliabilityChecks')}
       </p>
-      <div className='mt-3 space-y-3'>
+      <div className='mt-2 space-y-2'>
         <div className='flex items-start gap-2 rounded-2xl bg-slate-50 p-3'>
           <div className='h-2 w-2 mt-1.5 rounded-full bg-cyan-600' />
           <div>

@@ -94,10 +94,10 @@ export function CandidateComparisonMatrix({
   };
 
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-xs'>
-      <div className='w-full max-w-5xl rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto animate-fade-in relative'>
+    <div className='fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-3 backdrop-blur-xs'>
+      <div className='w-full max-w-5xl rounded-3xl border border-slate-200 bg-white p-3 shadow-2xl space-y-2 max-h-[90vh] overflow-y-auto animate-fade-in relative'>
         {/* Header Close Panel */}
-        <div className='flex items-center justify-between border-b border-slate-100 pb-4'>
+        <div className='flex items-center justify-between border-b border-slate-100 pb-2'>
           <div>
             <span className='eyebrow'>{t('hr.matrix.eyebrow')}</span>
             <h3 className='text-xl font-bold text-slate-950 flex items-center gap-2'>
@@ -306,14 +306,14 @@ export function CandidateComparisonMatrix({
         </div>
 
         {/* Detailed CV content insights comparisons */}
-        <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3 pt-4 border-t border-slate-100'>
+        <div className='grid gap-2 sm:grid-cols-2 lg:grid-cols-3 pt-2 border-t border-slate-100'>
           {processed.map((c, index) => {
             const color = colors[index % colors.length];
             const name = c.candidate.detectedName ?? c.candidate.filename;
             return (
               <div
                 key={c.candidate.id}
-                className='rounded-2xl border border-slate-200 p-4 space-y-4'
+                className='rounded-2xl border border-slate-200 p-3 space-y-2'
               >
                 {/* Header card badge */}
                 <div className='flex items-center gap-2'>

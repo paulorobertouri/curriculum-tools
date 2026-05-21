@@ -74,7 +74,7 @@ export function HrFunnelChart({ result }: HrFunnelChartProps) {
 
       {/* Top concerns */}
       {metrics.topConcerns.length > 0 ? (
-        <div className='mt-4'>
+        <div className='mt-2'>
           <p className='text-xs font-bold uppercase tracking-wide text-slate-500'>
             {t('hr.pipeline.topConcerns')}
           </p>

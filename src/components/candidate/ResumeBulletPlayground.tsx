@@ -30,7 +30,7 @@ export function ResumeBulletPlayground({
   };
 
   return (
-    <section className='tool-panel space-y-6'>
+    <section className='tool-panel space-y-2'>
       <div className='flex items-center justify-between'>
         <div>
           <p className='eyebrow'>{t('candidate.playground.eyebrow')}</p>
@@ -47,8 +47,8 @@ export function ResumeBulletPlayground({
         </button>
       </div>
 
-      <div className='grid gap-6 lg:grid-cols-2'>
-        <div className='space-y-4'>
+      <div className='grid gap-2 lg:grid-cols-2'>
+        <div className='space-y-2'>
           <p className='text-xs font-bold uppercase tracking-wide text-slate-500'>
             {t('candidate.playground.step1')}
           </p>
@@ -58,7 +58,7 @@ export function ResumeBulletPlayground({
                 key={i}
                 onClick={() => handleSelectOriginal(i)}
                 className={[
-                  'w-full text-left p-3 rounded-2xl border text-sm transition-all touch-target',
+                  'w-full text-left p-2 rounded-2xl border text-sm transition-all touch-target',
                   activeOriginalIndex === i
                     ? 'border-cyan-600 bg-cyan-50 text-cyan-900 shadow-sm'
                     : 'border-slate-100 bg-white text-slate-600 hover:border-slate-200',
@@ -70,11 +70,11 @@ export function ResumeBulletPlayground({
           </div>
         </div>
 
-        <div className='space-y-4'>
+        <div className='space-y-2'>
           <p className='text-xs font-bold uppercase tracking-wide text-slate-500'>
             {t('candidate.playground.step2')}
           </p>
-          <div className='space-y-4 rounded-3xl border border-slate-200 bg-slate-50/50 p-4'>
+          <div className='space-y-2 rounded-3xl border border-slate-200 bg-slate-50/50 p-2'>
             <textarea
               className='text-input h-32 resize-none bg-white shadow-xs'
               value={editedBullet}
@@ -89,7 +89,7 @@ export function ResumeBulletPlayground({
                 <button
                   key={i}
                   onClick={() => applySuggestion(s)}
-                  className='group flex w-full items-center justify-between rounded-xl bg-white p-2.5 text-xs font-medium text-slate-700 shadow-xs transition-all hover:bg-cyan-50 hover:text-cyan-900'
+                  className='group flex w-full items-center justify-between rounded-xl bg-white p-2 text-xs font-medium text-slate-700 shadow-xs transition-all hover:bg-cyan-50 hover:text-cyan-900'
                 >
                   <span className='truncate mr-2'>{s}</span>
                   <ArrowRight className='h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100' />
@@ -97,7 +97,7 @@ export function ResumeBulletPlayground({
               ))}
             </div>
 
-            <div className='flex items-start gap-2 rounded-xl bg-emerald-100/50 p-2.5 text-[10px] font-bold text-emerald-800 leading-normal'>
+            <div className='flex items-start gap-2 rounded-xl bg-emerald-100/50 p-2 text-[10px] font-bold text-emerald-800 leading-normal'>
               <CheckCircle2 className='h-3.5 w-3.5 flex-shrink-0 mt-0.5' />
               {t('candidate.playground.copyHint')}
             </div>

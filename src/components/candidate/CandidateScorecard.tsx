@@ -68,7 +68,7 @@ export function CandidateScorecard({
   ];
 
   return (
-    <section className='rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-5 shadow-sm'>
+    <section className='rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-3 shadow-sm'>
       <div className='flex items-center justify-between'>
         <div>
           <p className='text-xs font-bold uppercase tracking-wide text-slate-500'>
@@ -81,9 +81,9 @@ export function CandidateScorecard({
         <GradeBadge grade={scorecard.overallGrade} />
       </div>
 
-      <div className='mt-5 flex flex-col items-center gap-6 lg:flex-row'>
+      <div className='mt-2 flex flex-col items-center gap-2 lg:flex-row'>
         <RadarChart dimensions={dimensions} />
-        <div className='flex-1 space-y-3'>
+        <div className='flex-1 space-y-2'>
           {dimensions.map(dimension => (
             <DimensionRow
               key={dimension.label}

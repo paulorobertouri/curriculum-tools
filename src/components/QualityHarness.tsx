@@ -234,8 +234,8 @@ export function QualityHarness({ config }: QualityHarnessProps) {
 
   return (
     <div className='tool-stack'>
-      <div className='tool-panel space-y-6'>
-        <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
+      <div className='tool-panel space-y-2'>
+        <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
           <div>
             <p className='eyebrow'>{t('quality.title')}</p>
             <h2 className='panel-title'>{t('quality.subtitle')}</h2>
@@ -260,8 +260,8 @@ export function QualityHarness({ config }: QualityHarnessProps) {
           </button>
         </div>
 
-        <div className='grid gap-4 md:grid-cols-3'>
-          <div className='flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm'>
+        <div className='grid gap-2 md:grid-cols-3'>
+          <div className='flex items-start gap-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm'>
             <HelpCircle className='mt-0.5 h-5 w-5 text-cyan-600 flex-shrink-0' />
             <div>
               <p className='text-sm font-bold text-slate-900'>
@@ -275,11 +275,11 @@ export function QualityHarness({ config }: QualityHarnessProps) {
             </div>
           </div>
 
-          <div className='rounded-2xl border border-slate-200 bg-white p-4 shadow-sm'>
+          <div className='rounded-2xl border border-slate-200 bg-white p-3 shadow-sm'>
             <p className='text-sm font-bold text-slate-900'>
               {t('quality.promptQualityDeltas')}
             </p>
-            <div className='mt-3 space-y-2 text-sm text-slate-700'>
+            <div className='mt-2 space-y-2 text-sm text-slate-700'>
               <div className='flex justify-between border-b border-slate-100 pb-1'>
                 <span>{t('quality.candidateAvg')}:</span>
                 <span className='font-bold'>
@@ -297,11 +297,11 @@ export function QualityHarness({ config }: QualityHarnessProps) {
             </div>
           </div>
 
-          <div className='rounded-2xl border border-slate-200 bg-white p-4 shadow-sm'>
+          <div className='rounded-2xl border border-slate-200 bg-white p-3 shadow-sm'>
             <p className='text-sm font-bold text-slate-900'>
               {t('quality.scoreDriftMonitor')}
             </p>
-            <div className='mt-3 max-h-24 overflow-y-auto space-y-1 text-xs text-slate-600'>
+            <div className='mt-2 max-h-24 overflow-y-auto space-y-1 text-xs text-slate-600'>
               {driftAcrossModels.map(item => (
                 <div key={item.fixtureId} className='flex justify-between'>
                   <span className='truncate mr-2'>{item.fixtureName}</span>
@@ -323,7 +323,7 @@ export function QualityHarness({ config }: QualityHarnessProps) {
 
         {error ? <p className='error-message'>{error}</p> : null}
 
-        <div className='grid gap-4 sm:grid-cols-3'>
+        <div className='grid gap-2 sm:grid-cols-3'>
           <StatCard
             label={t('quality.runsStored')}
             value={String(runs.length)}
@@ -343,7 +343,7 @@ export function QualityHarness({ config }: QualityHarnessProps) {
         </div>
 
         {/* Fixture Score History / Expandable Details Table */}
-        <section className='space-y-4' aria-live='polite'>
+        <section className='space-y-2' aria-live='polite'>
           <h3 className='text-base font-bold text-slate-950'>
             {t('quality.fixtureHistory')}
           </h3>
@@ -427,9 +427,9 @@ export function QualityHarness({ config }: QualityHarnessProps) {
                           <tr>
                             <td
                               colSpan={6}
-                              className='bg-slate-50/50 px-6 py-4'
+                              className='bg-slate-50/50 px-3 py-2'
                             >
-                              <div className='grid gap-4 sm:grid-cols-3 text-xs'>
+                              <div className='grid gap-2 sm:grid-cols-3 text-xs'>
                                 <div className='flex items-start gap-2 rounded-xl bg-white border border-slate-100 p-3'>
                                   <Clock className='h-4 w-4 text-cyan-600 mt-0.5' />
                                   <div>
@@ -617,7 +617,7 @@ export function QualityHarness({ config }: QualityHarnessProps) {
         </section>
 
         {latestRun ? (
-          <div className='rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm flex items-center justify-between'>
+          <div className='rounded-2xl border border-slate-200 bg-white p-3 text-sm text-slate-600 shadow-sm flex items-center justify-between'>
             <span>
               {t('quality.lastRun')}:{' '}
               <span className='font-bold text-slate-800'>
@@ -646,7 +646,7 @@ function StatCard({
   warning?: boolean;
 }) {
   return (
-    <article className='rounded-2xl border border-slate-200 bg-white p-4 shadow-sm flex flex-col justify-between h-24'>
+    <article className='rounded-2xl border border-slate-200 bg-white p-3 shadow-sm flex flex-col justify-between h-24'>
       <p className='flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500'>
         {icon}
         {label}

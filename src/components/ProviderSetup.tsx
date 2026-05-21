@@ -308,7 +308,7 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
             ) : null}
 
             <button
-              className='primary-button touch-target'
+              className='primary-button touch-target w-full'
               type='submit'
               disabled={isTesting}
             >
