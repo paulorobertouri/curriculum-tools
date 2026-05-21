@@ -174,26 +174,9 @@ const dictionaries: Record<Locale, Dictionary> = {
     'hr.dashboard.comparison': 'Average vs top candidate',
     'hr.dashboard.spread': 'Score spread',
     'hr.list.interviewQuestions': 'Interview questions',
-    // HR ROI
-    'hr.roi.title': 'ROI Analytics',
-    'hr.roi.subtitle': 'Hiring Cost & Funnel ROI Calculator',
-    'hr.roi.description':
-      'Configure hiring metrics, analyze operations overhead, and visualize the time/cost savings achieved by screening with Curriculum Tools.',
-    'hr.roi.badge': 'Enterprise ROI Approved',
-    'hr.roi.openRoles': 'Open Roles / Year',
-    'hr.roi.candidatesPerRole': 'Candidates / Role',
-    'hr.roi.hourlyRate': 'HR Hourly Rate ($)',
-    'hr.roi.manualTime': 'Manual Screening / CV',
-    'hr.roi.assessmentCost': 'Traditional Assessment Cost / Role ($)',
-    'hr.roi.cvsScreened': 'CVs Screened',
-    'hr.roi.timeSaved': 'Time Saved',
-    'hr.roi.costProjection': 'Annual Cost Projection',
-    'hr.roi.manual': 'Manual',
-    'hr.roi.aiTool': 'AI tool',
-    'hr.roi.netSavings': 'Net Financial Savings',
-    'hr.roi.perYear': '/year',
     // HR Matrix
     'hr.matrix.eyebrow': 'Screening Matrix',
+    'hr.matrix.action': 'Compare',
     'hr.matrix.title': 'Candidate Side-by-Side Comparison',
     'hr.matrix.overlaps': 'Score Overlaps',
     'hr.matrix.metrics': 'Evaluation Metrics',
@@ -307,8 +290,6 @@ const dictionaries: Record<Locale, Dictionary> = {
     'candidate.playground.suggestions': 'AI Suggestions',
     'candidate.playground.copyHint':
       'Copy this to your resume to quantify impact.',
-    // HR ROI updates
-    'hr.roi.costReduction': 'Cost Reduction',
   },
   'pt-BR': {
     'language.label': 'Idioma',
@@ -477,26 +458,9 @@ const dictionaries: Record<Locale, Dictionary> = {
     'hr.dashboard.comparison': 'Media vs melhor candidato',
     'hr.dashboard.spread': 'Diferença de notas',
     'hr.list.interviewQuestions': 'Perguntas de entrevista',
-    // HR ROI
-    'hr.roi.title': 'Analitica de ROI',
-    'hr.roi.subtitle': 'Calculadora de ROI do Funil e Custo de Contratacao',
-    'hr.roi.description':
-      'Configure metricas de contratacao, analise a sobrecarga operacional e visualize a economia de tempo/custo alcancada ao fazer a triagem com o Curriculum Tools.',
-    'hr.roi.badge': 'ROI Corporativo Aprovado',
-    'hr.roi.openRoles': 'Vagas Abertas / Ano',
-    'hr.roi.candidatesPerRole': 'Candidatos / Vaga',
-    'hr.roi.hourlyRate': 'Valor da Hora de RH ($)',
-    'hr.roi.manualTime': 'Triagem Manual / CV',
-    'hr.roi.assessmentCost': 'Custo de Avaliacao Tradicional / Vaga ($)',
-    'hr.roi.cvsScreened': 'CVs Triados',
-    'hr.roi.timeSaved': 'Tempo Economizado',
-    'hr.roi.costProjection': 'Projecao de Custo Anual',
-    'hr.roi.manual': 'Manual',
-    'hr.roi.aiTool': 'Ferramenta de IA',
-    'hr.roi.netSavings': 'Economia Financeira Liquida',
-    'hr.roi.perYear': '/ano',
     // HR Matrix
     'hr.matrix.eyebrow': 'Matriz de Triagem',
+    'hr.matrix.action': 'Comparar',
     'hr.matrix.title': 'Comparacao Lado a Lado de Candidatos',
     'hr.matrix.overlaps': 'Sobreposicoes de Notas',
     'hr.matrix.metrics': 'Metricas de Avaliacao',
@@ -612,8 +576,6 @@ const dictionaries: Record<Locale, Dictionary> = {
     'candidate.playground.suggestions': 'Sugestoes da IA',
     'candidate.playground.copyHint':
       'Copie isso para o seu curriculo para quantificar o impacto.',
-    // HR ROI updates
-    'hr.roi.costReduction': 'Reducao de Custos',
   },
   'es-ES': {
     'language.label': 'Idioma',
@@ -783,26 +745,9 @@ const dictionaries: Record<Locale, Dictionary> = {
     'hr.dashboard.comparison': 'Promedio vs mejor candidato',
     'hr.dashboard.spread': 'Diferencia de puntuacion',
     'hr.list.interviewQuestions': 'Preguntas de entrevista',
-    // HR ROI
-    'hr.roi.title': 'Analitica de ROI',
-    'hr.roi.subtitle': 'Calculadora de ROI del Embudo y Coste de Contratacion',
-    'hr.roi.description':
-      'Configure las metricas de contratacion, analice la sobrecarga operativa y visualice el ahorro de tiempo/coste logrado al realizar el filtrado con Curriculum Tools.',
-    'hr.roi.badge': 'ROI Corporativo Aprobado',
-    'hr.roi.openRoles': 'Puestos Abiertos / Ano',
-    'hr.roi.candidatesPerRole': 'Candidatos / Puesto',
-    'hr.roi.hourlyRate': 'Tarifa Horaria de RRHH ($)',
-    'hr.roi.manualTime': 'Filtrado Manual / CV',
-    'hr.roi.assessmentCost': 'Coste de Evaluacion Tradicional / Puesto ($)',
-    'hr.roi.cvsScreened': 'CVs Filtrados',
-    'hr.roi.timeSaved': 'Tiempo Ahorrado',
-    'hr.roi.costProjection': 'Proyeccion de Coste Anual',
-    'hr.roi.manual': 'Manual',
-    'hr.roi.aiTool': 'Herramienta IA',
-    'hr.roi.netSavings': 'Ahorro Financiero Neto',
-    'hr.roi.perYear': '/ano',
     // HR Matrix
-    'hr.matrix.eyebrow': 'Matriz de Filtrado',
+    'hr.matrix.eyebrow': 'Matriz de Triaje',
+    'hr.matrix.action': 'Comparar',
     'hr.matrix.title': 'Comparativa Lado a Lado de Candidatos',
     'hr.matrix.overlaps': 'Solapamiento de Puntuaciones',
     'hr.matrix.metrics': 'Metricas de Evaluacion',
@@ -918,8 +863,6 @@ const dictionaries: Record<Locale, Dictionary> = {
     'candidate.playground.suggestions': 'Sugerencias de IA',
     'candidate.playground.copyHint':
       'Copia esto en tu curriculum para cuantificar el impacto.',
-    // HR ROI updates
-    'hr.roi.costReduction': 'Reduccion de Costes',
   },
 };
 

@@ -2,8 +2,10 @@ import {
   ChevronDown,
   ChevronUp,
   Download,
+  LayoutGrid,
   Loader2,
   Sparkles,
+  Trash2,
 } from 'lucide-react';
 import { ChangeEvent, useMemo, useState } from 'react';
 
@@ -20,7 +22,6 @@ import { TextArea } from '@/components/common/TextArea';
 import { TextField } from '@/components/common/TextField';
 import { CandidateComparisonMatrix } from '@/components/hr/CandidateComparisonMatrix';
 import { HrFunnelChart } from '@/components/hr/HrFunnelChart';
-import { HrPipelineRoiCalculator } from '@/components/hr/HrPipelineRoiCalculator';
 import { HrScoreHistogram } from '@/components/hr/HrScoreHistogram';
 import {
   AiConfig,
@@ -72,6 +73,7 @@ export function HrRanker({ config }: HrRankerProps) {
   const [isExtracting, setIsExtracting] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isFormCollapsed, setIsFormCollapsed] = useState(false);
+  const [isMatrixOpen, setIsMatrixOpen] = useState(false);
   const [processingLabel, setProcessingLabel] = useState<string | null>(null);
 
   let resultStatus: 'loading' | 'ready' | 'empty' = 'empty';
@@ -141,8 +143,16 @@ export function HrRanker({ config }: HrRankerProps) {
       }),
     );
 
-    setFiles(extracted);
+    setFiles(prev => [...prev, ...extracted]);
     setIsExtracting(false);
+  };
+
+  const removeFile = (id: string) => {
+    setFiles(prev => prev.filter(f => f.id !== id));
+  };
+
+  const clearFiles = () => {
+    setFiles([]);
   };
 
   const handleSubmit = async (event: React.SyntheticEvent<HTMLFormElement>) => {
@@ -267,37 +277,59 @@ export function HrRanker({ config }: HrRankerProps) {
             </div>
 
             {files.length > 0 && (
-              <div className='rounded-2xl border border-slate-200 bg-slate-50 p-3'>
-                <p className='text-xs font-bold uppercase tracking-wide text-slate-500'>
-                  {isExtracting ? t('hr.extracting') : t('hr.ready')}
-                </p>
-                <ul className='mt-2 max-h-40 overflow-y-auto space-y-1.5'>
+              <div className='rounded-2xl border border-slate-200 bg-slate-50 p-2'>
+                <div className='flex items-center justify-between px-1'>
+                  <p className='text-[10px] font-bold uppercase tracking-wide text-slate-500'>
+                    {isExtracting ? t('hr.extracting') : t('hr.ready')}
+                  </p>
+                  {!isExtracting && (
+                    <button
+                      type='button'
+                      onClick={clearFiles}
+                      className='text-[10px] font-bold text-rose-600 hover:text-rose-800 uppercase transition-colors'
+                    >
+                      {t('provider.status.clear')}
+                    </button>
+                  )}
+                </div>
+                <ul className='mt-2 max-h-40 overflow-y-auto space-y-1'>
                   {files.map(file => (
                     <li
                       key={file.id}
-                      className='flex items-center justify-between text-sm'
+                      className='flex items-center justify-between text-sm group'
                     >
-                      <span className='truncate font-medium text-slate-700'>
-                        {file.filename}
-                      </span>
-                      {file.status === 'ready' ? (
-                        <span className='flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 text-[10px] text-emerald-700'>
-                          ✓
+                      <div className='flex items-center gap-2 truncate'>
+                        {file.status === 'ready' ? (
+                          <span className='flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[8px] text-emerald-700'>
+                            ✓
+                          </span>
+                        ) : (
+                          <span
+                            title={file.error}
+                            className='flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-rose-100 text-[8px] text-rose-700'
+                          >
+                            !
+                          </span>
+                        )}
+                        <span className='truncate font-medium text-slate-700'>
+                          {file.filename}
                         </span>
-                      ) : (
-                        <span
-                          title={file.error}
-                          className='flex h-5 w-5 items-center justify-center rounded-full bg-rose-100 text-[10px] text-rose-700'
+                      </div>
+                      {!isExtracting && (
+                        <button
+                          type='button'
+                          onClick={() => removeFile(file.id)}
+                          className='p-1 text-slate-400 hover:text-rose-600 transition-colors opacity-0 group-hover:opacity-100 touch-target'
+                          title='Remove file'
                         >
-                          !
-                        </span>
+                          <Trash2 className='h-3.5 w-3.5' />
+                        </button>
                       )}
                     </li>
                   ))}
                 </ul>
               </div>
             )}
-
             {error && <p className='error-message'>{error}</p>}
 
             <button
@@ -401,20 +433,29 @@ export function HrRanker({ config }: HrRankerProps) {
               </div>
             </div>
 
-            <HrPipelineRoiCalculator />
-
             <div className='flex items-center justify-between'>
               <h3 className='text-lg font-black text-slate-950'>
                 {t('hr.rankList')}
               </h3>
               <div className='flex gap-2'>
-                <CandidateComparisonMatrix
-                  candidates={result.candidates.map(c => ({
-                    candidate: c,
-                    cvText: rawCvById[c.id] || '',
-                  }))}
-                  onClose={() => {}}
-                />
+                <button
+                  className='status-button touch-target text-xs'
+                  type='button'
+                  onClick={() => setIsMatrixOpen(true)}
+                >
+                  <LayoutGrid className='h-3 w-3' />
+                  {t('hr.matrix.action')}
+                </button>
+
+                {isMatrixOpen && (
+                  <CandidateComparisonMatrix
+                    candidates={result.candidates.map(c => ({
+                      candidate: c,
+                      cvText: rawCvById[c.id] || '',
+                    }))}
+                    onClose={() => setIsMatrixOpen(false)}
+                  />
+                )}
                 <button
                   className='status-button touch-target text-xs'
                   type='button'

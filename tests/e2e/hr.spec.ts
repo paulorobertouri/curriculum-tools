@@ -30,11 +30,17 @@ test.describe('HR Journey', () => {
     await expect(page.getByText('alice.txt').first()).toBeVisible();
     await expect(page.getByText('bob.txt').first()).toBeVisible();
     await expect(page.getByText('Average vs top candidate')).toBeVisible();
-    await expect(
-      page.getByText('Hiring Cost & Funnel ROI Calculator'),
-    ).toBeVisible();
 
     await captureJourneyScreenshot(page, 'hr', '00-ranking-result');
+
+    // Open comparison matrix
+    await page.getByRole('button', { name: /Compare/i }).click();
+    await expect(page.getByText('Candidate Side-by-Side Comparison')).toBeVisible();
+    await captureJourneyScreenshot(page, 'hr', '04-comparison-matrix');
+
+    // Close comparison matrix
+    await page.locator('button:has(svg.lucide-x)').click();
+    await expect(page.getByText('Candidate Side-by-Side Comparison')).not.toBeVisible();
   });
 
   test('evaluates each candidate in separated ranking requests', async ({

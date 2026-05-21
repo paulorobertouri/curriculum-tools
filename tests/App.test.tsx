@@ -270,8 +270,5 @@ describe('App', () => {
     expect(
       screen.getByRole('heading', { name: 'Average vs top candidate' }),
     ).toBeVisible();
-    expect(
-      screen.getByText('Hiring Cost & Funnel ROI Calculator'),
-    ).toBeVisible();
   });
 });
