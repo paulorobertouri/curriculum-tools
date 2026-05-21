@@ -1,8 +1,4 @@
-import {
-  ProviderFallbackNotice,
-  callProviderReview,
-  runWithAnonymousFallback,
-} from '@/application/providerFallback';
+import { callProviderReview } from '@/application/providerFallback';
 import {
   AiConfig,
   CandidateReview,
@@ -11,19 +7,15 @@ import {
 
 type CandidateReviewUseCaseResult = {
   review: CandidateReview;
-  providerNotice: ProviderFallbackNotice | null;
 };
 
 export const runCandidateReviewUseCase = async (
   config: AiConfig,
   input: CandidateReviewInput,
 ): Promise<CandidateReviewUseCaseResult> => {
-  const { data, notice } = await runWithAnonymousFallback(config, effective =>
-    callProviderReview(effective, input),
-  );
+  const data = await callProviderReview(config, input);
 
   return {
     review: data,
-    providerNotice: notice,
   };
 };

@@ -1,4 +1,5 @@
 import { CandidateReview, HrRankingResult } from '@/domain/aiTypes';
+import { extractKeywords, findEvidence } from '@/domain/textAnalysis';
 
 export type EvidenceTraceItem = {
   claim: string;
@@ -9,69 +10,35 @@ export type EvidenceTraceItem = {
 export type CandidateQualitySummary = {
   confidenceScore: number;
   evidenceCoverageRate: number;
+  hallucinationRiskScore: number;
   unsupportedClaims: string[];
   traces: EvidenceTraceItem[];
 };
 
-const stopWords = new Set([
-  'the',
-  'and',
-  'for',
-  'with',
-  'from',
-  'this',
-  'that',
-  'have',
-  'has',
-  'your',
-  'into',
-  'about',
-  'role',
-  'work',
-  'were',
-]);
-
-const extractKeywords = (text: string) =>
-  Array.from(
-    new Set(
-      text
-        .toLowerCase()
-        .replace(/[^a-z0-9\s]/g, ' ')
-        .split(/\s+/)
-        .filter(word => word.length > 3 && !stopWords.has(word)),
-    ),
-  );
-
-const toSentences = (text: string) =>
-  text
-    .replace(/\s+/g, ' ')
-    .split(/(?<=[.!?])\s+/)
-    .map(item => item.trim())
-    .filter(Boolean);
-
-const findEvidence = (claim: string, source: string): string | null => {
-  const keywords = extractKeywords(claim).slice(0, 6);
-  if (keywords.length === 0) {
-    return null;
+const computeHallucinationRisk = (
+  traces: EvidenceTraceItem[],
+  cvText: string,
+): number => {
+  if (traces.length === 0) {
+    return 0;
   }
 
-  const sentences = toSentences(source);
-  let best: { sentence: string; score: number } | null = null;
+  const cvKeywords = new Set(extractKeywords(cvText));
 
-  for (const sentence of sentences) {
-    const lowered = sentence.toLowerCase();
-    const score = keywords.filter(keyword => lowered.includes(keyword)).length;
+  let zeroOverlapCount = 0;
 
-    if (score === 0) {
-      continue;
-    }
+  for (const trace of traces) {
+    const claimKeywords = extractKeywords(trace.claim);
+    const hasAnyOverlap = claimKeywords.some(keyword =>
+      cvKeywords.has(keyword),
+    );
 
-    if (!best || score > best.score) {
-      best = { sentence, score };
+    if (!hasAnyOverlap) {
+      zeroOverlapCount += 1;
     }
   }
 
-  return best && best.score >= 2 ? best.sentence : null;
+  return Number(((zeroOverlapCount / traces.length) * 100).toFixed(0));
 };
 
 export const buildCandidateQualitySummary = (
@@ -115,9 +82,12 @@ export const buildCandidateQualitySummary = (
     ).toFixed(0),
   );
 
+  const hallucinationRiskScore = computeHallucinationRisk(traces, cvText);
+
   return {
     confidenceScore,
     evidenceCoverageRate: Number(evidenceCoverageRate.toFixed(0)),
+    hallucinationRiskScore,
     unsupportedClaims: traces
       .filter(trace => !trace.supported)
       .map(trace => trace.claim),

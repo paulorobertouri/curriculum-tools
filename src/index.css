@@ -118,8 +118,8 @@
     @apply relative min-h-screen;
   }
 
-  .tool-grid {
-    @apply grid gap-6 lg:grid-cols-[minmax(0,1.02fr)_minmax(360px,0.72fr)] lg:items-start;
+  .tool-stack {
+    @apply flex flex-col gap-6 mx-auto w-full max-w-4xl;
   }
 
   .tool-panel {

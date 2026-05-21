@@ -5,12 +5,15 @@ const HARNESS_STORAGE_KEY = 'curriculum-tools.evaluationHarness.v1';
 export type EvaluationCandidateRun = {
   fixtureId: string;
   score: number;
+  durationMs?: number;
+  evidenceCoverageRate?: number;
 };
 
 export type EvaluationHrRun = {
   fixtureId: string;
   candidateOrder: string[];
   averageScore: number;
+  durationMs?: number;
 };
 
 export type EvaluationRun = {

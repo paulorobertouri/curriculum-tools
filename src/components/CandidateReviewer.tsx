@@ -1,21 +1,34 @@
-import { Download, FileText, Loader2, Sparkles } from 'lucide-react';
 import {
-  ChangeEvent,
-  FormEvent,
-  ReactNode,
-  useId,
-  useMemo,
-  useState,
-} from 'react';
+  ChevronDown,
+  ChevronUp,
+  Download,
+  Loader2,
+  Sparkles,
+} from 'lucide-react';
+import { ChangeEvent, FormEvent, useMemo, useState } from 'react';
 
 import {
   loadCandidateCvDraft,
   persistCandidateCvDraft,
 } from '@/application/candidate/candidateDraftGateway';
 import { runCandidateReviewUseCase } from '@/application/candidate/runCandidateReviewUseCase';
-import { ProviderFallbackNotice } from '@/application/providerFallback';
+import { CandidateScorecard } from '@/components/candidate/CandidateScorecard';
+import { InterviewSimulator } from '@/components/candidate/InterviewSimulator';
+import { ResumeBulletPlayground } from '@/components/candidate/ResumeBulletPlayground';
+import { SkillGapPanel } from '@/components/candidate/SkillGapPanel';
+import { List } from '@/components/common/List';
+import { LongTextBlock } from '@/components/common/LongTextBlock';
+import { MetricBar } from '@/components/common/MetricBar';
+import { ResultPanel } from '@/components/common/ResultPanel';
+import { Score } from '@/components/common/Score';
+import { TextArea } from '@/components/common/TextArea';
+import { TextField } from '@/components/common/TextField';
 import { AiConfig, CandidateReview } from '@/domain/aiTypes';
-import { buildCandidateQualitySummary } from '@/domain/reviewQuality';
+import {
+  CandidateQualitySummary,
+  buildCandidateQualitySummary,
+} from '@/domain/reviewQuality';
+import { analyzeSkillGap } from '@/domain/skillGapAnalysis';
 import {
   downloadCandidateTextFile,
   downloadJsonFile,
@@ -39,8 +52,10 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
   );
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [providerNotice, setProviderNotice] =
-    useState<ProviderFallbackNotice | null>(null);
+  const [isFormCollapsed, setIsFormCollapsed] = useState(false);
+  const [activeTab, setActiveTab] = useState<'overview' | 'toolkit'>(
+    'overview',
+  );
 
   const handleFile = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -50,7 +65,6 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
     }
 
     setError(null);
-    setProviderNotice(null);
     setFileStatus(t('candidate.extracting', { filename: file.name }));
 
     try {
@@ -80,16 +94,15 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
     setIsProcessing(true);
 
     try {
-      const { review, providerNotice: nextProviderNotice } =
-        await runCandidateReviewUseCase(config, {
-          jobTitle,
-          jobDescription,
-          cvText,
-          outputLocale: locale,
-        });
+      const { review } = await runCandidateReviewUseCase(config, {
+        jobTitle,
+        jobDescription,
+        cvText,
+        outputLocale: locale,
+      });
       setPreviousResult(result);
       setResult(review);
-      setProviderNotice(nextProviderNotice);
+      setIsFormCollapsed(true);
     } catch (processError) {
       setError(
         processError instanceof Error
@@ -101,82 +114,106 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
     }
   };
 
+  const quality = useMemo(
+    () => (result ? buildCandidateQualitySummary(cvText, result) : null),
+    [result, cvText],
+  );
+
+  const skillGap = useMemo(
+    () => analyzeSkillGap(jobDescription, cvText),
+    [jobDescription, cvText],
+  );
+
+  const scoreDelta =
+    result && previousResult ? result.score - previousResult.score : 0;
+
   return (
-    <section className='tool-grid'>
-      <form className='tool-panel' onSubmit={handleSubmit}>
-        <div>
-          <p className='eyebrow'>{t('candidate.eyebrow')}</p>
-          <h2 className='panel-title'>{t('candidate.title')}</h2>
-          <p className='mt-2 text-sm leading-6 text-slate-600'>
-            {t('candidate.description')}
-          </p>
-        </div>
-        <TextField
-          label={t('candidate.jobTitle')}
-          value={jobTitle}
-          onChange={setJobTitle}
-        />
-        <TextArea
-          label={t('candidate.jobDescription')}
-          value={jobDescription}
-          onChange={setJobDescription}
-          rows={6}
-        />
-        <label className='field-label' htmlFor='candidate-file'>
-          {t('candidate.upload')}
-        </label>
-        <input
-          id='candidate-file'
-          className='file-input'
-          type='file'
-          accept={SUPPORTED_FILE_TYPES}
-          onChange={handleFile}
-        />
-        <p className='text-xs leading-5 text-slate-500'>
-          {t('candidate.uploadHint')}
-        </p>
-        {fileStatus ? <p className='success-message'>{fileStatus}</p> : null}
-        <TextArea
-          label={t('candidate.cvText')}
-          value={cvText}
-          onChange={value => {
-            setCvText(value);
-            persistCandidateCvDraft(value);
-          }}
-          rows={10}
-        />
-        {error ? (
-          <p role='alert' className='error-message'>
-            {error}
-          </p>
-        ) : null}
+    <div className='tool-stack'>
+      <div className='tool-panel overflow-hidden'>
         <button
-          className='primary-button touch-target'
-          type='submit'
-          disabled={isProcessing}
+          type='button'
+          onClick={() => setIsFormCollapsed(!isFormCollapsed)}
+          className='flex w-full items-center justify-between'
         >
-          {isProcessing ? (
-            <Loader2 className='h-4 w-4 animate-spin' />
-          ) : (
-            <Sparkles className='h-4 w-4' />
-          )}
-          {isProcessing ? t('candidate.processing') : t('candidate.process')}
+          <div className='text-left'>
+            <p className='eyebrow'>{t('candidate.eyebrow')}</p>
+            <h2 className='panel-title'>{t('candidate.title')}</h2>
+          </div>
+          <div className='flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200'>
+            {isFormCollapsed ? (
+              <ChevronDown className='h-5 w-5' />
+            ) : (
+              <ChevronUp className='h-5 w-5' />
+            )}
+          </div>
         </button>
-        <p className='text-xs leading-5 text-slate-500'>
-          {t('candidate.processHint')}
-        </p>
-        {providerNotice ? (
-          <p className='warning-message'>
-            {t('provider.fallback.notice', {
-              primary: providerNotice.primaryProvider,
-              fallback: providerNotice.fallbackProvider,
-              reason: t(
-                `provider.fallback.reason.${providerNotice.reasonKind}`,
-              ),
-            })}
-          </p>
-        ) : null}
-      </form>
+
+        {!isFormCollapsed && (
+          <form className='mt-6 grid gap-5' onSubmit={handleSubmit}>
+            <p className='text-sm leading-6 text-slate-600'>
+              {t('candidate.description')}
+            </p>
+            <TextField
+              label={t('candidate.jobTitle')}
+              value={jobTitle}
+              onChange={setJobTitle}
+            />
+            <TextArea
+              label={t('candidate.jobDescription')}
+              value={jobDescription}
+              onChange={setJobDescription}
+              rows={6}
+            />
+            <div className='space-y-2'>
+              <label className='field-label' htmlFor='candidate-file'>
+                {t('candidate.upload')}
+              </label>
+              <input
+                id='candidate-file'
+                className='file-input'
+                type='file'
+                accept={SUPPORTED_FILE_TYPES}
+                onChange={handleFile}
+              />
+              <p className='text-xs leading-5 text-slate-500'>
+                {t('candidate.uploadHint')}
+              </p>
+            </div>
+            {fileStatus ? (
+              <p className='success-message'>{fileStatus}</p>
+            ) : null}
+            <TextArea
+              label={t('candidate.cvText')}
+              value={cvText}
+              onChange={value => {
+                setCvText(value);
+                persistCandidateCvDraft(value);
+              }}
+              rows={8}
+            />
+
+            {error ? <p className='error-message'>{error}</p> : null}
+
+            <button
+              className='submit-button touch-target group mt-2'
+              type='submit'
+              disabled={isProcessing}
+            >
+              {isProcessing ? (
+                <Loader2 className='h-4 w-4 animate-spin' />
+              ) : (
+                <Sparkles className='h-4 w-4' />
+              )}
+              {isProcessing
+                ? t('candidate.processing')
+                : t('candidate.process')}
+            </button>
+            <p className='text-xs leading-5 text-slate-500'>
+              {t('candidate.processHint')}
+            </p>
+          </form>
+        )}
+      </div>
 
       <ResultPanel
         title={t('candidate.resultTitle')}
@@ -186,158 +223,125 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
           isProcessing ? t('candidate.processing') : t('result.ready')
         }
       >
-        {result ? (
-          <CandidateResult
-            result={result}
-            cvText={cvText}
-            previousResult={previousResult}
-          />
-        ) : null}
-      </ResultPanel>
-    </section>
-  );
-}
-
-function CandidateResult({
-  result,
-  cvText,
-  previousResult,
-}: {
-  result: CandidateReview;
-  cvText: string;
-  previousResult: CandidateReview | null;
-}) {
-  const { t } = useI18n();
-  const quality = useMemo(
-    () => buildCandidateQualitySummary(cvText, result),
-    [cvText, result],
-  );
-  const scoreDelta = previousResult
-    ? Number((result.score - previousResult.score).toFixed(1))
-    : 0;
-
-  return (
-    <div className='space-y-5'>
-      <div className='flex flex-wrap gap-2'>
-        <button
-          className='status-button touch-target'
-          type='button'
-          onClick={() => downloadJsonFile('candidate-review', result)}
-        >
-          <Download className='h-4 w-4' />
-          {t('export.json')}
-        </button>
-        <button
-          className='status-button touch-target'
-          type='button'
-          onClick={() => downloadCandidateTextFile(result)}
-        >
-          <Download className='h-4 w-4' />
-          {t('export.text')}
-        </button>
-      </div>
-      <Score value={result.score} />
-      {previousResult ? (
-        <div className='rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700'>
-          <p className='font-bold text-slate-900'>Rerun diff</p>
-          <p className='mt-1'>
-            Score delta: {scoreDelta >= 0 ? '+' : ''}
-            {scoreDelta.toFixed(1)}
-          </p>
-          <p>
-            Strength items: {previousResult.strengths.length} {'->'}{' '}
-            {result.strengths.length}
-          </p>
-          <p>
-            Gap items: {previousResult.gaps.length} {'->'} {result.gaps.length}
-          </p>
+        <div className='mb-6 flex gap-2'>
+          {[
+            { id: 'overview', label: t('candidate.tab.overview') },
+            { id: 'toolkit', label: t('candidate.tab.toolkit') },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as 'overview' | 'toolkit')}
+              className={[
+                'rounded-xl px-4 py-1.5 text-xs font-bold transition-all touch-target',
+                activeTab === tab.id
+                  ? 'bg-slate-950 text-white shadow-sm'
+                  : 'bg-slate-100 text-slate-500 hover:bg-slate-200',
+              ].join(' ')}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
-      ) : null}
-      <CandidateMetricsChart result={result} />
-      <CandidateQualityPanel quality={quality} />
-      <p className='text-sm leading-6 text-slate-700'>{result.summary}</p>
-      <List title={t('candidate.list.strengths')} items={result.strengths} />
-      <List title={t('candidate.list.gaps')} items={result.gaps} />
-      <List
-        title={t('candidate.list.recommendations')}
-        items={result.recommendations}
-      />
-      <List
-        title={t('candidate.list.rewritten')}
-        items={result.rewrittenBullets}
-      />
-      <LongTextBlock
-        title={t('candidate.list.rewrittenCv')}
-        text={result.rewrittenCv}
-      />
-      <LongTextBlock
-        title={t('candidate.list.coverLetter')}
-        text={result.coverLetter}
-      />
-      <CandidateInterviewQaList items={result.interviewQa} />
+
+        <div className='flex gap-2 mb-6'>
+          <button
+            className='status-button touch-target text-xs'
+            type='button'
+            onClick={() => downloadJsonFile('candidate-review', result)}
+          >
+            <Download className='h-3 w-3' />
+            {t('export.json')}
+          </button>
+          <button
+            className='status-button touch-target text-xs'
+            type='button'
+            onClick={() => downloadCandidateTextFile(result!)}
+          >
+            <Download className='h-3 w-3' />
+            {t('export.text')}
+          </button>
+        </div>
+
+        {activeTab === 'overview' && result && quality && (
+          <div className='space-y-5 animate-fade-in'>
+            <Score value={result.score} />
+            {previousResult ? (
+              <div className='rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700'>
+                <p className='font-bold text-slate-900'>
+                  {t('candidate.rerunDiff')}
+                </p>
+                <p className='mt-1'>
+                  {t('candidate.scoreDelta')}: {scoreDelta >= 0 ? '+' : ''}
+                  {scoreDelta.toFixed(1)}
+                </p>
+                <p>
+                  {t('candidate.strengthItems')}:{' '}
+                  {previousResult.strengths.length} {'->'}
+                  {'  '}
+                  {result.strengths.length}
+                </p>
+                <p>
+                  {t('candidate.gapItems')}: {previousResult.gaps.length} {'->'}{' '}
+                  {result.gaps.length}
+                </p>
+              </div>
+            ) : null}
+            <CandidateScorecard
+              review={result}
+              quality={quality}
+              skillGap={skillGap}
+            />
+            <SkillGapPanel jobDescription={jobDescription} cvText={cvText} />
+            <CandidateMetricsChart result={result} quality={quality} />
+            <CandidateQualityPanel quality={quality} />
+            <p className='text-sm leading-6 text-slate-700'>{result.summary}</p>
+            <List
+              title={t('candidate.list.strengths')}
+              items={result.strengths}
+            />
+            <List title={t('candidate.list.gaps')} items={result.gaps} />
+            <List
+              title={t('candidate.list.recommendations')}
+              items={result.recommendations}
+            />
+          </div>
+        )}
+
+        {activeTab === 'toolkit' && result && (
+          <div className='space-y-8 animate-fade-in'>
+            <ResumeBulletPlayground
+              originalBullets={result.strengths}
+              suggestedBullets={result.rewrittenBullets}
+            />
+            <InterviewSimulator questions={result.interviewQa} />
+            <LongTextBlock
+              title={t('candidate.list.rewrittenCv')}
+              text={result.rewrittenCv}
+            />
+            <LongTextBlock
+              title={t('candidate.list.coverLetter')}
+              text={result.coverLetter}
+            />
+          </div>
+        )}
+      </ResultPanel>
     </div>
   );
 }
 
-function CandidateQualityPanel({
+function CandidateMetricsChart({
+  result,
   quality,
 }: {
-  quality: ReturnType<typeof buildCandidateQualitySummary>;
+  result: CandidateReview;
+  quality: CandidateQualitySummary;
 }) {
-  return (
-    <section className='rounded-3xl border border-slate-200 bg-slate-50 p-4 shadow-sm'>
-      <p className='text-sm font-bold text-slate-900'>Reliability checks</p>
-      <div className='mt-2 grid gap-2 sm:grid-cols-2'>
-        <p className='rounded-xl bg-white px-3 py-2 text-sm text-slate-700'>
-          Confidence score:{' '}
-          <span className='font-bold'>{quality.confidenceScore}/100</span>
-        </p>
-        <p className='rounded-xl bg-white px-3 py-2 text-sm text-slate-700'>
-          Evidence coverage:{' '}
-          <span className='font-bold'>{quality.evidenceCoverageRate}%</span>
-        </p>
-      </div>
-
-      {quality.unsupportedClaims.length > 0 ? (
-        <div className='mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900'>
-          <p className='font-bold'>Unsupported-claim guard</p>
-          <ul className='mt-1 list-disc space-y-1 pl-5'>
-            {quality.unsupportedClaims.slice(0, 5).map(claim => (
-              <li key={claim}>{claim}</li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-
-      <details className='mt-3 rounded-xl border border-slate-200 bg-white p-3'>
-        <summary className='cursor-pointer text-sm font-bold text-slate-900'>
-          Evidence trace
-        </summary>
-        <div className='mt-2 space-y-2 text-sm text-slate-700'>
-          {quality.traces.slice(0, 8).map(trace => (
-            <div key={`${trace.claim}-${trace.evidence ?? 'none'}`}>
-              <p className='font-semibold text-slate-900'>{trace.claim}</p>
-              <p>
-                {trace.evidence ??
-                  'No direct supporting excerpt found in CV text.'}
-              </p>
-            </div>
-          ))}
-        </div>
-      </details>
-    </section>
-  );
-}
-
-function CandidateMetricsChart({ result }: { result: CandidateReview }) {
   const { t } = useI18n();
-  const strengthsScore = Math.min(10, result.strengths.length * 2);
-  const gapsScore = Math.max(0, 10 - Math.min(10, result.gaps.length * 2));
+
+  const strengthsScore = Math.min(10, result.strengths.length * 1.5);
+  const gapsScore = Math.max(0, 10 - result.gaps.length * 1.5);
   const recommendationScore = Math.min(10, result.recommendations.length * 2);
-  const evidenceCoverage = Math.min(
-    10,
-    (result.strengths.length + result.rewrittenBullets.length) * 1.25,
-  );
+  const evidenceCoverage = quality.evidenceCoverageRate / 10;
   const interviewReadiness = Math.min(10, result.interviewQa.length * 1.5);
 
   return (
@@ -369,238 +373,35 @@ function CandidateMetricsChart({ result }: { result: CandidateReview }) {
   );
 }
 
-function LongTextBlock({ title, text }: { title: string; text: string }) {
-  const { t } = useI18n();
-
-  return (
-    <div>
-      <h3 className='text-sm font-bold text-slate-950'>{title}</h3>
-      {text.trim().length > 0 ? (
-        <pre className='mt-2 whitespace-pre-wrap rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-700'>
-          {text}
-        </pre>
-      ) : (
-        <p className='mt-2 text-sm text-slate-500'>{t('result.noItems')}</p>
-      )}
-    </div>
-  );
-}
-
-function CandidateInterviewQaList({
-  items,
+function CandidateQualityPanel({
+  quality,
 }: {
-  items: CandidateReview['interviewQa'];
+  quality: CandidateQualitySummary;
 }) {
   const { t } = useI18n();
 
   return (
-    <div>
-      <h3 className='text-sm font-bold text-slate-950'>
-        {t('candidate.list.interviewQa')}
-      </h3>
-      {items.length > 0 ? (
-        <div className='mt-2 space-y-3'>
-          {items.map(item => (
-            <article
-              key={`${item.question}-${item.suggestedAnswer}`}
-              className='rounded-2xl border border-slate-200 bg-slate-50 p-3'
-            >
-              <p className='text-sm font-bold text-slate-900'>
-                {item.question}
-              </p>
-              <p className='mt-2 text-sm leading-6 text-slate-700'>
-                <span className='font-semibold text-slate-900'>
-                  {t('candidate.interview.suggestedAnswer')}:
-                </span>{' '}
-                {item.suggestedAnswer}
-              </p>
-            </article>
-          ))}
-        </div>
-      ) : (
-        <p className='mt-2 text-sm text-slate-500'>{t('result.noItems')}</p>
-      )}
-    </div>
-  );
-}
-
-function MetricBar({ label, value }: { label: string; value: number }) {
-  const safeValue = Math.max(
-    0,
-    Math.min(10, Number.isFinite(value) ? value : 0),
-  );
-
-  return (
-    <div>
-      <div className='mb-1 flex items-center justify-between text-xs font-semibold text-slate-700'>
-        <span>{label}</span>
-        <span>{safeValue.toFixed(1)}/10</span>
-      </div>
-      <div className='h-2 rounded-full bg-slate-200'>
-        <div
-          className='h-2 rounded-full bg-cyan-600 transition-all duration-300'
-          style={{ width: `${safeValue * 10}%` }}
-        />
-      </div>
-    </div>
-  );
-}
-
-export function TextField({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange(value: string): void;
-}) {
-  const id = useId();
-
-  return (
-    <div className='space-y-2'>
-      <label className='field-label' htmlFor={id}>
-        {label}
-      </label>
-      <input
-        id={id}
-        className='text-input'
-        value={value}
-        onChange={event => onChange(event.target.value)}
-      />
-    </div>
-  );
-}
-
-export function TextArea({
-  label,
-  value,
-  onChange,
-  rows,
-}: {
-  label: string;
-  value: string;
-  rows: number;
-  onChange(value: string): void;
-}) {
-  const id = useId();
-
-  return (
-    <div className='space-y-2'>
-      <label className='field-label' htmlFor={id}>
-        {label}
-      </label>
-      <textarea
-        id={id}
-        className='text-input resize-y'
-        rows={rows}
-        value={value}
-        onChange={event => onChange(event.target.value)}
-      />
-    </div>
-  );
-}
-
-export function ResultPanel({
-  title,
-  empty,
-  status = 'empty',
-  statusMessage,
-  errorMessage,
-  children,
-  className = '',
-}: {
-  title: string;
-  empty: string;
-  status?: 'empty' | 'loading' | 'ready' | 'error';
-  statusMessage?: string;
-  errorMessage?: string;
-  children: ReactNode;
-  className?: string;
-}) {
-  const { t } = useI18n();
-  const isReady = Boolean(children) && status === 'ready';
-
-  return (
-    <aside
-      className={['tool-panel', className].filter(Boolean).join(' ')}
-      aria-busy={status === 'loading'}
-      aria-live='polite'
-      aria-atomic='true'
-      tabIndex={-1}
-    >
-      <div className='flex items-center gap-2'>
-        <FileText className='h-5 w-5 text-cyan-700' />
-        <h2 className='panel-title'>{title}</h2>
-      </div>
-      {status === 'loading' ? (
-        <div className='state-loading rounded-3xl border border-dashed border-cyan-200 bg-cyan-50 p-4 text-sm leading-6 text-cyan-900'>
-          <div className='flex items-center gap-2 font-bold'>
-            <Loader2 className='h-4 w-4 animate-spin' />
-            <span>{statusMessage ?? t('result.loading')}</span>
-          </div>
-          <div className='mt-3 space-y-2'>
-            <div className='skeleton h-3 w-3/4' />
-            <div className='skeleton h-3 w-5/6' />
-            <div className='skeleton h-3 w-2/3' />
-          </div>
-          <p className='mt-2 text-cyan-800/80'>{empty}</p>
-        </div>
-      ) : status === 'error' ? (
-        <div className='error-message'>
-          <p className='font-bold'>{statusMessage ?? t('result.loading')}</p>
-          <p className='mt-1 text-sm'>{errorMessage ?? empty}</p>
-        </div>
-      ) : isReady ? (
-        <div className='space-y-3'>
-          <div className='inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold uppercase tracking-wide text-emerald-800'>
-            {statusMessage ?? t('result.ready')}
-          </div>
-          {children}
-        </div>
-      ) : (
-        <div className='rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-4'>
-          <p className='text-sm leading-6 text-slate-600'>{empty}</p>
-        </div>
-      )}
-    </aside>
-  );
-}
-
-export function Score({ value }: { value: number }) {
-  const { locale, t } = useI18n();
-  const formatter = new Intl.NumberFormat(locale, {
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
-  });
-
-  return (
-    <div className='rounded-lg border border-cyan-200 bg-cyan-50 p-4'>
-      <p className='text-sm font-bold uppercase text-cyan-800'>
-        {t('result.score')}
+    <div className='rounded-3xl border border-slate-200 bg-white p-4 shadow-sm'>
+      <p className='text-sm font-bold text-slate-900'>
+        {t('candidate.quality.reliabilityChecks')}
       </p>
-      <p className='text-4xl font-black text-slate-950'>
-        {formatter.format(value)}
-      </p>
-    </div>
-  );
-}
-
-export function List({ title, items }: { title: string; items: string[] }) {
-  const { t } = useI18n();
-
-  return (
-    <div>
-      <h3 className='text-sm font-bold text-slate-950'>{title}</h3>
-      {items.length > 0 ? (
-        <ul className='mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-slate-700'>
-          {items.map(item => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
-      ) : (
-        <p className='mt-2 text-sm text-slate-500'>{t('result.noItems')}</p>
-      )}
+      <div className='mt-3 space-y-3'>
+        <div className='flex items-start gap-2 rounded-2xl bg-slate-50 p-3'>
+          <div className='h-2 w-2 mt-1.5 rounded-full bg-cyan-600' />
+          <div>
+            <p className='text-xs font-bold'>
+              {t('candidate.quality.unsupportedGuard')}
+            </p>
+            <p className='text-[10px] text-slate-500 mt-0.5'>
+              {quality.unsupportedClaims.length === 0
+                ? t('candidate.quality.allVerified')
+                : t('candidate.quality.unsupportedClaims', {
+                    count: quality.unsupportedClaims.length,
+                  })}
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

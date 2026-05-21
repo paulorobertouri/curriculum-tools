@@ -1,5 +1,6 @@
 import { AiConfig } from '@/domain/aiTypes';
 import { candidateFixtures, hrFixtures } from '@/domain/evaluationFixtures';
+import { buildCandidateQualitySummary } from '@/domain/reviewQuality';
 import { PROMPT_VERSIONS } from '@/prompts/promptVersions';
 import { getProviderAdapter } from '@/providers';
 import { EvaluationRun } from '@/storage/evaluationHarnessStorage';
@@ -19,19 +20,33 @@ export const runEvaluationHarnessUseCase = async (
 
   const candidateRuns = [] as EvaluationRun['candidateRuns'];
   for (const fixture of candidateFixtures) {
+    const start = Date.now();
     const review = await adapter.reviewCandidateCv(config, fixture.input);
-    candidateRuns.push({ fixtureId: fixture.id, score: review.score });
+    const durationMs = Date.now() - start;
+
+    const quality = buildCandidateQualitySummary(fixture.input.cvText, review);
+
+    candidateRuns.push({
+      fixtureId: fixture.id,
+      score: review.score,
+      durationMs,
+      evidenceCoverageRate: quality.evidenceCoverageRate,
+    });
   }
 
   const hrRuns = [] as EvaluationRun['hrRuns'];
   for (const fixture of hrFixtures) {
+    const start = Date.now();
     const ranking = await adapter.rankHrCvs(config, fixture.input);
+    const durationMs = Date.now() - start;
+
     hrRuns.push({
       fixtureId: fixture.id,
       candidateOrder: ranking.candidates.map(candidate => candidate.id),
       averageScore: average(
         ranking.candidates.map(candidate => candidate.score),
       ),
+      durationMs,
     });
   }
 

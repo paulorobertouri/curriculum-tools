@@ -6,13 +6,7 @@ import {
 } from '@/domain/aiTypes';
 
 const isProvider = (value: unknown): value is AiProviderId =>
-  value === 'gemini' ||
-  value === 'openai' ||
-  value === 'deepseek' ||
-  value === 'ovh' ||
-  value === 'llm7' ||
-  value === 'pollinations' ||
-  value === 'kilo';
+  value === 'gemini' || value === 'openai' || value === 'deepseek';
 
 export const isAiConfig = (value: unknown): value is AiConfig => {
   if (typeof value !== 'object' || value === null) {

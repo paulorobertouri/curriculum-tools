@@ -9,7 +9,7 @@ Curriculum Tools is a browser-only Vite + React + TypeScript application.
 - No backend in v1.
 - Provider configuration is persisted in browser storage.
 - CV text is extracted in-browser and sent to AI providers only after explicit user action.
-- The app supports key-based and optional-key anonymous provider modes.
+- The app supports bring-your-own-key providers.
 
 ## Architecture Style
 
@@ -33,10 +33,6 @@ Supported providers:
 - OpenAI
 - Gemini
 - DeepSeek
-- OVHcloud AI Endpoints (anonymous optional key)
-- LLM7 (anonymous optional key)
-- Pollinations (anonymous optional key)
-- Kilo (anonymous optional key)
 
 Provider orchestration uses shared workflows in `src/providers/providerWorkflows.ts` and shared response extraction/parsing in `src/providers/responseParsing.ts`.
 
@@ -72,11 +68,7 @@ src/
     index.ts
     deepseekProvider.ts
     geminiProvider.ts
-    kiloProvider.ts
-    llm7Provider.ts
     openaiProvider.ts
-    ovhProvider.ts
-    pollinationsProvider.ts
     providerUtils.ts
     providerWorkflows.ts
     responseParsing.ts

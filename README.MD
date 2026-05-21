@@ -8,7 +8,7 @@ Test the app live on GitHub Pages: https://paulorobertouri.github.io/curriculum-
 
 ## Latest Changes
 
-- Added multi-provider support for both key-based and anonymous free providers, including OVH, LLM7, Pollinations, and Kilo.
+- Added multi-provider support for Gemini, OpenAI, and DeepSeek.
 - Added a built-in language selector for localized workflows.
 - Added a Quality Evaluation Harness to track score drift and ranking stability across prompt/model changes.
 - Added optional sensitive-data redaction controls in provider setup.
@@ -23,7 +23,7 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE).
 
 - Provider setup gate with `Test and Save`.
 - Valid provider config saved in `localStorage`.
-- Supported providers: Gemini, OpenAI, DeepSeek, OVH, LLM7, Pollinations, and Kilo.
+- Supported providers: Gemini, OpenAI, and DeepSeek.
 - Candidate CV Reviewer with role-specific score and recommendations.
 - HR CV Ranking with multiple CV uploads, summary metrics, and ranked justifications.
 - Language selector available in the app header.

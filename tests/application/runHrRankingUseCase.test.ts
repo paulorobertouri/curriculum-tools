@@ -1,49 +1,42 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { runHrRankingUseCase } from '@/application/hr/runHrRankingUseCase';
-import { AiConfig, ProviderError } from '@/domain/aiTypes';
+import { AiConfig } from '@/domain/aiTypes';
+import { rankByProvider } from '@/providers';
 
-const { rankByProvider, getProviderAdapterMock } = vi.hoisted(() => ({
-  rankByProvider: {
+vi.mock('@/providers', () => {
+  const rankByProvider = {
     openai: vi.fn(),
-    ovh: vi.fn(),
-    llm7: vi.fn(),
-  },
-  getProviderAdapterMock: vi.fn(),
-}));
+  };
 
-vi.mock('@/providers', () => ({
-  getProviderAdapter: getProviderAdapterMock,
-}));
-
-const config: AiConfig = {
-  provider: 'openai',
-  apiKey: 'sk-test',
-  model: 'gpt-5.4-mini',
-  savedAt: '2026-05-18T00:00:00.000Z',
-};
+  return {
+    getProviderAdapter: (provider: string) => ({
+      rankHrCvs: rankByProvider[provider as 'openai'],
+    }),
+    rankByProvider,
+  };
+});
 
 describe('runHrRankingUseCase', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
+  const config: AiConfig = {
+    provider: 'openai',
+    apiKey: 'key',
+    model: 'gpt-4',
+    savedAt: '2026-05-16',
+  };
 
-    getProviderAdapterMock.mockImplementation((provider: string) => ({
-      rankHrCvs: rankByProvider[provider as 'openai' | 'ovh' | 'llm7'],
-    }));
-  });
-
-  it('given multiple cvs when executed then evaluates separately and sorts deterministically', async () => {
+  it('calls the provider for each CV and sorts results', async () => {
     rankByProvider.openai
       .mockResolvedValueOnce({
         candidates: [
           {
-            id: 'b',
-            filename: 'b.txt',
-            score: 7.9,
-            justification: 'Good fit',
+            id: 'c1',
+            score: 8,
+            filename: 'f1.txt',
+            justification: 'j1',
             strengths: [],
             concerns: [],
-            interviewRecommendation: 'yes',
+            interviewRecommendation: 'maybe',
             interviewQuestions: [],
           },
         ],
@@ -51,98 +44,31 @@ describe('runHrRankingUseCase', () => {
       .mockResolvedValueOnce({
         candidates: [
           {
-            id: 'a',
-            filename: 'a.txt',
-            score: 8.2,
-            justification: 'Better fit',
+            id: 'c2',
+            score: 9,
+            filename: 'f2.txt',
+            justification: 'j2',
             strengths: [],
             concerns: [],
-            interviewRecommendation: 'strong_yes',
+            interviewRecommendation: 'maybe',
             interviewQuestions: [],
           },
         ],
       });
 
-    const progress = vi.fn();
-
     const result = await runHrRankingUseCase({
       config,
-      jobTitle: 'Backend Engineer',
-      jobDescription: 'Build resilient APIs',
+      jobTitle: 'T',
+      jobDescription: 'D',
       cvs: [
-        { id: 'b', filename: 'b.txt', text: 'cv-b' },
-        { id: 'a', filename: 'a.txt', text: 'cv-a' },
+        { id: 'c1', filename: 'f1.txt', text: 't1' },
+        { id: 'c2', filename: 'f2.txt', text: 't2' },
       ],
-      onProgress: progress,
     });
 
+    expect(result.ranking.candidates).toHaveLength(2);
+    expect(result.ranking.candidates[0].id).toBe('c2'); // Sorted by score desc
+    expect(result.ranking.candidates[1].id).toBe('c1');
     expect(rankByProvider.openai).toHaveBeenCalledTimes(2);
-    expect(progress).toHaveBeenNthCalledWith(1, 1, 2);
-    expect(progress).toHaveBeenNthCalledWith(2, 2, 2);
-    expect(result.ranking.candidates.map(candidate => candidate.id)).toEqual([
-      'a',
-      'b',
-    ]);
-    expect(result.providerNotice).toBeNull();
-  });
-
-  it('given missing provider candidate when executed then creates fallback entry', async () => {
-    rankByProvider.openai.mockResolvedValueOnce({ candidates: [] });
-
-    const result = await runHrRankingUseCase({
-      config,
-      jobTitle: 'Backend Engineer',
-      jobDescription: 'Build resilient APIs',
-      cvs: [{ id: 'x', filename: 'x.txt', text: 'cv-x' }],
-    });
-
-    expect(result.ranking.candidates[0]).toMatchObject({
-      id: 'x',
-      filename: 'x.txt',
-      score: 0,
-      interviewRecommendation: 'maybe',
-    });
-  });
-
-  it('falls back from ovh to llm7 on retryable provider errors', async () => {
-    const ovhConfig: AiConfig = {
-      provider: 'ovh',
-      apiKey: '',
-      model: 'Qwen3-32B',
-      savedAt: '2026-05-18T00:00:00.000Z',
-    };
-
-    rankByProvider.ovh.mockRejectedValueOnce(
-      new ProviderError('network', 'Network down'),
-    );
-    rankByProvider.llm7.mockResolvedValueOnce({
-      candidates: [
-        {
-          id: 'x',
-          filename: 'x.txt',
-          score: 6.2,
-          justification: 'Fallback response',
-          strengths: [],
-          concerns: [],
-          interviewRecommendation: 'maybe',
-          interviewQuestions: [],
-        },
-      ],
-    });
-
-    const result = await runHrRankingUseCase({
-      config: ovhConfig,
-      jobTitle: 'Backend Engineer',
-      jobDescription: 'Build resilient APIs',
-      cvs: [{ id: 'x', filename: 'x.txt', text: 'cv-x' }],
-    });
-
-    expect(rankByProvider.ovh).toHaveBeenCalledTimes(1);
-    expect(rankByProvider.llm7).toHaveBeenCalledTimes(1);
-    expect(result.providerNotice).toMatchObject({
-      primaryProvider: 'ovh',
-      fallbackProvider: 'llm7',
-      reasonKind: 'network',
-    });
   });
 });

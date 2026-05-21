@@ -8,7 +8,7 @@ The codebase follows a layered browser-first architecture:
 
 - `src/domain`: core business types and pure domain logic.
 - `src/application`: use-cases that orchestrate workflows and depend on domain abstractions.
-- `src/providers`: infrastructure adapters for OpenAI, Gemini, DeepSeek, OVH, LLM7, Pollinations, and Kilo.
+- `src/providers`: infrastructure adapters for OpenAI, Gemini, and DeepSeek.
 - `src/storage`: persistence concerns (`localStorage`) behind modules.
 - `src/components`: presentation and interaction layer.
 

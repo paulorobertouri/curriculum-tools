@@ -20,7 +20,7 @@ Build a Vite + React + TypeScript + TailwindCSS application with Vitest coverage
 2. Candidate CV Reviewer
 3. HR CV Ranking
 
-The app is bring-your-own-key with optional-key anonymous provider support. The user chooses among Gemini, OpenAI, DeepSeek, OVH, LLM7, Pollinations, and Kilo, enters an API key when required, optionally edits a model name, and clicks `Test and Save`. The app sends a minimal prompt to confirm the selected provider responds successfully. Only after a successful test does it save the config in `localStorage` and unlock the tools.
+The app is bring-your-own-key. The user chooses among Gemini, OpenAI, or DeepSeek, enters an API key, optionally edits a model name, and clicks `Test and Save`. The app sends a minimal prompt to confirm the selected provider responds successfully. Only after a successful test does it save the config in `localStorage` and unlock the tools.
 
 ## Audience
 
@@ -47,7 +47,7 @@ Secondary users:
 1. User opens the app.
 2. App checks `localStorage` for `curriculum-tools.aiConfig.v1`.
 3. If no config exists, the setup screen is shown.
-4. User selects provider: Gemini, OpenAI, DeepSeek, OVH, LLM7, Pollinations, or Kilo.
+4. User selects provider: Gemini, OpenAI, or DeepSeek.
 5. User enters API key and optionally changes the model.
 6. User clicks `Test and Save`.
 7. App sends a small test prompt, such as `Reply with only: hello`.
@@ -139,7 +139,7 @@ In scope for v1:
 - Static React application.
 - Bring-your-own-key provider setup.
 - Browser `localStorage` config persistence.
-- Gemini, OpenAI, DeepSeek, OVH, LLM7, Pollinations, and Kilo adapters.
+- Gemini, OpenAI, and DeepSeek adapters.
 - Candidate CV review.
 - HR CV ranking.
 - Quality evaluation harness for fixture-based drift checks.

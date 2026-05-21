@@ -23,7 +23,17 @@ describe('runEvaluationHarnessUseCase', () => {
   };
 
   it('builds an evaluation run from all fixtures', async () => {
-    mockAdapter.reviewCandidateCv.mockResolvedValue({ score: 8.2 });
+    mockAdapter.reviewCandidateCv.mockResolvedValue({
+      score: 8.2,
+      summary: 'Summary',
+      strengths: ['Strength'],
+      gaps: ['Gap'],
+      recommendations: ['Recommendation'],
+      rewrittenBullets: ['Bullet'],
+      rewrittenCv: 'CV text',
+      coverLetter: 'Letter',
+      interviewQa: [{ question: 'Q', suggestedAnswer: 'A' }],
+    });
     mockAdapter.rankHrCvs.mockResolvedValue({
       candidates: [
         { id: 'candidate-1', score: 7.5 },

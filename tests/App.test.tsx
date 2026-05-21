@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -16,6 +16,7 @@ const savedConfig = {
   apiKey: 'sk-test-key',
   model: 'gpt-5.4-mini',
   savedAt: '2026-05-16T00:00:00.000Z',
+  redactSensitiveData: true,
 };
 
 describe('App', () => {
@@ -56,7 +57,7 @@ describe('App', () => {
     ).toBeVisible();
     expect(
       screen.getByText(
-        'Conecte Gemini, OpenAI, DeepSeek, OVHcloud, LLM7, Pollinations ou Kilo antes de revisar ou classificar CVs.',
+        'Conecte Gemini, OpenAI ou DeepSeek antes de revisar ou classificar CVs.',
       ),
     ).toBeVisible();
     expect(
@@ -83,17 +84,6 @@ describe('App', () => {
     expect(localStorage.getItem(AI_CONFIG_STORAGE_KEY)).toContain(
       'sk-test-key',
     );
-  });
-
-  it('does not list disabled anonymous providers in setup', () => {
-    renderApp();
-
-    const providerSelect = screen.getByLabelText('Provider');
-    expect(screen.queryByRole('option', { name: /OVHcloud/i })).toBeNull();
-    expect(screen.queryByRole('option', { name: /LLM7/i })).toBeNull();
-    expect(screen.queryByRole('option', { name: /Pollinations/i })).toBeNull();
-    expect(screen.queryByRole('option', { name: /Kilo/i })).toBeNull();
-    expect(providerSelect).toBeVisible();
   });
 
   it('fetches OpenAI models and updates the model input', async () => {
@@ -218,6 +208,8 @@ describe('App', () => {
     });
 
     expect(screen.getByText('Strong fit for the role.')).toBeVisible();
+    expect(screen.getByText('Scorecard')).toBeVisible();
+    expect(screen.getByText('Skill analysis')).toBeVisible();
     expect(
       screen.getByRole('heading', { name: 'Recommendations' }),
     ).toBeVisible();
@@ -247,30 +239,28 @@ describe('App', () => {
         }),
       }),
     } as Response);
-
+    seedSavedConfig();
     renderApp();
 
-    await user.click(screen.getByRole('tab', { name: 'HR' }));
-    await user.click(screen.getByRole('button', { name: 'Process' }));
-    expect(
-      await screen.findByText(
-        'Add job title, job description, and at least one valid CV.',
-      ),
-    ).toBeVisible();
+    const hrTab = screen.getByRole('tab', { name: /^HR$/ });
+    fireEvent.click(hrTab);
 
-    await user.type(screen.getByLabelText('Job title'), 'Engineering Manager');
+    // Wait for HR form
+    const jobTitleInput = await screen.findByLabelText(/Job title/i);
+
+    await user.type(jobTitleInput, 'Engineering Manager');
     await user.type(
-      screen.getByLabelText('Job description'),
+      screen.getByLabelText(/Job description/i),
       'Lead engineering teams and execute roadmap.',
     );
 
-    const fileInput = screen.getByLabelText('CV files');
+    const fileInput = screen.getByLabelText(/CV files/i);
     const file = new File(['Alice CV experience text'], 'alice.txt', {
       type: 'text/plain',
     });
     await user.upload(fileInput, file);
 
-    await user.click(screen.getByRole('button', { name: 'Process' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Process$/ }));
 
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: 'Alice' })).toBeVisible();
@@ -280,7 +270,8 @@ describe('App', () => {
     expect(
       screen.getByRole('heading', { name: 'Average vs top candidate' }),
     ).toBeVisible();
-    expect(screen.getByText('Recommendation distribution')).toBeVisible();
-    expect(screen.getByText('Recommendation: strong yes')).toBeVisible();
+    expect(
+      screen.getByText('Hiring Cost & Funnel ROI Calculator'),
+    ).toBeVisible();
   });
 });

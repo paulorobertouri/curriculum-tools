@@ -1,8 +1,4 @@
-import {
-  ProviderFallbackNotice,
-  callProviderRanking,
-  runWithAnonymousFallback,
-} from '@/application/providerFallback';
+import { callProviderRanking } from '@/application/providerFallback';
 import { AiConfig, HrCvInput, HrRankingResult } from '@/domain/aiTypes';
 
 const sortCandidates = (
@@ -37,28 +33,20 @@ export const runHrRankingUseCase = async ({
   onProgress?(index: number, total: number): void;
 }): Promise<{
   ranking: HrRankingResult;
-  providerNotice: ProviderFallbackNotice | null;
 }> => {
   const rankedCandidates = [] as HrRankingResult['candidates'];
-  let providerNotice: ProviderFallbackNotice | null = null;
 
   for (let index = 0; index < cvs.length; index += 1) {
     const cv = cvs[index];
 
     onProgress?.(index + 1, cvs.length);
 
-    const { data: partial, notice } = await runWithAnonymousFallback(
-      config,
-      effective =>
-        callProviderRanking(effective, {
-          jobTitle,
-          jobDescription,
-          cvs: [cv],
-          outputLocale,
-        }),
-    );
-
-    providerNotice ??= notice;
+    const partial = await callProviderRanking(config, {
+      jobTitle,
+      jobDescription,
+      cvs: [cv],
+      outputLocale,
+    });
 
     const partialCandidate =
       partial.candidates.find(candidate => candidate.id === cv.id) ??
@@ -86,6 +74,5 @@ export const runHrRankingUseCase = async ({
     ranking: {
       candidates: sortCandidates({ candidates: rankedCandidates }),
     },
-    providerNotice,
   };
 };

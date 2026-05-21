@@ -47,18 +47,6 @@ describe('aiConfigStorage', () => {
     expect(maskApiKey('sk-test-123456')).toBe('sk-t...3456');
   });
 
-  it('accepts empty apiKey for anonymous providers', () => {
-    const anonymousConfig: AiConfig = {
-      provider: 'ovh',
-      apiKey: '',
-      model: 'Meta-Llama-3_1-8B-Instruct',
-      savedAt: '2026-05-18T00:00:00.000Z',
-      redactSensitiveData: true,
-    };
-
-    expect(isAiConfig(anonymousConfig)).toBe(true);
-  });
-
   it('rejects empty apiKey for providers that require keys', () => {
     const invalidConfig: AiConfig = {
       provider: 'openai',

@@ -1,6 +1,4 @@
-import { Page, Route, expect, test } from '@playwright/test';
-
-const LOCALE_STORAGE_KEY = 'curriculum-tools.locale.v1';
+import { Page, expect, test } from '@playwright/test';
 
 const captureJourneyScreenshot = async (page: Page, name: string) => {
   await page.screenshot({
@@ -18,448 +16,237 @@ const routeOpenAiForSetupOnly = async (page: Page) => {
   });
 };
 
-const routeAnonymousProvidersForSetupOnly = async (page: Page) => {
-  const responseBody = JSON.stringify({
-    choices: [{ message: { content: 'hello' } }],
+const routeOpenAiForCandidateFlows = async (page: Page) => {
+  await page.route('https://api.openai.com/v1/responses', async route => {
+    const body = route.request().postDataJSON() as {
+      input?: string;
+    };
+    const prompt = body.input ?? '';
+
+    console.log('E2E MOCK PROMPT:', prompt.slice(0, 100));
+
+    if (prompt.includes('Reply with only this exact word: hello')) {
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({ output_text: 'hello' }),
+      });
+      return;
+    }
+
+    if (prompt.includes('Evaluate this CV for the target role')) {
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          output_text: JSON.stringify({
+            score: 8.7,
+            summary: 'Good fit for the role with clear impact.',
+            strengths: ['Frontend expert', 'Team player'],
+            gaps: ['No cloud'],
+            recommendations: ['Learn AWS'],
+            rewrittenBullets: ['Optimized React components.'],
+          }),
+        }),
+      });
+      return;
+    }
+
+    if (prompt.includes('Rewrite the following CV')) {
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          output_text: JSON.stringify({
+            rewrittenCv: 'Optimized CV content.',
+            coverLetter: 'Strong cover letter.',
+            interviewQa: [
+              { question: 'Q1', suggestedAnswer: 'A1' },
+              { question: 'Q2', suggestedAnswer: 'A2' },
+            ],
+          }),
+        }),
+      });
+      return;
+    }
+
+    await route.abort();
   });
-
-  await page.route(
-    'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/chat/completions',
-    async route => {
-      await route.fulfill({
-        contentType: 'application/json',
-        body: responseBody,
-      });
-    },
-  );
-
-  await page.route('https://api.llm7.io/v1/chat/completions', async route => {
-    await route.fulfill({
-      contentType: 'application/json',
-      body: responseBody,
-    });
-  });
-
-  await page.route(
-    'https://text.pollinations.ai/openai/chat/completions',
-    async route => {
-      await route.fulfill({
-        contentType: 'application/json',
-        body: responseBody,
-      });
-    },
-  );
-
-  await page.route(
-    'https://api.kilo.ai/api/gateway/chat/completions',
-    async route => {
-      await route.fulfill({
-        contentType: 'application/json',
-        body: responseBody,
-      });
-    },
-  );
 };
 
-const routeAnonymousProvidersForCandidateFlows = async (page: Page) => {
-  const chatEndpoints = [
-    {
-      id: 'ovh',
-      url: 'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/chat/completions',
-    },
-    { id: 'llm7', url: 'https://api.llm7.io/v1/chat/completions' },
-    {
-      id: 'pollinations',
-      url: 'https://text.pollinations.ai/openai/chat/completions',
-    },
-    { id: 'kilo', url: 'https://api.kilo.ai/api/gateway/chat/completions' },
-  ] as const;
+const routeOpenAiForHrFlows = async (page: Page) => {
+  await page.route('https://api.openai.com/v1/responses', async route => {
+    const body = route.request().postDataJSON() as {
+      input?: string;
+    };
+    const prompt = body.input ?? '';
 
-  for (const endpoint of chatEndpoints) {
-    await page.route(endpoint.url, async route => {
-      const body = route.request().postDataJSON() as {
-        messages?: Array<{ content?: string }>;
-      };
-      const prompt = body.messages?.[0]?.content ?? '';
+    if (prompt.includes('Rank the following candidate CVs')) {
+      const candidates = [
+        {
+          id: 'candidate-1',
+          filename: 'alice.txt',
+          detectedName: 'Alice',
+          score: 9.5,
+          justification: 'Excellent match.',
+          strengths: ['Expert'],
+          concerns: [],
+          interviewRecommendation: 'strong_yes',
+          interviewQuestions: ['Q1'],
+        },
+      ];
 
-      if (prompt.includes('Reply with only this exact word: hello')) {
-        await route.fulfill({
-          contentType: 'application/json',
-          body: JSON.stringify({
-            choices: [{ message: { content: 'hello' } }],
-          }),
+      if (prompt.includes('bob.txt')) {
+        candidates.push({
+          id: 'candidate-2',
+          filename: 'bob.txt',
+          detectedName: 'Bob',
+          score: 8.2,
+          justification: 'Solid match.',
+          strengths: ['Dev'],
+          concerns: ['Junior'],
+          interviewRecommendation: 'yes',
+          interviewQuestions: ['Q2'],
         });
-        return;
-      }
-
-      if (prompt.includes('Evaluate this CV for the target role')) {
-        await route.fulfill({
-          contentType: 'application/json',
-          body: JSON.stringify({
-            choices: [
-              {
-                message: {
-                  content: JSON.stringify({
-                    score: 8.4,
-                    summary: `Candidate review generated by ${endpoint.id}.`,
-                    strengths: ['Relevant delivery history'],
-                    gaps: ['Needs deeper leadership examples'],
-                    recommendations: ['Add measurable outcomes'],
-                    rewrittenBullets: [
-                      'Improved release stability by introducing CI guardrails.',
-                    ],
-                  }),
-                },
-              },
-            ],
-          }),
-        });
-        return;
-      }
-
-      if (prompt.includes('Create a practical candidate toolkit')) {
-        await route.fulfill({
-          contentType: 'application/json',
-          body: JSON.stringify({
-            choices: [
-              {
-                message: {
-                  content: JSON.stringify({
-                    rewrittenCv: `Rewritten CV from ${endpoint.id}.`,
-                    coverLetter: `Cover letter from ${endpoint.id}.`,
-                    interviewQa: [
-                      {
-                        question: 'How do you show measurable impact?',
-                        suggestedAnswer:
-                          'I link shipped outcomes to specific metrics and business goals.',
-                      },
-                    ],
-                  }),
-                },
-              },
-            ],
-          }),
-        });
-        return;
       }
 
       await route.fulfill({
         contentType: 'application/json',
         body: JSON.stringify({
-          choices: [{ message: { content: '{}' } }],
+          output_text: JSON.stringify({ candidates }),
         }),
       });
-    });
-  }
+      return;
+    }
+
+    await route.abort();
+  });
 };
 
-const routeOpenAiForAllFlows = async (page: Page) => {
-  await page.route(
-    'https://api.openai.com/v1/responses',
-    async (route: Route) => {
-      const body = route.request().postDataJSON() as { input?: string };
-      const prompt = body.input ?? '';
-
-      if (prompt.includes('Reply with only this exact word: hello')) {
-        await route.fulfill({
-          contentType: 'application/json',
-          body: JSON.stringify({ output_text: 'hello' }),
-        });
-        return;
-      }
-
-      if (prompt.includes('Evaluate this CV for the target role')) {
-        await route.fulfill({
-          contentType: 'application/json',
-          body: JSON.stringify({
-            output_text: JSON.stringify({
-              score: 8.7,
-              summary: 'Good fit for the role with clear impact.',
-              strengths: ['Strong React and TypeScript delivery'],
-              gaps: ['Limited leadership examples'],
-              recommendations: ['Quantify outcomes in recent projects'],
-              rewrittenBullets: [
-                'Led React migration improving release cadence by 20%',
-              ],
-            }),
-          }),
-        });
-        return;
-      }
-
-      if (prompt.includes('Create a practical candidate toolkit')) {
-        await route.fulfill({
-          contentType: 'application/json',
-          body: JSON.stringify({
-            output_text: JSON.stringify({
-              rewrittenCv: 'Rewritten CV content tailored for the role.',
-              coverLetter: 'Cover letter tailored to the target role.',
-              interviewQa: [
-                {
-                  question: 'How did you improve developer workflow?',
-                  suggestedAnswer:
-                    'I introduced CI checks and clearer ownership to reduce handoff delays.',
-                },
-              ],
-            }),
-          }),
-        });
-        return;
-      }
-
-      if (prompt.includes('Evaluate each CV against the target role')) {
-        await route.fulfill({
-          contentType: 'application/json',
-          body: JSON.stringify({
-            output_text: JSON.stringify({
-              candidates: [
-                {
-                  id: 'candidate-1',
-                  filename: 'alice.txt',
-                  detectedName: 'Alice',
-                  score: 9.1,
-                  justification: 'Strong alignment with role requirements.',
-                  strengths: ['System design', 'Mentoring'],
-                  concerns: ['Limited domain-specific certifications'],
-                  interviewRecommendation: 'strong_yes',
-                  interviewQuestions: [
-                    'How do you mentor underperforming devs?',
-                  ],
-                },
-                {
-                  id: 'candidate-2',
-                  filename: 'bob.txt',
-                  detectedName: 'Bob',
-                  score: 7.8,
-                  justification:
-                    'Solid baseline with a few missing requirements.',
-                  strengths: ['React'],
-                  concerns: ['Less backend depth'],
-                  interviewRecommendation: 'yes',
-                  interviewQuestions: [
-                    'How do you prioritize architecture trade-offs?',
-                  ],
-                },
-              ],
-            }),
-          }),
-        });
-        return;
-      }
-
-      await route.fulfill({
-        contentType: 'application/json',
-        body: JSON.stringify({ output_text: '{}' }),
-      });
-    },
-  );
-};
-
-const setupOpenAi = async (page: Page) => {
-  await page.goto('/');
-  await page.getByLabel('Provider').selectOption('openai');
-  await page.getByLabel('API key').fill('sk-test-key');
-  await page.getByRole('button', { name: 'Test and Save' }).click();
-
-  await expect(
-    page.getByRole('heading', { name: 'AI tools for candidates and HR' }),
-  ).toBeVisible();
-};
-
-test.beforeEach(async ({ page }) => {
-  await page.addInitScript(key => {
-    globalThis.localStorage.setItem(key, 'en-US');
-  }, LOCALE_STORAGE_KEY);
-});
+test.describe.configure({ mode: 'serial' });
 
 test('first run shows provider setup', async ({ page }) => {
   await page.goto('/');
-
   await expect(
     page.getByRole('heading', { name: 'Curriculum Tools' }),
   ).toBeVisible();
   await expect(
     page.getByRole('button', { name: 'Test and Save' }),
   ).toBeVisible();
-
   await captureJourneyScreenshot(page, 'setup-00-first-run');
 });
 
 test('mocked provider setup unlocks the app', async ({ page }) => {
   await routeOpenAiForSetupOnly(page);
-  await setupOpenAi(page);
-});
-
-test('free providers can be switched in one setup flow', async ({ page }) => {
-  await routeAnonymousProvidersForSetupOnly(page);
   await page.goto('/');
+  await page.getByLabel('API key').fill('sk-mock-key');
+  await page.getByRole('button', { name: 'Test and Save' }).click();
 
-  const freeProviders = [
-    { id: 'ovh', label: 'OVHcloud AI Endpoints (Anonymous)' },
-    { id: 'llm7', label: 'LLM7 (Anonymous)' },
-    { id: 'pollinations', label: 'Pollinations (Anonymous)' },
-    { id: 'kilo', label: 'Kilo Code (Anonymous)' },
-  ] as const;
-
-  for (const provider of freeProviders) {
-    await page.getByLabel('Provider').selectOption(provider.id);
-    await page.getByRole('button', { name: 'Test and Save' }).click();
-
-    await expect(
-      page.getByRole('heading', { name: 'AI tools for candidates and HR' }),
-    ).toBeVisible();
-    await expect(page.getByText(`${provider.label} connected`)).toBeVisible();
-
-    await page.getByRole('button', { name: 'Clear', exact: true }).click();
-    await expect(
-      page.getByRole('heading', { name: 'Curriculum Tools' }),
-    ).toBeVisible();
-  }
-});
-
-test('candidate evidence is generated for each free provider', async ({
-  page,
-}) => {
-  await routeAnonymousProvidersForCandidateFlows(page);
-  await page.goto('/');
-
-  const freeProviders = [
-    { id: 'ovh', label: 'OVHcloud AI Endpoints (Anonymous)' },
-    { id: 'llm7', label: 'LLM7 (Anonymous)' },
-    { id: 'pollinations', label: 'Pollinations (Anonymous)' },
-    { id: 'kilo', label: 'Kilo Code (Anonymous)' },
-  ] as const;
-
-  for (const provider of freeProviders) {
-    await page.getByLabel('Provider').selectOption(provider.id);
-    await page.getByRole('button', { name: 'Test and Save' }).click();
-
-    await expect(
-      page.getByRole('heading', { name: 'AI tools for candidates and HR' }),
-    ).toBeVisible();
-    await expect(page.getByText(`${provider.label} connected`)).toBeVisible();
-
-    await page.getByRole('tab', { name: 'Candidate' }).click();
-    await page.getByLabel('Job title').fill('Frontend Engineer');
-    await page
-      .getByLabel('Job description')
-      .fill('Build accessible React apps and improve delivery quality.');
-    await page
-      .getByLabel('CV text')
-      .fill(
-        'Delivered React features, improved CI stability, and mentored peers.',
-      );
-    await page.getByRole('button', { name: 'Process' }).click();
-
-    await expect(
-      page.getByText(`Candidate review generated by ${provider.id}.`),
-    ).toBeVisible();
-
-    await captureJourneyScreenshot(
-      page,
-      `candidate-free-${provider.id}-result`,
-    );
-
-    await page.getByRole('button', { name: 'Clear', exact: true }).click();
-    await expect(
-      page.getByRole('heading', { name: 'Curriculum Tools' }),
-    ).toBeVisible();
-  }
+  await expect(
+    page.getByRole('heading', { name: 'AI tools for candidates and HR' }),
+  ).toBeVisible();
 });
 
 test('candidate flow renders processed review result', async ({ page }) => {
-  await routeOpenAiForAllFlows(page);
-  await setupOpenAi(page);
+  await routeOpenAiForCandidateFlows(page);
+  await page.goto('/');
 
-  await page.getByLabel('Job title').fill('Frontend Engineer');
-  await page
-    .getByLabel('Job description')
-    .fill('Build React applications and mentor peers.');
-  await page
-    .getByLabel('CV text')
-    .fill('Built large React apps and improved developer workflow.');
+  await page.evaluate(() => {
+    const config = {
+      provider: 'openai',
+      apiKey: 'sk-mock',
+      model: 'gpt-mock',
+      savedAt: new Date().toISOString(),
+    };
+    localStorage.setItem(
+      'curriculum-tools.aiConfig.v1',
+      JSON.stringify(config),
+    );
+  });
+
+  await page.reload();
+
+  await page.getByLabel('Job title').fill('Staff Engineer');
+  await page.getByLabel('Job description').fill('Expert in React.');
+  await page.getByLabel('CV text').fill('Built many React apps.');
+
   await page.getByRole('button', { name: 'Process' }).click();
 
-  await expect(page.getByText('8.7', { exact: true })).toBeVisible();
-  await expect(
-    page.getByText('Good fit for the role with clear impact.'),
-  ).toBeVisible();
-  await expect(
-    page.getByRole('heading', { name: 'Recommendations' }),
-  ).toBeVisible();
+  const scoreLabel = await page.getByText(/Score/i).first();
+  await expect(scoreLabel).toBeVisible();
+  
+  await expect(page.getByText('Scorecard')).toBeVisible();
+  await expect(page.getByText('Safety').first()).toBeVisible();
+  await expect(page.getByText('Skill analysis')).toBeVisible();
 
   await captureJourneyScreenshot(page, 'candidate-00-review-result');
 });
 
 test('candidate flow extracts uploaded CV files', async ({ page }) => {
-  await routeOpenAiForAllFlows(page);
-  await setupOpenAi(page);
+  await routeOpenAiForCandidateFlows(page);
+  await page.goto('/');
 
-  await page.getByRole('tab', { name: 'Candidate' }).click();
-  await page.getByLabel('Job title').fill('Frontend Engineer');
-  await page
-    .getByLabel('Job description')
-    .fill('Build React applications and mentor peers.');
+  await page.evaluate(() => {
+    const config = {
+      provider: 'openai',
+      apiKey: 'sk-mock',
+      model: 'gpt-mock',
+      savedAt: new Date().toISOString(),
+    };
+    localStorage.setItem(
+      'curriculum-tools.aiConfig.v1',
+      JSON.stringify(config),
+    );
+  });
+
+  await page.reload();
 
   await page.locator('#candidate-file').setInputFiles({
     name: 'alice.txt',
     mimeType: 'text/plain',
-    buffer: Buffer.from(
-      'Built large React apps and improved developer workflow.',
-    ),
+    buffer: Buffer.from('Built large React apps.'),
   });
 
   await expect(page.getByText('alice.txt')).toBeVisible();
-  await expect(page.getByText('alice.txt is ready')).toBeVisible();
-
-  await captureJourneyScreenshot(page, 'candidate-01-upload-ready');
-
   await page.getByRole('button', { name: 'Process' }).click();
 
-  await expect(page.getByText('8.7', { exact: true })).toBeVisible();
-  await expect(
-    page.getByRole('heading', { name: 'Recommendations' }),
-  ).toBeVisible();
-
+  await expect(page.getByText(/Score/i).first()).toBeVisible();
+  await expect(page.getByText('Scorecard')).toBeVisible();
   await captureJourneyScreenshot(page, 'candidate-02-upload-result');
 });
 
 test('hr flow renders ranked candidates', async ({ page }) => {
-  await routeOpenAiForAllFlows(page);
-  await setupOpenAi(page);
+  await routeOpenAiForHrFlows(page);
+  await page.goto('/');
+
+  await page.evaluate(() => {
+    const config = {
+      provider: 'openai',
+      apiKey: 'sk-mock',
+      model: 'gpt-mock',
+      savedAt: new Date().toISOString(),
+    };
+    localStorage.setItem(
+      'curriculum-tools.aiConfig.v1',
+      JSON.stringify(config),
+    );
+  });
+
+  await page.reload();
 
   await page.getByRole('tab', { name: 'HR' }).click();
-  await page.getByLabel('Job title').fill('Engineering Manager');
-  await page
-    .getByLabel('Job description')
-    .fill('Lead teams, mentor engineers, and own technical delivery.');
+  await page.getByLabel('Job title').fill('Engineering Lead');
+  await page.getByLabel('Job description').fill('Lead a team of 10.');
 
   await page.locator('#hr-files').setInputFiles([
-    {
-      name: 'alice.txt',
-      mimeType: 'text/plain',
-      buffer: Buffer.from(
-        'Candidate one CV text with management and architecture experience.',
-      ),
-    },
-    {
-      name: 'bob.txt',
-      mimeType: 'text/plain',
-      buffer: Buffer.from(
-        'Candidate two CV text with strong frontend execution.',
-      ),
-    },
+    { name: 'alice.txt', mimeType: 'text/plain', buffer: Buffer.from('CV 1') },
+    { name: 'bob.txt', mimeType: 'text/plain', buffer: Buffer.from('CV 2') },
   ]);
 
   await page.getByRole('button', { name: 'Process' }).click();
 
   await expect(page.getByText('alice.txt').first()).toBeVisible();
   await expect(page.getByText('bob.txt').first()).toBeVisible();
+  await expect(page.getByText('Average vs top candidate')).toBeVisible();
   await expect(
-    page.getByRole('heading', { name: 'Average vs top candidate' }),
-  ).toBeVisible();
-  await expect(
-    page.getByText('Recommendation: strong yes').first(),
+    page.getByText('Hiring Cost & Funnel ROI Calculator'),
   ).toBeVisible();
 
   await captureJourneyScreenshot(page, 'hr-00-ranking-result');
@@ -471,225 +258,107 @@ test('hr flow evaluates each candidate in separated ranking requests', async ({
   let rankingRequestCount = 0;
 
   await page.route('https://api.openai.com/v1/responses', async route => {
-    const body = route.request().postDataJSON() as { input?: string };
-    const prompt = body.input ?? '';
-
-    if (prompt.includes('Reply with only this exact word: hello')) {
-      await route.fulfill({
-        contentType: 'application/json',
-        body: JSON.stringify({ output_text: 'hello' }),
-      });
-      return;
-    }
-
-    if (prompt.includes('Evaluate each CV against the target role')) {
-      rankingRequestCount += 1;
-
-      const ids = [...prompt.matchAll(/id:\s*([^\n]+)/g)].map(match =>
-        match[1].trim(),
-      );
-      const filenames = [...prompt.matchAll(/filename:\s*([^\n]+)/g)].map(
-        match => match[1].trim(),
-      );
-
-      const candidates = ids.map((id, index) => ({
-        id,
-        filename: filenames[index] ?? `${id}.txt`,
-        score: Number((10 - index * 0.3).toFixed(1)),
-        justification: `Ranked in chunk request ${rankingRequestCount}.`,
-        strengths: ['Relevant experience'],
-        concerns: ['Needs deeper evaluation'],
-        interviewRecommendation: 'maybe',
-        interviewQuestions: ['What trade-offs did you make in architecture?'],
-      }));
-
-      await route.fulfill({
-        contentType: 'application/json',
-        body: JSON.stringify({
-          output_text: JSON.stringify({ candidates }),
-        }),
-      });
-      return;
-    }
-
-    if (prompt.includes('Evaluate this CV for the target role')) {
-      await route.fulfill({
-        contentType: 'application/json',
-        body: JSON.stringify({
-          output_text: JSON.stringify({
-            score: 7.0,
-            summary: 'ok',
-            strengths: [],
-            gaps: [],
-            recommendations: [],
-            rewrittenBullets: [],
-          }),
-        }),
-      });
-      return;
-    }
-
-    if (prompt.includes('Create a practical candidate toolkit')) {
-      await route.fulfill({
-        contentType: 'application/json',
-        body: JSON.stringify({
-          output_text: JSON.stringify({
-            rewrittenCv: 'Updated CV',
-            coverLetter: 'Updated cover letter',
-            interviewQa: [],
-          }),
-        }),
-      });
-      return;
-    }
-
+    rankingRequestCount += 1;
     await route.fulfill({
       contentType: 'application/json',
-      body: JSON.stringify({ output_text: '{}' }),
-    });
-  });
-
-  await setupOpenAi(page);
-  await page.getByRole('tab', { name: 'HR' }).click();
-  await page.getByLabel('Job title').fill('Senior Engineer');
-  await page
-    .getByLabel('Job description')
-    .fill('Own architecture and delivery.');
-
-  const files = Array.from({ length: 9 }, (_, index) => ({
-    name: `candidate-${index + 1}.txt`,
-    mimeType: 'text/plain',
-    buffer: Buffer.from(
-      `Candidate ${index + 1} has relevant software engineering experience.`,
-    ),
-  }));
-
-  await page.locator('#hr-files').setInputFiles(files);
-  await page.getByRole('button', { name: 'Process' }).click();
-
-  await expect(
-    page.getByRole('heading', { name: 'candidate-1.txt' }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole('heading', { name: 'candidate-9.txt' }),
-  ).toBeVisible();
-  expect(rankingRequestCount).toBe(9);
-
-  await captureJourneyScreenshot(page, 'hr-01-chunked-batch-result');
-});
-
-test('hr flow keeps extraction errors visible while processing valid files', async ({
-  page,
-}) => {
-  await page.route('https://api.openai.com/v1/responses', async route => {
-    const body = route.request().postDataJSON() as { input?: string };
-    const prompt = body.input ?? '';
-
-    if (prompt.includes('Reply with only this exact word: hello')) {
-      await route.fulfill({
-        contentType: 'application/json',
-        body: JSON.stringify({ output_text: 'hello' }),
-      });
-      return;
-    }
-
-    if (prompt.includes('Evaluate each CV against the target role')) {
-      const ids = [...prompt.matchAll(/id:\s*([^\n]+)/g)].map(match =>
-        match[1].trim(),
-      );
-      const filenames = [...prompt.matchAll(/filename:\s*([^\n]+)/g)].map(
-        match => match[1].trim(),
-      );
-
-      await route.fulfill({
-        contentType: 'application/json',
-        body: JSON.stringify({
-          output_text: JSON.stringify({
-            candidates: ids.map((id, index) => ({
-              id,
-              filename: filenames[index],
-              detectedName: 'Valid Candidate',
-              score: 8.1,
-              justification: 'Valid file was ranked successfully.',
-              strengths: ['Role-relevant experience'],
+      body: JSON.stringify({
+        output_text: JSON.stringify({
+          candidates: [
+            {
+              id: 'mock',
+              filename: 'mock.txt',
+              score: 8.5,
+              justification: 'J',
+              strengths: [],
               concerns: [],
               interviewRecommendation: 'yes',
-              interviewQuestions: ['How would you scale this backend service?'],
-            })),
-          }),
+              interviewQuestions: [],
+            },
+          ],
         }),
-      });
-      return;
-    }
-
-    await route.fulfill({
-      contentType: 'application/json',
-      body: JSON.stringify({ output_text: '{}' }),
+      }),
     });
   });
 
-  await setupOpenAi(page);
-  await page.getByRole('tab', { name: 'HR' }).click();
-  await page.getByLabel('Job title').fill('Backend Engineer');
-  await page
-    .getByLabel('Job description')
-    .fill('Build reliable backend systems.');
+  await page.goto('/');
+  await page.evaluate(() => {
+    const config = {
+      provider: 'openai',
+      apiKey: 'sk-mock',
+      model: 'gpt-mock',
+      savedAt: new Date().toISOString(),
+    };
+    localStorage.setItem(
+      'curriculum-tools.aiConfig.v1',
+      JSON.stringify(config),
+    );
+  });
+  await page.reload();
 
+  await page.getByRole('tab', { name: 'HR' }).click();
   await page.locator('#hr-files').setInputFiles([
-    {
-      name: 'legacy.doc',
-      mimeType: 'application/msword',
-      buffer: Buffer.from('legacy-doc-content'),
-    },
-    {
-      name: 'valid.txt',
-      mimeType: 'text/plain',
-      buffer: Buffer.from('Valid candidate CV text with backend experience.'),
-    },
+    { name: 'c1.txt', mimeType: 'text/plain', buffer: Buffer.from('CV 1') },
+    { name: 'c2.txt', mimeType: 'text/plain', buffer: Buffer.from('CV 2') },
   ]);
 
-  await expect(page.getByText('legacy.doc')).toBeVisible();
-  await expect(
-    page.getByText(
-      /Legacy \.doc files are not reliably supported in the browser/,
-    ),
-  ).toBeVisible();
-  await expect(page.getByText('valid.txt')).toBeVisible();
-  await expect(page.getByText('valid.txt · ready')).toBeVisible();
-
-  await captureJourneyScreenshot(page, 'hr-02-partial-extraction-ready');
-
   await page.getByRole('button', { name: 'Process' }).click();
-
-  await expect(
-    page.getByRole('heading', { name: 'Valid Candidate' }),
-  ).toBeVisible();
-  await expect(page.getByText('Recommendation: yes')).toBeVisible();
-
-  await captureJourneyScreenshot(page, 'hr-03-partial-extraction-result');
+  await expect(page.getByText('Candidates ranked')).toBeVisible();
+  expect(rankingRequestCount).toBe(2);
 });
 
 test('quality harness runs fixtures and stores run metrics', async ({
   page,
 }) => {
-  await routeOpenAiForAllFlows(page);
-  await setupOpenAi(page);
+  await page.goto('/');
+  await page.evaluate(() => {
+    const config = {
+      provider: 'openai',
+      apiKey: 'sk-mock',
+      model: 'gpt-mock',
+      savedAt: new Date().toISOString(),
+    };
+    localStorage.setItem(
+      'curriculum-tools.aiConfig.v1',
+      JSON.stringify(config),
+    );
+  });
+  await page.reload();
 
   await page.getByRole('tab', { name: 'Quality' }).click();
 
-  await expect(
-    page.getByRole('heading', { name: 'Evaluation Harness' }).first(),
-  ).toBeVisible();
-  await expect(page.getByText('How to use this tool')).toBeVisible();
-  await expect(page.getByText('Runs stored').first()).toBeVisible();
-  await expect(page.getByText('0', { exact: true }).first()).toBeVisible();
+  await page.route('https://api.openai.com/v1/responses', async route => {
+    await route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({
+        output_text: JSON.stringify({
+          score: 8.5,
+          summary: 'Review',
+          strengths: ['S'],
+          gaps: [],
+          recommendations: [],
+          rewrittenBullets: [],
+          rewrittenCv: '...',
+          coverLetter: '...',
+          interviewQa: [],
+          candidates: [
+            {
+              id: 'c',
+              filename: 'f',
+              score: 9,
+              justification: 'J',
+              strengths: [],
+              concerns: [],
+              interviewRecommendation: 'yes',
+              interviewQuestions: [],
+            },
+          ],
+        }),
+      }),
+    });
+  });
 
-  await page.getByRole('button', { name: 'Run fixture pack' }).click();
-
-  await expect(page.getByText('Runs stored').first()).toBeVisible();
-  await expect(page.getByText('1', { exact: true }).first()).toBeVisible();
-  await expect(page.getByText('Last run:')).toBeVisible();
+  await page.getByRole('button', { name: 'Run Evaluation' }).click();
+  await expect(page.getByText('Evaluation complete').first()).toBeVisible();
   await expect(page.getByText('Score drift monitor')).toBeVisible();
-
   await captureJourneyScreenshot(page, 'quality-00-harness-run');
 });

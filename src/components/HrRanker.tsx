@@ -1,4 +1,10 @@
-import { Download, Loader2, Sparkles } from 'lucide-react';
+import {
+  ChevronDown,
+  ChevronUp,
+  Download,
+  Loader2,
+  Sparkles,
+} from 'lucide-react';
 import { ChangeEvent, useMemo, useState } from 'react';
 
 import {
@@ -6,14 +12,16 @@ import {
   persistHrDecisions,
 } from '@/application/hr/hrDecisionsGateway';
 import { runHrRankingUseCase } from '@/application/hr/runHrRankingUseCase';
-import { ProviderFallbackNotice } from '@/application/providerFallback';
-import {
-  List,
-  ResultPanel,
-  Score,
-  TextArea,
-  TextField,
-} from '@/components/CandidateReviewer';
+import { List } from '@/components/common/List';
+import { MetricBar } from '@/components/common/MetricBar';
+import { ResultPanel } from '@/components/common/ResultPanel';
+import { Score } from '@/components/common/Score';
+import { TextArea } from '@/components/common/TextArea';
+import { TextField } from '@/components/common/TextField';
+import { CandidateComparisonMatrix } from '@/components/hr/CandidateComparisonMatrix';
+import { HrFunnelChart } from '@/components/hr/HrFunnelChart';
+import { HrPipelineRoiCalculator } from '@/components/hr/HrPipelineRoiCalculator';
+import { HrScoreHistogram } from '@/components/hr/HrScoreHistogram';
 import {
   AiConfig,
   HrCvInput,
@@ -63,9 +71,8 @@ export function HrRanker({ config }: HrRankerProps) {
   const [error, setError] = useState<string | null>(null);
   const [isExtracting, setIsExtracting] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isFormCollapsed, setIsFormCollapsed] = useState(false);
   const [processingLabel, setProcessingLabel] = useState<string | null>(null);
-  const [providerNotice, setProviderNotice] =
-    useState<ProviderFallbackNotice | null>(null);
 
   let resultStatus: 'loading' | 'ready' | 'empty' = 'empty';
   if (isProcessing) {
@@ -107,7 +114,6 @@ export function HrRanker({ config }: HrRankerProps) {
 
     setIsExtracting(true);
     setError(null);
-    setProviderNotice(null);
 
     const extracted = await Promise.all(
       selectedFiles.map(async file => {
@@ -156,40 +162,31 @@ export function HrRanker({ config }: HrRankerProps) {
     setProcessingLabel(t('hr.processing'));
 
     try {
-      const { ranking, providerNotice: nextProviderNotice } =
-        await runHrRankingUseCase({
-          config,
-          jobTitle,
-          jobDescription,
-          cvs: validFiles,
-          outputLocale: locale,
-          onProgress(index, total) {
-            setProcessingLabel(
-              t('hr.batchProcessing', {
-                index,
-                total,
-              }),
-            );
-          },
-        });
-
-      const nextRawCvById = validFiles.reduce<Record<string, string>>(
-        (accumulator, cv) => {
-          accumulator[cv.id] = cv.text;
-          return accumulator;
+      const { ranking } = await runHrRankingUseCase({
+        config,
+        jobTitle,
+        jobDescription,
+        cvs: validFiles.map(f => ({
+          id: f.id,
+          filename: f.filename,
+          text: f.text,
+        })),
+        outputLocale: locale,
+        onProgress: (index, total) => {
+          setProcessingLabel(t('hr.batchProcessing', { index, total }));
         },
-        {},
-      );
+      });
 
-      const mergedRawCvById = {
-        ...rawCvById,
-        ...nextRawCvById,
-      };
+      setRawCvById(
+        validFiles.reduce(
+          (acc, file) => ({ ...acc, [file.id]: file.text }),
+          {},
+        ),
+      );
 
       setPreviousResult(result);
       setResult(ranking);
-      setRawCvById(mergedRawCvById);
-      setProviderNotice(nextProviderNotice);
+      setIsFormCollapsed(true);
     } catch (processError) {
       setError(
         processError instanceof Error
@@ -202,731 +199,429 @@ export function HrRanker({ config }: HrRankerProps) {
     }
   };
 
+  const metrics = useMemo(() => {
+    if (!result) return null;
+    return buildHrMetricsSummary(result);
+  }, [result]);
+
+  const rankDiff = useMemo(() => {
+    if (!previousResult || !result) return null;
+    return buildHrRankDiffSummary(previousResult, result);
+  }, [previousResult, result]);
+
   return (
-    <section className='tool-grid'>
-      <form className='tool-panel' onSubmit={handleSubmit}>
-        <div>
-          <p className='eyebrow'>{t('hr.eyebrow')}</p>
-          <h2 className='panel-title'>{t('hr.title')}</h2>
-          <p className='mt-2 text-sm leading-6 text-slate-600'>
-            {t('hr.description')}
-          </p>
-        </div>
-        <TextField
-          label={t('candidate.jobTitle')}
-          value={jobTitle}
-          onChange={setJobTitle}
-        />
-        <TextArea
-          label={t('candidate.jobDescription')}
-          value={jobDescription}
-          onChange={setJobDescription}
-          rows={8}
-        />
-        <label className='field-label' htmlFor='hr-files'>
-          {t('hr.upload')}
-        </label>
-        <input
-          id='hr-files'
-          className='file-input'
-          type='file'
-          accept={SUPPORTED_FILE_TYPES}
-          multiple
-          onChange={handleFiles}
-        />
-        <p className='text-xs leading-5 text-slate-500'>{t('hr.uploadHint')}</p>
-        {isExtracting ? (
-          <p className='rounded-2xl border border-cyan-200 bg-cyan-50 px-4 py-3 text-sm text-cyan-800'>
-            {t('hr.extracting')}
-          </p>
-        ) : null}
-        {isProcessing && processingLabel ? (
-          <p className='rounded-2xl border border-cyan-200 bg-cyan-50 px-4 py-3 text-sm text-cyan-800'>
-            {processingLabel}
-          </p>
-        ) : null}
-        {files.length > 0 ? (
-          <ul className='space-y-2'>
-            {files.map(file => (
-              <li
-                className='rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm shadow-sm'
-                key={file.id}
-              >
-                <span className='font-semibold'>{file.filename}</span>
-                <span
-                  className={
-                    file.status === 'ready'
-                      ? 'text-emerald-700'
-                      : 'text-rose-700'
-                  }
-                >
-                  {' '}
-                  · {file.status === 'ready' ? t('hr.ready') : file.error}
-                </span>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-        {error ? (
-          <p role='alert' className='error-message'>
-            {error}
-          </p>
-        ) : null}
+    <div className='tool-stack'>
+      <div className='tool-panel overflow-hidden'>
         <button
-          className='primary-button touch-target'
-          type='submit'
-          disabled={isProcessing || isExtracting}
+          type='button'
+          onClick={() => setIsFormCollapsed(!isFormCollapsed)}
+          className='flex w-full items-center justify-between'
         >
-          {isProcessing ? (
-            <Loader2 className='h-4 w-4 animate-spin' />
-          ) : (
-            <Sparkles className='h-4 w-4' />
-          )}
-          {isProcessing ? t('hr.processing') : t('hr.process')}
+          <div className='text-left'>
+            <p className='eyebrow'>{t('hr.eyebrow')}</p>
+            <h2 className='panel-title'>{t('hr.title')}</h2>
+          </div>
+          <div className='flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200'>
+            {isFormCollapsed ? (
+              <ChevronDown className='h-5 w-5' />
+            ) : (
+              <ChevronUp className='h-5 w-5' />
+            )}
+          </div>
         </button>
-        <p className='text-xs leading-5 text-slate-500'>
-          {t('hr.processHint')}
-        </p>
-        {providerNotice ? (
-          <p className='warning-message'>
-            {t('provider.fallback.notice', {
-              primary: providerNotice.primaryProvider,
-              fallback: providerNotice.fallbackProvider,
-              reason: t(
-                `provider.fallback.reason.${providerNotice.reasonKind}`,
-              ),
-            })}
-          </p>
-        ) : null}
-      </form>
+
+        {!isFormCollapsed && (
+          <form className='mt-6 grid gap-5' onSubmit={handleSubmit}>
+            <p className='text-sm leading-6 text-slate-600'>
+              {t('hr.description')}
+            </p>
+
+            <TextField
+              label={t('candidate.jobTitle')}
+              value={jobTitle}
+              onChange={setJobTitle}
+            />
+            <TextArea
+              label={t('candidate.jobDescription')}
+              value={jobDescription}
+              onChange={setJobDescription}
+              rows={6}
+            />
+
+            <div className='space-y-2'>
+              <label className='field-label' htmlFor='hr-files'>
+                {t('hr.upload')}
+              </label>
+              <input
+                id='hr-files'
+                multiple
+                className='file-input'
+                type='file'
+                accept={SUPPORTED_FILE_TYPES}
+                onChange={handleFiles}
+                disabled={isExtracting}
+              />
+              <p className='text-xs leading-5 text-slate-500'>
+                {t('hr.uploadHint')}
+              </p>
+            </div>
+
+            {files.length > 0 && (
+              <div className='rounded-2xl border border-slate-200 bg-slate-50 p-3'>
+                <p className='text-xs font-bold uppercase tracking-wide text-slate-500'>
+                  {isExtracting ? t('hr.extracting') : t('hr.ready')}
+                </p>
+                <ul className='mt-2 max-h-40 overflow-y-auto space-y-1.5'>
+                  {files.map(file => (
+                    <li
+                      key={file.id}
+                      className='flex items-center justify-between text-sm'
+                    >
+                      <span className='truncate font-medium text-slate-700'>
+                        {file.filename}
+                      </span>
+                      {file.status === 'ready' ? (
+                        <span className='flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 text-[10px] text-emerald-700'>
+                          ✓
+                        </span>
+                      ) : (
+                        <span
+                          title={file.error}
+                          className='flex h-5 w-5 items-center justify-center rounded-full bg-rose-100 text-[10px] text-rose-700'
+                        >
+                          !
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {error && <p className='error-message'>{error}</p>}
+
+            <button
+              className='submit-button touch-target group mt-2'
+              type='submit'
+              disabled={isProcessing || isExtracting || files.length === 0}
+            >
+              {isProcessing ? (
+                <Loader2 className='h-4 w-4 animate-spin' />
+              ) : (
+                <Sparkles className='h-4 w-4' />
+              )}
+              {isProcessing ? t('hr.processing') : t('hr.process')}
+            </button>
+            <p className='text-xs leading-5 text-slate-500'>
+              {t('hr.processHint')}
+            </p>
+          </form>
+        )}
+      </div>
 
       <ResultPanel
         title={t('hr.resultTitle')}
         empty={t('hr.resultEmpty')}
         status={resultStatus}
-        statusMessage={
-          isProcessing
-            ? (processingLabel ?? t('hr.processing'))
-            : t('result.ready')
-        }
+        statusMessage={processingLabel ?? t('result.ready')}
       >
-        {result ? (
-          <RankingResult
-            result={result}
-            previousResult={previousResult}
-            rawCvById={rawCvById}
-            decisions={decisions}
-            onDecisionChange={updateDecision}
-          />
-        ) : null}
+        {result && metrics && (
+          <div className='animate-fade-in space-y-6'>
+            {/* Dashboard metrics */}
+            <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-4'>
+              <MetricCard
+                label={t('hr.dashboard.count')}
+                value={metrics.totalCandidates}
+              />
+              <MetricCard
+                label={t('hr.dashboard.average')}
+                value={metrics.averageScore.toFixed(1)}
+              />
+              <MetricCard
+                label={t('hr.dashboard.max')}
+                value={metrics.topScore.toFixed(1)}
+              />
+              <MetricCard
+                label={t('hr.dashboard.yesRate')}
+                value={`${metrics.yesOrBetterRate.toFixed(0)}%`}
+              />
+            </div>
+
+            {rankDiff && (
+              <div className='rounded-3xl border border-slate-200 bg-emerald-50 p-4 shadow-sm'>
+                <p className='text-xs font-bold uppercase tracking-wide text-emerald-800'>
+                  {t('quality.rankStability')}
+                </p>
+                <div className='mt-2 flex items-baseline gap-4'>
+                  <div>
+                    <p className='text-2xl font-black text-slate-950'>
+                      {rankDiff.rankSwapCount}
+                    </p>
+                    <p className='text-[10px] font-bold text-emerald-700 uppercase'>
+                      {t('quality.rankSwaps')}
+                    </p>
+                  </div>
+                  <div className='h-8 w-px bg-emerald-200' />
+                  <div>
+                    <p className='text-2xl font-black text-slate-950'>
+                      {rankDiff.averageDelta > 0 ? '+' : ''}
+                      {rankDiff.averageDelta}
+                    </p>
+                    <p className='text-[10px] font-bold text-emerald-700 uppercase'>
+                      {t('quality.avgDelta')}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className='grid gap-6 lg:grid-cols-2'>
+              <div className='space-y-6'>
+                <HrFunnelChart result={result} />
+                <HrScoreHistogram result={result} />
+              </div>
+
+              <div className='rounded-3xl border border-dashed border-slate-300 bg-white p-3 shadow-sm'>
+                <h3 className='text-xs font-bold uppercase tracking-wide text-slate-700'>
+                  {t('hr.dashboard.comparison')}
+                </h3>
+                <div className='mt-3 space-y-3'>
+                  <MetricBar
+                    label={t('hr.dashboard.average')}
+                    value={metrics.averageScore}
+                  />
+                  <MetricBar
+                    label={t('hr.dashboard.topCandidate')}
+                    value={metrics.topScore}
+                  />
+                </div>
+                <p className='mt-3 text-[10px] leading-4 text-slate-500'>
+                  {t('hr.dashboard.comparisonHint')}
+                </p>
+              </div>
+            </div>
+
+            <HrPipelineRoiCalculator />
+
+            <div className='flex items-center justify-between'>
+              <h3 className='text-lg font-black text-slate-950'>
+                {t('hr.rankList')}
+              </h3>
+              <div className='flex gap-2'>
+                <CandidateComparisonMatrix
+                  candidates={result.candidates.map(c => ({
+                    candidate: c,
+                    cvText: rawCvById[c.id] || '',
+                  }))}
+                  onClose={() => {}}
+                />
+                <button
+                  className='status-button touch-target text-xs'
+                  type='button'
+                  onClick={() => downloadJsonFile('hr-ranking', result)}
+                >
+                  <Download className='h-3 w-3' />
+                  {t('export.json')}
+                </button>
+                <button
+                  className='status-button touch-target text-xs'
+                  type='button'
+                  onClick={() => downloadHrCsvFile(result, metrics)}
+                >
+                  <Download className='h-3 w-3' />
+                  {t('export.csv')}
+                </button>
+              </div>
+            </div>
+
+            <div className='space-y-4'>
+              {result.candidates.map(candidate => (
+                <HrCandidateCard
+                  key={candidate.id}
+                  candidate={candidate}
+                  cvText={rawCvById[candidate.id]}
+                  decision={decisions[candidate.id]}
+                  onDecisionChange={patch =>
+                    updateDecision(candidate.id, patch)
+                  }
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </ResultPanel>
-    </section>
+    </div>
   );
 }
 
-function RankingResult({
-  result,
-  previousResult,
-  rawCvById,
-  decisions,
-  onDecisionChange,
+function MetricCard({
+  label,
+  value,
 }: {
-  result: HrRankingResult;
-  previousResult: HrRankingResult | null;
-  rawCvById: Record<string, string>;
-  decisions: HrDecisionMap;
-  onDecisionChange(
-    candidateId: string,
-    patch: Partial<Omit<HrDecision, 'candidateId' | 'updatedAt'>>,
-  ): void;
+  label: string;
+  value: string | number;
 }) {
-  const { t } = useI18n();
-  const summary = buildHrMetricsSummary(result);
-  const [comparisonIds, setComparisonIds] = useState<string[]>([]);
-
-  const diffSummary = useMemo(() => {
-    if (!previousResult) {
-      return null;
-    }
-
-    return buildHrRankDiffSummary(previousResult, result);
-  }, [previousResult, result]);
-
-  const comparedCandidates = result.candidates.filter(candidate =>
-    comparisonIds.includes(candidate.id),
-  );
-
-  const toggleComparison = (candidateId: string) => {
-    setComparisonIds(current => {
-      if (current.includes(candidateId)) {
-        return current.filter(id => id !== candidateId);
-      }
-
-      if (current.length >= 3) {
-        return [...current.slice(1), candidateId];
-      }
-
-      return [...current, candidateId];
-    });
-  };
-
   return (
-    <div className='space-y-4'>
-      <div className='flex flex-wrap gap-2'>
-        <button
-          className='status-button touch-target'
-          type='button'
-          onClick={() =>
-            downloadJsonFile('hr-ranking', {
-              summary,
-              result,
-              decisions,
-            })
-          }
-        >
-          <Download className='h-4 w-4' />
-          {t('export.json')}
-        </button>
-        <button
-          className='status-button touch-target'
-          type='button'
-          onClick={() => downloadHrCsvFile(result, summary)}
-        >
-          <Download className='h-4 w-4' />
-          {t('export.csv')}
-        </button>
-      </div>
-
-      {diffSummary ? <HrRerunDiffPanel diff={diffSummary} /> : null}
-
-      <HrMetricsDashboard result={result} />
-      <HrRecommendationDistribution result={result} />
-
-      {comparedCandidates.length >= 2 ? (
-        <HrComparisonMatrix candidates={comparedCandidates} />
-      ) : null}
-
-      {result.candidates.map(candidate => (
-        <HrCandidateCard
-          key={candidate.id}
-          candidate={candidate}
-          cvText={rawCvById[candidate.id] ?? ''}
-          decision={decisions[candidate.id]}
-          onDecisionChange={onDecisionChange}
-          isCompared={comparisonIds.includes(candidate.id)}
-          onToggleComparison={toggleComparison}
-        />
-      ))}
-    </div>
+    <article className='rounded-2xl border border-slate-200 bg-white p-3 shadow-sm'>
+      <p className='text-[10px] font-bold uppercase tracking-wider text-slate-500'>
+        {label}
+      </p>
+      <p className='mt-1 text-xl font-black text-slate-950'>{value}</p>
+    </article>
   );
 }
 
 function HrCandidateCard({
   candidate,
-  cvText,
+  cvText = '',
   decision,
   onDecisionChange,
-  isCompared,
-  onToggleComparison,
 }: {
   candidate: RankedCandidate;
-  cvText: string;
+  cvText?: string;
   decision?: HrDecision;
-  onDecisionChange(
-    candidateId: string,
-    patch: Partial<Omit<HrDecision, 'candidateId' | 'updatedAt'>>,
-  ): void;
-  isCompared: boolean;
-  onToggleComparison(candidateId: string): void;
+  onDecisionChange: (patch: Partial<HrDecision>) => void;
 }) {
   const { t } = useI18n();
+  const [isExpanded, setIsExpanded] = useState(false);
+
   const quality = useMemo(
-    () =>
-      buildHrCandidateQualitySummary(cvText, [
-        candidate.justification,
-        ...candidate.strengths,
-        ...candidate.concerns,
-      ]),
-    [candidate.concerns, candidate.justification, candidate.strengths, cvText],
+    () => buildHrCandidateQualitySummary(cvText || '', candidate.strengths),
+    [cvText, candidate.strengths],
   );
 
   return (
-    <article className='rounded-3xl border border-slate-200 bg-white p-4 shadow-sm'>
-      <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
-        <div>
-          <h3 className='text-lg font-black text-slate-950'>
-            {candidate.detectedName || candidate.filename}
-          </h3>
-          <p className='text-sm text-slate-600'>{candidate.filename}</p>
-          <label className='mt-2 inline-flex items-center gap-2 text-sm text-slate-700'>
-            <input
-              className='touch-target h-5 w-5 rounded border-slate-300 text-cyan-600 focus:ring-cyan-500'
-              type='checkbox'
-              checked={isCompared}
-              onChange={() => onToggleComparison(candidate.id)}
-            />
-            Compare
-          </label>
+    <article className='rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md'>
+      <div className='flex flex-wrap items-start justify-between gap-4'>
+        <div className='flex-1 min-w-[200px]'>
+          <div className='flex items-center gap-2'>
+            <h4 className='text-lg font-black text-slate-950'>
+              {candidate.detectedName || candidate.filename}
+            </h4>
+            <span className='rounded-lg bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600'>
+              {candidate.filename}
+            </span>
+          </div>
+          <p className='mt-2 text-sm leading-6 text-slate-700'>
+            {candidate.justification}
+          </p>
         </div>
-        <div className='flex flex-col items-end gap-2'>
+        <div className='flex items-center gap-3'>
           <Score value={candidate.score} />
-          <button
-            className='status-button touch-target'
-            type='button'
-            onClick={() => downloadInterviewerBrief(candidate)}
-          >
-            <Download className='h-4 w-4' />
-            Interviewer brief
-          </button>
+          <div className='text-right'>
+            <p className='text-[10px] font-bold uppercase tracking-wider text-slate-500'>
+              {t('hr.recommendation')}
+            </p>
+            <p className='text-sm font-black text-slate-950 uppercase'>
+              {t(`hr.recommendation.${candidate.interviewRecommendation}`)}
+            </p>
+          </div>
         </div>
       </div>
 
-      <p className='mt-4 text-sm leading-6 text-slate-700'>
-        {candidate.justification}
-      </p>
-
-      <div className='mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700'>
-        Confidence:{' '}
-        <span className='font-bold'>{quality.confidenceScore}/100</span>
-      </div>
-
-      {quality.unsupportedClaims.length > 0 ? (
-        <div className='warning-message mt-2'>
-          Unsupported-claim guard: {quality.unsupportedClaims.length} claim(s)
-        </div>
-      ) : null}
-
-      <div className='mt-4 grid gap-4 md:grid-cols-2'>
-        <List
-          title={t('candidate.list.strengths')}
-          items={candidate.strengths}
+      <div className='mt-5 flex flex-wrap gap-2'>
+        <button
+          className='status-button touch-target'
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          {isExpanded ? t('provider.status.clear') : t('provider.status.edit')}
+        </button>
+        <div className='h-8 w-px bg-slate-200' />
+        <DecisionToggles
+          status={decision?.status || 'hold'}
+          onChange={status => onDecisionChange({ status })}
         />
-        <List title={t('candidate.list.concerns')} items={candidate.concerns} />
+        <button
+          className='status-button touch-target'
+          onClick={() => downloadInterviewerBrief(candidate)}
+        >
+          <Download className='h-3 w-3' />
+          {t('export.text')}
+        </button>
       </div>
 
-      <p className='mt-4 rounded-full bg-slate-100 px-3 py-2 text-sm font-bold text-slate-800'>
-        {t('hr.recommendation')}:{' '}
-        {candidate.interviewRecommendation.replace('_', ' ')}
-      </p>
+      {isExpanded && (
+        <div className='mt-6 space-y-6 border-t border-slate-100 pt-6 animate-fade-in'>
+          <div className='grid gap-6 lg:grid-cols-2'>
+            <List
+              title={t('candidate.list.strengths')}
+              items={candidate.strengths}
+            />
+            <List
+              title={t('candidate.list.concerns')}
+              items={candidate.concerns}
+            />
+          </div>
 
-      <div className='mt-4'>
-        <List
-          title={t('hr.list.interviewQuestions')}
-          items={candidate.interviewQuestions}
-        />
-      </div>
-
-      <HrDecisionPanel
-        decision={decision}
-        onStatusChange={status => onDecisionChange(candidate.id, { status })}
-        onNoteChange={note => onDecisionChange(candidate.id, { note })}
-        onTagChange={tags => onDecisionChange(candidate.id, { tags })}
-      />
-
-      <details className='mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3'>
-        <summary className='cursor-pointer text-sm font-bold text-slate-900'>
-          Evidence trace
-        </summary>
-        <div className='mt-2 space-y-2 text-sm text-slate-700'>
-          {quality.traces.slice(0, 6).map(trace => (
-            <div key={`${trace.claim}-${trace.evidence ?? 'none'}`}>
-              <p className='font-semibold text-slate-900'>{trace.claim}</p>
-              <p>
-                {trace.evidence ??
-                  'No direct supporting excerpt found in CV text.'}
-              </p>
+          <div className='rounded-2xl border border-slate-200 bg-slate-50 p-4'>
+            <p className='text-xs font-bold uppercase tracking-wide text-slate-500'>
+              {t('candidate.metric.evidenceCoverage')}
+            </p>
+            <div className='mt-3 grid gap-4 sm:grid-cols-2'>
+              <MetricBar
+                label={t('candidate.metric.evidenceCoverage')}
+                value={quality.confidenceScore / 10}
+              />
+              <div className='text-right'>
+                <p className='text-xl font-black text-slate-950'>
+                  {quality.confidenceScore}%
+                </p>
+                <p className='text-[10px] font-bold uppercase text-slate-500'>
+                  Confidence
+                </p>
+              </div>
             </div>
-          ))}
+          </div>
+
+          <List
+            title={t('hr.list.interviewQuestions')}
+            items={candidate.interviewQuestions}
+          />
+
+          <TextArea
+            label='Decision notes'
+            value={decision?.note || ''}
+            onChange={note => onDecisionChange({ note })}
+            placeholder='Add reasoning, internal tags, or next steps...'
+            rows={3}
+          />
         </div>
-      </details>
+      )}
     </article>
   );
 }
 
-function HrDecisionPanel({
-  decision,
-  onStatusChange,
-  onNoteChange,
-  onTagChange,
+function DecisionToggles({
+  status,
+  onChange,
 }: {
-  decision?: HrDecision;
-  onStatusChange(status: HrDecisionStatus): void;
-  onNoteChange(note: string): void;
-  onTagChange(tags: string[]): void;
+  status: HrDecisionStatus;
+  onChange: (status: HrDecisionStatus) => void;
 }) {
-  const statuses: Array<{ value: HrDecisionStatus; label: string }> = [
-    { value: 'shortlist', label: 'Shortlist' },
-    { value: 'hold', label: 'Hold' },
-    { value: 'reject', label: 'Reject' },
-    { value: 'interview', label: 'Interview' },
-  ];
+  const options: Array<{ id: HrDecisionStatus; label: string; color: string }> =
+    [
+      { id: 'shortlist', label: 'Shortlist', color: 'bg-emerald-500' },
+      { id: 'hold', label: 'Hold', color: 'bg-amber-500' },
+      { id: 'reject', label: 'Reject', color: 'bg-rose-500' },
+    ];
 
   return (
-    <section className='mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3'>
-      <p className='text-sm font-bold text-slate-900'>Decision actions</p>
-      <div className='mt-2 flex flex-wrap gap-2'>
-        {statuses.map(status => (
-          <button
-            key={status.value}
-            className={[
-              'status-button text-xs',
-              decision?.status === status.value
-                ? 'border-cyan-600 text-cyan-700'
-                : '',
-            ].join(' ')}
-            type='button'
-            onClick={() => onStatusChange(status.value)}
-          >
-            {status.label}
-          </button>
-        ))}
-      </div>
-      <label className='mt-3 block text-sm font-semibold text-slate-700'>
-        Notes
-      </label>
-      <textarea
-        className='text-input mt-1 resize-y'
-        rows={2}
-        value={decision?.note ?? ''}
-        onChange={event => onNoteChange(event.target.value)}
-      />
-      <label className='mt-3 block text-sm font-semibold text-slate-700'>
-        Tags (comma separated)
-      </label>
-      <input
-        className='text-input mt-1'
-        value={(decision?.tags ?? []).join(', ')}
-        onChange={event =>
-          onTagChange(
-            event.target.value
-              .split(',')
-              .map(item => item.trim())
-              .filter(Boolean),
-          )
-        }
-      />
-    </section>
-  );
-}
-
-function HrComparisonMatrix({ candidates }: { candidates: RankedCandidate[] }) {
-  return (
-    <section className='rounded-3xl border border-slate-200 bg-slate-50 p-4 shadow-sm'>
-      <h3 className='text-sm font-bold text-slate-900'>
-        Side-by-side comparison
-      </h3>
-      <div className='mt-3 overflow-x-auto'>
-        <table className='w-full min-w-[640px] border-collapse text-sm'>
-          <thead>
-            <tr className='text-left text-slate-600'>
-              <th className='border-b border-slate-200 px-2 py-2'>Metric</th>
-              {candidates.map(candidate => (
-                <th
-                  key={candidate.id}
-                  className='border-b border-slate-200 px-2 py-2'
-                >
-                  {candidate.detectedName ?? candidate.filename}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            <MatrixRow
-              label='Score'
-              values={candidates.map(item => item.score.toFixed(1))}
-            />
-            <MatrixRow
-              label='Recommendation'
-              values={candidates.map(item =>
-                item.interviewRecommendation.replace('_', ' '),
-              )}
-            />
-            <MatrixRow
-              label='Top strengths'
-              values={candidates.map(item =>
-                item.strengths.slice(0, 2).join(' | '),
-              )}
-            />
-            <MatrixRow
-              label='Top concerns'
-              values={candidates.map(item =>
-                item.concerns.slice(0, 2).join(' | '),
-              )}
-            />
-          </tbody>
-        </table>
-      </div>
-    </section>
-  );
-}
-
-function MatrixRow({ label, values }: { label: string; values: string[] }) {
-  return (
-    <tr>
-      <th className='border-b border-slate-200 px-2 py-2 text-left text-slate-700'>
-        {label}
-      </th>
-      {values.map((value, index) => (
-        <td
-          key={`${label}-${index}`}
-          className='border-b border-slate-200 px-2 py-2 text-slate-700'
+    <div className='flex gap-1 rounded-2xl bg-slate-100 p-1'>
+      {options.map(opt => (
+        <button
+          key={opt.id}
+          type='button'
+          onClick={() => onChange(opt.id)}
+          className={[
+            'rounded-xl px-3 py-1 text-[10px] font-bold uppercase transition-all',
+            status === opt.id
+              ? `${opt.color} text-white shadow-sm`
+              : 'text-slate-500 hover:text-slate-700',
+          ].join(' ')}
         >
-          {value || 'N/A'}
-        </td>
+          {opt.label}
+        </button>
       ))}
-    </tr>
-  );
-}
-
-function HrRerunDiffPanel({
-  diff,
-}: {
-  diff: ReturnType<typeof buildHrRankDiffSummary>;
-}) {
-  return (
-    <section className='rounded-3xl border border-slate-200 bg-slate-50 p-4 shadow-sm'>
-      <h3 className='text-sm font-bold text-slate-900'>Rerun diff</h3>
-      <div className='mt-2 grid gap-2 sm:grid-cols-3'>
-        <p className='rounded-xl bg-white px-3 py-2 text-sm text-slate-700'>
-          Avg score delta:{' '}
-          <span className='font-bold'>
-            {diff.averageDelta >= 0 ? '+' : ''}
-            {diff.averageDelta.toFixed(1)}
-          </span>
-        </p>
-        <p className='rounded-xl bg-white px-3 py-2 text-sm text-slate-700'>
-          Previous avg:{' '}
-          <span className='font-bold'>{diff.previousAverage.toFixed(1)}</span>
-        </p>
-        <p className='rounded-xl bg-white px-3 py-2 text-sm text-slate-700'>
-          Rank swaps:{' '}
-          <span
-            className={
-              diff.rankSwapCount > 1 ? 'font-bold text-amber-700' : 'font-bold'
-            }
-          >
-            {diff.rankSwapCount}
-          </span>
-        </p>
-      </div>
-    </section>
-  );
-}
-
-function HrMetricsDashboard({ result }: { result: HrRankingResult }) {
-  const { locale, t } = useI18n();
-  const summary = buildHrMetricsSummary(result);
-  const percentFormatter = new Intl.NumberFormat(locale, {
-    maximumFractionDigits: 0,
-  });
-
-  return (
-    <section className='rounded-3xl border border-slate-200 bg-slate-50 p-4 shadow-sm'>
-      <p className='text-sm font-bold text-slate-900'>
-        {t('hr.dashboard.title')}
-      </p>
-      <div className='mt-3 grid gap-3 sm:grid-cols-3'>
-        <HrSummaryStat
-          label={t('hr.dashboard.count')}
-          value={summary.totalCandidates.toString()}
-        />
-        <HrSummaryStat
-          label={t('hr.dashboard.average')}
-          value={`${summary.averageScore.toFixed(1)}/10`}
-        />
-        <HrSummaryStat
-          label={t('hr.dashboard.topCandidate')}
-          value={summary.topCandidateLabel}
-        />
-      </div>
-      <div className='mt-3 grid gap-3 sm:grid-cols-3'>
-        <HrSummaryStat
-          label={t('hr.dashboard.median')}
-          value={`${summary.medianScore.toFixed(1)}/10`}
-        />
-        <HrSummaryStat
-          label={t('hr.dashboard.deviation')}
-          value={summary.standardDeviation.toFixed(1)}
-        />
-        <HrSummaryStat
-          label={t('hr.dashboard.yesRate')}
-          value={`${percentFormatter.format(summary.yesOrBetterRate)}%`}
-        />
-      </div>
-      <div className='mt-3 space-y-3'>
-        <HrMetricBar
-          label={t('hr.dashboard.average')}
-          value={summary.averageScore}
-        />
-        <HrMetricBar
-          label={t('hr.dashboard.median')}
-          value={summary.medianScore}
-        />
-        <HrMetricBar label={t('hr.dashboard.max')} value={summary.topScore} />
-        <HrMetricBar
-          label={t('hr.dashboard.min')}
-          value={summary.lowestScore}
-        />
-      </div>
-      <HrComparisonBar
-        average={summary.averageScore}
-        top={summary.topScore}
-        lowest={summary.lowestScore}
-      />
-    </section>
-  );
-}
-
-function HrSummaryStat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className='rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-sm'>
-      <p className='text-[11px] font-bold uppercase tracking-wide text-slate-500'>
-        {label}
-      </p>
-      <p className='mt-1 truncate text-sm font-bold text-slate-950'>{value}</p>
     </div>
-  );
-}
-
-function HrMetricBar({ label, value }: { label: string; value: number }) {
-  const { locale } = useI18n();
-  const safeValue = Math.max(
-    0,
-    Math.min(10, Number.isFinite(value) ? value : 0),
-  );
-  const formatter = new Intl.NumberFormat(locale, {
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
-  });
-
-  return (
-    <div>
-      <div className='mb-1 flex items-center justify-between text-xs font-semibold text-slate-700'>
-        <span>{label}</span>
-        <span>{formatter.format(safeValue)}/10</span>
-      </div>
-      <div className='h-2 rounded-full bg-slate-200'>
-        <div
-          className='h-2 rounded-full bg-emerald-600 transition-all duration-300'
-          style={{ width: `${safeValue * 10}%` }}
-        />
-      </div>
-    </div>
-  );
-}
-
-function HrComparisonBar({
-  average,
-  top,
-  lowest,
-}: {
-  average: number;
-  top: number;
-  lowest: number;
-}) {
-  const { locale, t } = useI18n();
-  const safeAverage = Math.max(0, Math.min(10, average));
-  const safeTop = Math.max(0, Math.min(10, top));
-  const safeLowest = Math.max(0, Math.min(10, lowest));
-  const formatter = new Intl.NumberFormat(locale, {
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
-  });
-  const spread = Math.max(0, safeTop - safeLowest);
-
-  return (
-    <div className='mt-4 rounded-3xl border border-dashed border-slate-300 bg-white p-3 shadow-sm'>
-      <h3 className='text-xs font-bold uppercase tracking-wide text-slate-700'>
-        {t('hr.dashboard.comparison')}
-      </h3>
-      <div className='mt-3 space-y-3'>
-        <div>
-          <div className='mb-1 flex items-center justify-between text-xs font-semibold text-slate-700'>
-            <span>{t('hr.dashboard.average')}</span>
-            <span>{formatter.format(safeAverage)}/10</span>
-          </div>
-          <div className='h-2 rounded-full bg-slate-200'>
-            <div
-              className='h-2 rounded-full bg-cyan-600 transition-all duration-300'
-              style={{ width: `${safeAverage * 10}%` }}
-            />
-          </div>
-        </div>
-        <div>
-          <div className='mb-1 flex items-center justify-between text-xs font-semibold text-slate-700'>
-            <span>{t('hr.dashboard.max')}</span>
-            <span>{formatter.format(safeTop)}/10</span>
-          </div>
-          <div className='h-2 rounded-full bg-slate-200'>
-            <div
-              className='h-2 rounded-full bg-emerald-600 transition-all duration-300'
-              style={{ width: `${safeTop * 10}%` }}
-            />
-          </div>
-        </div>
-        <p className='text-xs font-semibold text-slate-600'>
-          {t('hr.dashboard.spread')}: {formatter.format(spread)}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function HrRecommendationDistribution({ result }: { result: HrRankingResult }) {
-  const { locale, t } = useI18n();
-  const counts = result.candidates.reduce(
-    (accumulator, candidate) => {
-      accumulator[candidate.interviewRecommendation] += 1;
-      return accumulator;
-    },
-    {
-      strong_yes: 0,
-      yes: 0,
-      maybe: 0,
-      no: 0,
-    },
-  );
-  const total = result.candidates.length || 1;
-  const formatter = new Intl.NumberFormat(locale, {
-    maximumFractionDigits: 0,
-  });
-
-  const entries = [
-    ['strong_yes', 'bg-emerald-600'],
-    ['yes', 'bg-cyan-600'],
-    ['maybe', 'bg-amber-500'],
-    ['no', 'bg-rose-600'],
-  ] as const;
-
-  return (
-    <section className='rounded-3xl border border-slate-200 bg-slate-50 p-4 shadow-sm'>
-      <p className='text-sm font-bold text-slate-900'>
-        {t('hr.recommendationDistribution')}
-      </p>
-      <div className='mt-3 grid gap-3 sm:grid-cols-2'>
-        {entries.map(([key, barClass]) => {
-          const count = counts[key];
-          const percentage = (count / total) * 100;
-
-          return (
-            <div
-              key={key}
-              className='rounded-md border border-slate-200 bg-white p-3'
-            >
-              <div className='mb-2 flex items-center justify-between text-xs font-semibold text-slate-700'>
-                <span>{t(`hr.recommendation.${key}`)}</span>
-                <span>{formatter.format(count)}</span>
-              </div>
-              <div className='h-2 rounded-full bg-slate-200'>
-                <div
-                  className={`h-2 rounded-full transition-all duration-300 ${barClass}`}
-                  style={{ width: `${percentage}%` }}
-                />
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </section>
   );
 }

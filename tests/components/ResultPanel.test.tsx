@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { ResultPanel } from '@/components/CandidateReviewer';
+import { ResultPanel } from '@/components/common/ResultPanel';
 import { I18nProvider } from '@/i18n/i18n';
 
 const renderPanel = (props: Parameters<typeof ResultPanel>[0]) => {

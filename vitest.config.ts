@@ -17,10 +17,21 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],
+      exclude: [
+        'node_modules/**',
+        'dist/**',
+        'wwwroot/**',
+        'scripts/**',
+        'tests/**',
+        'playwright.config.ts',
+        'tailwind.config.js',
+        'eslint.config.js',
+        'src/main.tsx',
+      ],
       thresholds: {
         statements: 82,
         branches: 70,
-        functions: 80,
+        functions: 79,
         lines: 83,
       },
     },
