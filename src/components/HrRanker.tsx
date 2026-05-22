@@ -171,6 +171,8 @@ export function HrRanker({ config }: HrRankerProps) {
     setIsProcessing(true);
     setProcessingLabel(t('hr.processing'));
 
+    const controller = new AbortController();
+
     try {
       const { ranking } = await runHrRankingUseCase({
         config,
@@ -185,6 +187,7 @@ export function HrRanker({ config }: HrRankerProps) {
         onProgress: (index, total) => {
           setProcessingLabel(t('hr.batchProcessing', { index, total }));
         },
+        signal: controller.signal,
       });
 
       setRawCvById(
@@ -198,6 +201,9 @@ export function HrRanker({ config }: HrRankerProps) {
       setResult(ranking);
       setIsFormCollapsed(true);
     } catch (processError) {
+      if (processError instanceof Error && processError.name === 'AbortError')
+        return;
+
       setError(
         processError instanceof Error
           ? processError.message

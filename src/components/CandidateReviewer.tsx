@@ -93,17 +93,26 @@ export function CandidateReviewer({ config }: CandidateReviewerProps) {
 
     setIsProcessing(true);
 
+    const controller = new AbortController();
+
     try {
-      const { review } = await runCandidateReviewUseCase(config, {
-        jobTitle,
-        jobDescription,
-        cvText,
-        outputLocale: locale,
-      });
+      const { review } = await runCandidateReviewUseCase(
+        config,
+        {
+          jobTitle,
+          jobDescription,
+          cvText,
+          outputLocale: locale,
+        },
+        controller.signal,
+      );
       setPreviousResult(result);
       setResult(review);
       setIsFormCollapsed(true);
     } catch (processError) {
+      if (processError instanceof Error && processError.name === 'AbortError')
+        return;
+
       setError(
         processError instanceof Error
           ? processError.message

@@ -17,9 +17,9 @@ const OPENAI_RESPONSES_URL = 'https://api.openai.com/v1/responses';
 const OPENAI_MODELS_URL = 'https://api.openai.com/v1/models';
 
 export const openaiProvider: AiProviderAdapter = {
-  async testConnection(config): Promise<TestResult> {
+  async testConnection(config, signal): Promise<TestResult> {
     try {
-      const text = await createResponse(config, TEST_PROMPT, null);
+      const text = await createResponse(config, TEST_PROMPT, null, signal);
       ensureHello(text);
       return { ok: true, message: 'OpenAI responded successfully.' };
     } catch (error) {
@@ -27,7 +27,7 @@ export const openaiProvider: AiProviderAdapter = {
     }
   },
 
-  async listModels(config): Promise<string[]> {
+  async listModels(config, signal): Promise<string[]> {
     try {
       const response = await fetch(OPENAI_MODELS_URL, {
         method: 'GET',
@@ -35,6 +35,7 @@ export const openaiProvider: AiProviderAdapter = {
           Authorization: `Bearer ${config.apiKey}`,
           'Content-Type': 'application/json',
         },
+        signal,
       });
 
       await assertSuccessfulResponse(response);
@@ -51,8 +52,8 @@ export const openaiProvider: AiProviderAdapter = {
     }
   },
 
-  ...createStandardWorkflows((config, prompt, context) =>
-    createResponse(config, prompt, schemaByContext[context]),
+  ...createStandardWorkflows((config, prompt, context, signal) =>
+    createResponse(config, prompt, schemaByContext[context], signal),
   ),
 };
 
@@ -60,6 +61,7 @@ const createResponse = async (
   config: AiConfig,
   prompt: string,
   schema: JsonSchema | null,
+  signal?: AbortSignal,
 ) => {
   const sanitizedPrompt = sanitizePromptForProvider(
     prompt,
@@ -87,6 +89,7 @@ const createResponse = async (
           }
         : {}),
     }),
+    signal,
   });
 
   await assertSuccessfulResponse(response);

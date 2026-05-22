@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import App from '@/App';
+import { App } from '@/App';
 import { AI_CONFIG_STORAGE_KEY } from '@/domain/aiTypes';
 import { I18nProvider } from '@/i18n/i18n';
 

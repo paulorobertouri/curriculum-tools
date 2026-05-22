@@ -24,6 +24,7 @@ export const runHrRankingUseCase = async ({
   cvs,
   outputLocale,
   onProgress,
+  signal,
 }: {
   config: AiConfig;
   jobTitle: string;
@@ -31,6 +32,7 @@ export const runHrRankingUseCase = async ({
   cvs: HrCvInput[];
   outputLocale?: 'en-US' | 'pt-BR' | 'es-ES';
   onProgress?(index: number, total: number): void;
+  signal?: AbortSignal;
 }): Promise<{
   ranking: HrRankingResult;
 }> => {
@@ -41,12 +43,16 @@ export const runHrRankingUseCase = async ({
 
     onProgress?.(index + 1, cvs.length);
 
-    const partial = await callProviderRanking(config, {
-      jobTitle,
-      jobDescription,
-      cvs: [cv],
-      outputLocale,
-    });
+    const partial = await callProviderRanking(
+      config,
+      {
+        jobTitle,
+        jobDescription,
+        cvs: [cv],
+        outputLocale,
+      },
+      signal,
+    );
 
     const partialCandidate =
       partial.candidates.find(candidate => candidate.id === cv.id) ??

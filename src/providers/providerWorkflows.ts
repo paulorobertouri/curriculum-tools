@@ -1,8 +1,6 @@
 import {
   AiConfig,
   AiProviderAdapter,
-  CandidateReviewInput,
-  HrRankingInput,
 } from '@/domain/aiTypes';
 import {
   normalizeCandidateCareerToolkit,
@@ -23,21 +21,24 @@ type ExecutePrompt = (
   config: AiConfig,
   prompt: string,
   context: ProviderPromptContext,
+  signal?: AbortSignal,
 ) => Promise<string>;
 
 export const createStandardWorkflows = (
   executePrompt: ExecutePrompt,
 ): Pick<AiProviderAdapter, 'reviewCandidateCv' | 'rankHrCvs'> => ({
-  async reviewCandidateCv(config: AiConfig, input: CandidateReviewInput) {
+  async reviewCandidateCv(config, input, signal) {
     const reviewText = await executePrompt(
       config,
       buildCandidatePrompt(input),
       'candidateReview',
+      signal,
     );
     const toolkitText = await executePrompt(
       config,
       buildCandidateToolkitPrompt(input),
       'candidateToolkit',
+      signal,
     );
 
     const review = parseJsonResult(reviewText, normalizeCandidateReview);
@@ -52,11 +53,12 @@ export const createStandardWorkflows = (
     };
   },
 
-  async rankHrCvs(config: AiConfig, input: HrRankingInput) {
+  async rankHrCvs(config, input, signal) {
     const rankingText = await executePrompt(
       config,
       buildHrPrompt(input),
       'hrRanking',
+      signal,
     );
     return parseJsonResult(rankingText, normalizeHrRanking);
   },

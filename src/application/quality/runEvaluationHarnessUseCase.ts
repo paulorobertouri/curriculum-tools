@@ -15,13 +15,18 @@ const average = (values: number[]) => {
 
 export const runEvaluationHarnessUseCase = async (
   config: AiConfig,
+  signal?: AbortSignal,
 ): Promise<EvaluationRun> => {
   const adapter = getProviderAdapter(config.provider);
 
   const candidateRuns = [] as EvaluationRun['candidateRuns'];
   for (const fixture of candidateFixtures) {
     const start = Date.now();
-    const review = await adapter.reviewCandidateCv(config, fixture.input);
+    const review = await adapter.reviewCandidateCv(
+      config,
+      fixture.input,
+      signal,
+    );
     const durationMs = Date.now() - start;
 
     const quality = buildCandidateQualitySummary(fixture.input.cvText, review);
@@ -37,7 +42,7 @@ export const runEvaluationHarnessUseCase = async (
   const hrRuns = [] as EvaluationRun['hrRuns'];
   for (const fixture of hrFixtures) {
     const start = Date.now();
-    const ranking = await adapter.rankHrCvs(config, fixture.input);
+    const ranking = await adapter.rankHrCvs(config, fixture.input, signal);
     const durationMs = Date.now() - start;
 
     hrRuns.push({

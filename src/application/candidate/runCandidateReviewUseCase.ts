@@ -12,8 +12,9 @@ type CandidateReviewUseCaseResult = {
 export const runCandidateReviewUseCase = async (
   config: AiConfig,
   input: CandidateReviewInput,
+  signal?: AbortSignal,
 ): Promise<CandidateReviewUseCaseResult> => {
-  const data = await callProviderReview(config, input);
+  const data = await callProviderReview(config, input, signal);
 
   return {
     review: data,

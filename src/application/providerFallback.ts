@@ -12,9 +12,11 @@ export const callProviderReview = (
   input: Parameters<
     ReturnType<typeof getProviderAdapter>['reviewCandidateCv']
   >[1],
-) => getProviderAdapter(config.provider).reviewCandidateCv(config, input);
+  signal?: AbortSignal,
+) => getProviderAdapter(config.provider).reviewCandidateCv(config, input, signal);
 
 export const callProviderRanking = (
   config: AiConfig,
   input: Parameters<ReturnType<typeof getProviderAdapter>['rankHrCvs']>[1],
-) => getProviderAdapter(config.provider).rankHrCvs(config, input);
+  signal?: AbortSignal,
+) => getProviderAdapter(config.provider).rankHrCvs(config, input, signal);

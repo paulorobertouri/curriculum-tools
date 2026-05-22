@@ -11,9 +11,9 @@ import { createStandardWorkflows } from '@/providers/providerWorkflows';
 import { extractGeminiText } from '@/providers/responseParsing';
 
 export const geminiProvider: AiProviderAdapter = {
-  async testConnection(config): Promise<TestResult> {
+  async testConnection(config, signal): Promise<TestResult> {
     try {
-      const text = await generateContent(config, TEST_PROMPT);
+      const text = await generateContent(config, TEST_PROMPT, signal);
       ensureHello(text);
       return { ok: true, message: 'Gemini responded successfully.' };
     } catch (error) {
@@ -21,7 +21,7 @@ export const geminiProvider: AiProviderAdapter = {
     }
   },
 
-  async listModels(config): Promise<string[]> {
+  async listModels(config, signal): Promise<string[]> {
     try {
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(
@@ -29,6 +29,7 @@ export const geminiProvider: AiProviderAdapter = {
         )}`,
         {
           method: 'GET',
+          signal,
         },
       );
 
@@ -53,12 +54,16 @@ export const geminiProvider: AiProviderAdapter = {
     }
   },
 
-  ...createStandardWorkflows((config, prompt) =>
-    generateContent(config, prompt),
+  ...createStandardWorkflows((config, prompt, _, signal) =>
+    generateContent(config, prompt, signal),
   ),
 };
 
-const generateContent = async (config: AiConfig, prompt: string) => {
+const generateContent = async (
+  config: AiConfig,
+  prompt: string,
+  signal?: AbortSignal,
+) => {
   const sanitizedPrompt = sanitizePromptForProvider(
     prompt,
     isPromptRedactionEnabled(config),
@@ -77,6 +82,7 @@ const generateContent = async (config: AiConfig, prompt: string) => {
       body: JSON.stringify({
         contents: [{ parts: [{ text: sanitizedPrompt }] }],
       }),
+      signal,
     },
   );
 

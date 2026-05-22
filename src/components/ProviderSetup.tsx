@@ -77,8 +77,13 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
 
     setIsFetchingModels(true);
 
+    const controller = new AbortController();
+
     try {
-      const { supported, models } = await listProviderModelsUseCase(config);
+      const { supported, models } = await listProviderModelsUseCase(
+        config,
+        controller.signal,
+      );
 
       if (!supported) {
         setStatus(t('provider.setup.modelsUnsupported'));
@@ -98,6 +103,8 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
         t('provider.setup.modelsFetched', { count: String(models.length) }),
       );
     } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') return;
+
       setStatus(
         error instanceof Error ? error.message : t('provider.status.failed'),
       );
@@ -130,10 +137,14 @@ export function ProviderSetup({ initialConfig, onSave }: ProviderSetupProps) {
 
     setIsTesting(true);
 
+    const controller = new AbortController();
+
     try {
-      await testProviderConnectionUseCase(config);
+      await testProviderConnectionUseCase(config, controller.signal);
       onSave(config);
     } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') return;
+
       setStatus(
         error instanceof Error ? error.message : t('provider.status.failed'),
       );

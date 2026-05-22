@@ -93,13 +93,18 @@ export class ProviderError extends Error {
 }
 
 export type AiProviderAdapter = {
-  testConnection(config: AiConfig): Promise<TestResult>;
-  listModels?(config: AiConfig): Promise<string[]>;
+  testConnection(config: AiConfig, signal?: AbortSignal): Promise<TestResult>;
+  listModels?(config: AiConfig, signal?: AbortSignal): Promise<string[]>;
   reviewCandidateCv(
     config: AiConfig,
     input: CandidateReviewInput,
+    signal?: AbortSignal,
   ): Promise<CandidateReview>;
-  rankHrCvs(config: AiConfig, input: HrRankingInput): Promise<HrRankingResult>;
+  rankHrCvs(
+    config: AiConfig,
+    input: HrRankingInput,
+    signal?: AbortSignal,
+  ): Promise<HrRankingResult>;
 };
 
 export const PROVIDER_LABELS: Record<AiProviderId, string> = {

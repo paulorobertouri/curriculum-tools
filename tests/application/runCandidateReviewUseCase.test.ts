@@ -50,6 +50,7 @@ describe('runCandidateReviewUseCase', () => {
     expect(reviewByProvider.openai).toHaveBeenCalledWith(
       config,
       expect.objectContaining({ jobTitle: 'T' }),
+      undefined,
     );
   });
 });

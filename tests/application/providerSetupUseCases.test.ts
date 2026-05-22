@@ -35,7 +35,7 @@ describe('providerSetupUseCases', () => {
       ok: true,
       message: 'ok',
     });
-    expect(mockAdapter.testConnection).toHaveBeenCalledWith(config);
+    expect(mockAdapter.testConnection).toHaveBeenCalledWith(config, undefined);
   });
 
   it('lists models when provider supports listing', async () => {

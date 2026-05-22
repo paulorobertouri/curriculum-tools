@@ -214,12 +214,16 @@ export function QualityHarness({ config }: QualityHarnessProps) {
     setIsRunning(true);
     setError(null);
 
+    const controller = new AbortController();
+
     try {
-      const run = await runEvaluationHarnessUseCase(config);
+      const run = await runEvaluationHarnessUseCase(config, controller.signal);
       const nextRuns = [...runs, run].slice(-30);
       setRuns(nextRuns);
       persistEvaluationRuns(nextRuns);
     } catch (runError) {
+      if (runError instanceof Error && runError.name === 'AbortError') return;
+
       setError(
         runError instanceof Error ? runError.message : 'Harness run failed.',
       );
