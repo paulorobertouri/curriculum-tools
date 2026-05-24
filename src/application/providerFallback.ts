@@ -1,5 +1,5 @@
 import { AiConfig, AiProviderId, ProviderErrorKind } from '@/domain/aiTypes';
-import { getProviderAdapter } from '@/providers';
+import { getProviderAdapter } from '@/presentation/providers';
 
 export type ProviderFallbackNotice = {
   primaryProvider: AiProviderId;

@@ -1,5 +1,5 @@
 import { AiConfig, TestResult } from '@/domain/aiTypes';
-import { getProviderAdapter } from '@/providers';
+import { getProviderAdapter } from '@/presentation/providers';
 
 export type ProviderModelsResult = {
   supported: boolean;

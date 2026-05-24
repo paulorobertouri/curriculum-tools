@@ -1,22 +1,22 @@
 import { BriefcaseBusiness, FlaskConical, UserRound } from 'lucide-react';
 import { KeyboardEvent, useEffect, useMemo, useRef, useState } from 'react';
 
-import { CandidateReviewer } from '@/components/CandidateReviewer';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { GlobalErrorPage } from '@/components/GlobalErrorPage';
-import { HrRanker } from '@/components/HrRanker';
-import { LanguageSelector } from '@/components/LanguageSelector';
-import { ProviderSetup } from '@/components/ProviderSetup';
-import { ProviderStatus } from '@/components/ProviderStatus';
-import { QualityHarness } from '@/components/QualityHarness';
+import { CandidateReviewer } from '@/presentation/components/CandidateReviewer';
+import { ErrorBoundary } from '@/presentation/components/ErrorBoundary';
+import { GlobalErrorPage } from '@/presentation/components/GlobalErrorPage';
+import { HrRanker } from '@/presentation/components/HrRanker';
+import { LanguageSelector } from '@/presentation/components/LanguageSelector';
+import { ProviderSetup } from '@/presentation/components/ProviderSetup';
+import { ProviderStatus } from '@/presentation/components/ProviderStatus';
+import { QualityHarness } from '@/presentation/components/QualityHarness';
 import { AiConfig, providerIsEnabled } from '@/domain/aiTypes';
-import { useI18n } from '@/i18n/i18n';
-import { getProviderAdapter } from '@/providers';
+import { useI18n } from '@/infrastructure/i18n/i18n';
+import { getProviderAdapter } from '@/presentation/providers';
 import {
   clearAiConfig,
   readAiConfig,
   saveAiConfig,
-} from '@/storage/aiConfigStorage';
+} from '@/infrastructure/storage/aiConfigStorage';
 
 type ActiveTool = 'candidate' | 'hr' | 'quality';
 

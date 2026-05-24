@@ -65,3 +65,11 @@ venv/
 .yarn/cache/
 .yarn/unplugged/
 .yarn/build-state.yml
+
+# Runtime and Database
+.data/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3

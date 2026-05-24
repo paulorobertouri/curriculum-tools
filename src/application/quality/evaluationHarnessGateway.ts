@@ -2,7 +2,7 @@ import {
   EvaluationRun,
   readEvaluationRuns,
   saveEvaluationRuns,
-} from '@/storage/evaluationHarnessStorage';
+} from '@/infrastructure/storage/evaluationHarnessStorage';
 
 export const loadEvaluationRuns = (): EvaluationRun[] => readEvaluationRuns();
 

@@ -2,8 +2,8 @@ import { AiConfig } from '@/domain/aiTypes';
 import { candidateFixtures, hrFixtures } from '@/domain/evaluationFixtures';
 import { buildCandidateQualitySummary } from '@/domain/reviewQuality';
 import { PROMPT_VERSIONS } from '@/prompts/promptVersions';
-import { getProviderAdapter } from '@/providers';
-import { EvaluationRun } from '@/storage/evaluationHarnessStorage';
+import { getProviderAdapter } from '@/presentation/providers';
+import { EvaluationRun } from '@/infrastructure/storage/evaluationHarnessStorage';
 
 const average = (values: number[]) => {
   if (values.length === 0) {
