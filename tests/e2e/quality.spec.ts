@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+
 import { captureJourneyScreenshot, seedSavedConfig } from './utils';
 
 test.describe('Quality Journey', () => {

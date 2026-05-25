@@ -1,15 +1,15 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { Button } from '@/components/common/Button';
-import { Card } from '@/components/common/Card';
-import { List } from '@/components/common/List';
-import { LongTextBlock } from '@/components/common/LongTextBlock';
-import { MetricBar } from '@/components/common/MetricBar';
-import { Score } from '@/components/common/Score';
-import { TextArea } from '@/components/common/TextArea';
-import { TextField } from '@/components/common/TextField';
-import { I18nProvider } from '@/i18n/i18n';
+import { Button } from '@/common/components/Button';
+import { Card } from '@/common/components/Card';
+import { List } from '@/common/components/List';
+import { LongTextBlock } from '@/common/components/LongTextBlock';
+import { MetricBar } from '@/common/components/MetricBar';
+import { Score } from '@/common/components/Score';
+import { TextArea } from '@/common/components/TextArea';
+import { TextField } from '@/common/components/TextField';
+import { I18nProvider } from '@/common/i18n/i18n';
 
 describe('Common Components', () => {
   describe('Button', () => {

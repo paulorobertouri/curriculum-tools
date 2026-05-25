@@ -1,4 +1,4 @@
-import { HrRankingInput } from '@/domain/aiTypes';
+import { HrRankingInput } from '@/common/core/aiTypes';
 import { getPromptLocaleGuidance } from '@/prompts/promptLocale';
 import { PROMPT_VERSIONS } from '@/prompts/promptVersions';
 

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { MetricBar } from '@/components/common/MetricBar';
+import { MetricBar } from '@/common/components/MetricBar';
 
 describe('MetricBar', () => {
   it('renders correctly with given value', () => {

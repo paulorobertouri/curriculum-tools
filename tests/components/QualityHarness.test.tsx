@@ -1,10 +1,10 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { loadEvaluationRuns } from '@/application/quality/evaluationHarnessGateway';
-import { QualityHarness } from '@/components/QualityHarness';
-import { AiConfig } from '@/domain/aiTypes';
-import { I18nProvider } from '@/i18n/i18n';
+import { AiConfig } from '@/common/core/aiTypes';
+import { I18nProvider } from '@/common/i18n/i18n';
+import { QualityHarness } from '@/quality/components/QualityHarness';
+import { loadEvaluationRuns } from '@/quality/handlers/evaluationHarnessGateway';
 
 const mockRuns = [
   {
@@ -33,7 +33,7 @@ const mockRuns = [
 ];
 
 // Mock storage gateways
-vi.mock('@/application/quality/evaluationHarnessGateway', () => ({
+vi.mock('@/quality/handlers/evaluationHarnessGateway', () => ({
   loadEvaluationRuns: vi.fn(() => mockRuns),
   persistEvaluationRuns: vi.fn(),
 }));

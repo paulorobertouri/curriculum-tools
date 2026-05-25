@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { AI_CONFIG_STORAGE_KEY, AiConfig } from '@/domain/aiTypes';
+import { AI_CONFIG_STORAGE_KEY, AiConfig } from '@/common/core/aiTypes';
 import {
   clearAiConfig,
   isAiConfig,
   maskApiKey,
   readAiConfig,
   saveAiConfig,
-} from '@/storage/aiConfigStorage';
+} from '@/common/storage/aiConfigStorage';
 
 const config: AiConfig = {
   provider: 'openai',

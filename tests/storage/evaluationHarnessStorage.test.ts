@@ -4,7 +4,7 @@ import {
   EvaluationRun,
   readEvaluationRuns,
   saveEvaluationRuns,
-} from '@/storage/evaluationHarnessStorage';
+} from '@/common/storage/evaluationHarnessStorage';
 
 const makeRun = (index: number): EvaluationRun => ({
   id: `run-${index}`,

@@ -1,6 +1,10 @@
 import { Page } from '@playwright/test';
 
-export const captureJourneyScreenshot = async (page: Page, category: string, name: string) => {
+export const captureJourneyScreenshot = async (
+  page: Page,
+  category: string,
+  name: string,
+) => {
   await page.screenshot({
     path: `tests/e2e/evidence/${category}/${name}.png`,
     fullPage: true,
@@ -15,7 +19,10 @@ export const seedSavedConfig = async (page: Page) => {
       model: 'gpt-mock',
       savedAt: new Date().toISOString(),
     };
-    localStorage.setItem('curriculum-tools.aiConfig.v1', JSON.stringify(config));
+    localStorage.setItem(
+      'curriculum-tools.aiConfig.v1',
+      JSON.stringify(config),
+    );
   });
 };
 
@@ -109,7 +116,7 @@ export const routeOpenAiForHrFlows = async (page: Page) => {
           interviewQuestions: ['Q1'],
         });
       }
-      
+
       if (isBob) {
         candidates.push({
           id: 'candidate-2',

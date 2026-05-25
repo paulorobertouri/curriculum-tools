@@ -4,7 +4,7 @@ import {
   clearCandidateCvDraft,
   readCandidateCvDraft,
   saveCandidateCvDraft,
-} from '@/storage/candidateDraftStorage';
+} from '@/common/storage/candidateDraftStorage';
 
 describe('candidateDraftStorage', () => {
   it('returns empty string when nothing is saved', () => {

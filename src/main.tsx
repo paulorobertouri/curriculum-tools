@@ -2,7 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { App } from '@/App';
-import { I18nProvider } from '@/infrastructure/i18n/i18n';
+import { I18nProvider } from '@/common/i18n/i18n';
 import '@/index.css';
 
 createRoot(document.getElementById('root')!).render(

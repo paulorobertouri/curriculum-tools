@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { extractTextFromFile } from '@/files/extractText';
+import { extractTextFromFile } from '@/common/files/extractText';
 
 describe('extractTextFromFile', () => {
   it('extracts plain text files', async () => {

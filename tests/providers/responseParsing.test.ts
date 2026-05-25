@@ -3,13 +3,13 @@ import { describe, expect, it } from 'vitest';
 import {
   normalizeCandidateReview,
   normalizeHrRanking,
-} from '@/domain/validation';
+} from '@/common/core/validation';
 import {
   extractChatCompletionText,
   extractGeminiText,
   extractOpenAiResponseText,
   parseJsonResult,
-} from '@/providers/responseParsing';
+} from '@/provider/adapters/responseParsing';
 
 describe('responseParsing', () => {
   it('parses fenced candidate JSON and normalizes score', () => {

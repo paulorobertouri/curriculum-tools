@@ -1,11 +1,11 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
+import { I18nProvider } from '@/common/i18n/i18n';
 import {
   CandidateComparisonMatrix,
   ComparedCandidate,
-} from '@/components/hr/CandidateComparisonMatrix';
-import { I18nProvider } from '@/i18n/i18n';
+} from '@/hr/components/CandidateComparisonMatrix';
 
 const MOCK_COMPARED: ComparedCandidate[] = [
   {

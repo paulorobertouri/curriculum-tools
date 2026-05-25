@@ -1,84 +1,40 @@
 # Engineering Standards
 
-Last updated: 2026-05-18
+Last updated: 2026-05-25
 
-## Architecture (DDD-lite)
+## Architecture (Adapter)
 
-The codebase follows a layered browser-first architecture:
+The codebase follows an adapter-oriented, domain/feature-first structure:
 
-- `src/domain`: core business types and pure domain logic.
-- `src/application`: use-cases that orchestrate workflows and depend on domain abstractions.
-- `src/providers`: infrastructure adapters for OpenAI, Gemini, and DeepSeek.
-- `src/storage`: persistence concerns (`localStorage`) behind modules.
-- `src/components`: presentation and interaction layer.
+- Endpoints/components handle translation, validation, and interaction concerns.
+- Handlers own one use case or query each.
+- Services orchestrate business behavior across collaborators.
+- Repositories/clients encapsulate provider and storage persistence details.
 
 Rules:
 
-- Components should not call providers or storage modules directly when application gateways/use-cases exist.
-- Components should not embed provider orchestration logic.
-- Use-cases should be testable without React.
-- Domain modules must stay framework-agnostic.
-- Provider-specific HTTP details stay in `src/providers`.
+- Keep domain logic outside transport/UI adapters.
+- Avoid pass-through layers with no behavior.
+- Add interfaces only when multiple implementations or stable seams justify them.
+- Prefer business boundary folder names over technical names.
 
-## Clean Code + DRY
+## Clean Code + Pragmatism
 
-- Keep functions small and intention-revealing.
-- Prefer pure helpers in domain/application over duplicated UI logic.
-- Keep side effects explicit at boundaries (provider calls, file extraction, storage).
-- Favor composition over large components with mixed concerns.
+- Keep modules focused on one responsibility.
+- Extract only when code is hard to read, hard to test, or truly reused.
+- Prefer concrete dependencies inside a bounded context.
 
-## Design Patterns In Use
+## Async and Parallelism
 
-- Strategy pattern: provider adapters selected via `getProviderAdapter`.
-- Use-case pattern (application service):
-  - `runCandidateReviewUseCase`
-  - `runHrRankingUseCase`
-- Application gateway pattern:
-  - `candidateDraftGateway`
-  - `hrDecisionsGateway`
-  - `providerSetupUseCases`
-  - `evaluationHarnessGateway`
-  - `runEvaluationHarnessUseCase`
-- Repository-like storage modules for local persistence.
+- Keep I/O async end-to-end.
+- Run independent I/O in parallel when safe.
+- Propagate cancellation through adapter layers.
 
-## TDD Workflow
+## Test Structure
 
-1. Add or update tests first for changed behavior.
-2. Implement minimal code to satisfy tests.
-3. Refactor while keeping tests green.
-4. Run:
-   - `pnpm test --run`
-
-- `pnpm test:coverage`
-- `pnpm run build`
-- `pnpm run lint`
-- `pnpm run test:e2e`
-
-Coverage gates:
-
-- Statements: 82%
-- Branches: 70%
-- Functions: 80%
-- Lines: 83%
-
-## BDD-style Test Naming
-
-Prefer behavior-driven naming:
-
-- `given valid input when processing then returns ranked candidates`
-- `given provider omission when processing then creates fallback entry`
+- Mirror `src` structure in `tests`.
+- Keep tests close to their domain/feature boundary.
 
 ## ADR Requirement
 
-When changing architecture boundaries, provider orchestration strategy, or testing gates, add/update ADRs in `docs/adr`.
-
-## VS Code Workspace Baseline
-
-Project includes:
-
-- `.vscode/settings.json`
-- `.vscode/extensions.json`
-- `.vscode/tasks.json`
-- `.vscode/launch.json`
-
-These enforce format/lint consistency and speed up local workflows.
+When adapter boundaries or folder strategy changes, update ADRs in `docs/adr`.

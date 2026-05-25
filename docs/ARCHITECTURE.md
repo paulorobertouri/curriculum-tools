@@ -1,116 +1,33 @@
 # Curriculum Tools Architecture
 
-Last planned: 2026-05-18
+Curriculum Tools now follows the monorepo **Adapter Architecture Standards**.
 
-## Overview
+## Core Layout
 
-Curriculum Tools is a browser-only Vite + React + TypeScript application.
+- **Domain-first** when boundaries are stable (`candidate`, `hr`, `provider`, `quality`).
+- **Feature-first** when work is short-lived and delivery-slice oriented.
+- Keep adapters at the boundary and domain logic as the source of truth.
 
-- No backend in v1.
-- Provider configuration is persisted in browser storage.
-- CV text is extracted in-browser and sent to AI providers only after explicit user action.
-- The app supports bring-your-own-key providers.
+## Adapter Responsibilities
 
-## Architecture Style
+- **Components/endpoints**: UI and transport translation only.
+- **Handlers**: one use case/query each, no framework-specific return types.
+- **Services**: orchestration, policies, and calculations across collaborators.
+- **Repositories/clients**: provider and storage details encapsulated.
 
-Layered Clean Architecture (DDD-lite):
-
-- `src/domain`: business types, invariants, pure logic.
-- `src/application`: use-cases and gateways that orchestrate workflows.
-- `src/providers`: infrastructure adapters with provider-specific HTTP details.
-- `src/storage`: persistence modules (`localStorage`).
-- `src/components`: UI/presentation concerns.
-
-Dependency direction:
-
-- `components` -> `application` -> (`domain`, `providers`, `storage`)
-- `domain` does not depend on framework or infrastructure modules.
-
-## Current Provider Portfolio
-
-Supported providers:
-
-- OpenAI
-- Gemini
-- DeepSeek
-
-Provider orchestration uses shared workflows in `src/providers/providerWorkflows.ts` and shared response extraction/parsing in `src/providers/responseParsing.ts`.
-
-## Source Structure
+## Path Convention
 
 ```text
-src/
-  application/
-    candidate/
-    hr/
-    provider/
-    quality/
-  components/
-    common/
-  domain/
-    aiTypes.ts
-    evaluationFixtures.ts
-    hrChunking.ts
-    hrMetricsSummary.ts
-    reviewQuality.ts
-    validation.ts
-  files/
-    extractText.ts
-    exportResults.ts
-  i18n/
-    i18n.tsx
-  prompts/
-    candidatePrompt.ts
-    candidateToolkitPrompt.ts
-    hrPrompt.ts
-    promptVersions.ts
-  providers/
-    index.ts
-    deepseekProvider.ts
-    geminiProvider.ts
-    openaiProvider.ts
-    providerUtils.ts
-    providerWorkflows.ts
-    responseParsing.ts
-  storage/
-    aiConfigStorage.ts
-    candidateDraftStorage.ts
-    evaluationHarnessStorage.ts
-    hrDecisionsStorage.ts
+{backend|frontend}/{src|tests|docs}/{domain|feature}/{class file}
 ```
 
-## Application Boundaries
+For this frontend app, use:
 
-Application gateways/use-cases are the primary seams between UI and infrastructure:
+- `frontend/src/{domain|feature}/{Component|Handler|Service}.ts(x)`
+- `frontend/tests/{domain|feature}/{Component|Service}.test.ts(x)`
 
-- Candidate draft gateway: `src/application/candidate/candidateDraftGateway.ts`
-- HR decisions gateway: `src/application/hr/hrDecisionsGateway.ts`
-- Provider setup use-cases: `src/application/provider/providerSetupUseCases.ts`
-- Quality harness execution/gateway:
-  - `src/application/quality/runEvaluationHarnessUseCase.ts`
-  - `src/application/quality/evaluationHarnessGateway.ts`
+## Working Rules
 
-These keep components focused on rendering, interaction, and state transitions.
-
-## Persistence
-
-Storage keys:
-
-- Provider config: `curriculum-tools.aiConfig.v1`
-- Evaluation harness runs: `curriculum-tools.evaluationHarness.v1`
-
-Storage modules validate payload shape and avoid logging sensitive values.
-
-## Testing Architecture
-
-- Unit tests cover domain, providers, storage, prompts, and application use-cases.
-- E2E tests cover first-run setup, candidate flow, HR flow, chunking behavior, and partial extraction behavior.
-- Coverage gates are enforced in Vitest.
-
-## Architectural Decisions
-
-See ADRs:
-
-- `docs/adr/0001-provider-workflow-standardization.md`
-- `docs/adr/0002-layer-boundaries-and-application-gateways.md`
-- `docs/adr/0003-testing-strategy-and-coverage-gates.md`
+- No extra service layers without behavior.
+- Add interfaces only when a stable seam or multiple implementations exist.
+- Keep async flows non-blocking and parallelize independent calls safely.

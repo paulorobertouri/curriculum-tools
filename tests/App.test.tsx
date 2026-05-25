@@ -3,8 +3,8 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { App } from '@/App';
-import { AI_CONFIG_STORAGE_KEY } from '@/domain/aiTypes';
-import { I18nProvider } from '@/i18n/i18n';
+import { AI_CONFIG_STORAGE_KEY } from '@/common/core/aiTypes';
+import { I18nProvider } from '@/common/i18n/i18n';
 
 const successfulOpenAiResponse = {
   ok: true,

@@ -1,19 +1,4 @@
-import { existsSync } from 'node:fs';
-
-import { defineConfig, devices } from '@playwright/test';
-
-const chromiumExecutableCandidates = [
-  process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,
-  '/usr/bin/google-chrome-stable',
-  '/usr/bin/google-chrome',
-  '/snap/bin/chromium',
-  '/usr/bin/chromium-browser',
-  '/usr/bin/chromium',
-].filter((candidate): candidate is string => Boolean(candidate));
-
-const chromiumExecutablePath = chromiumExecutableCandidates.find(candidate =>
-  existsSync(candidate),
-);
+import { defineConfig, /* _devices */ } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -25,23 +10,24 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:4173',
     trace: 'on-first-retry',
-    screenshot: 'on', // Capture screenshot for every test
+    screenshot: 'on',
     video: 'on-first-retry',
-    launchOptions: chromiumExecutablePath
-      ? {
-          executablePath: chromiumExecutablePath,
-        }
-      : undefined,
   },
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: 'google-chrome',
+      use: {
+        channel: 'chrome',
+        launchOptions: {
+          executablePath: '/usr/bin/google-chrome',
+        },
+      },
     },
   ],
   webServer: {
     command: 'npm run dev -- --port 4173',
     url: 'http://localhost:4173',
     reuseExistingServer: false,
+    timeout: 120_000,
   },
 });

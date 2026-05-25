@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+
 import {
   captureJourneyScreenshot,
   routeOpenAiForHrFlows,
@@ -19,13 +20,19 @@ test.describe('HR Journey', () => {
     await page.getByLabel('Job description').fill('Lead a team of 10.');
 
     await page.locator('#hr-files').setInputFiles([
-      { name: 'alice.txt', mimeType: 'text/plain', buffer: Buffer.from('CV 1') },
+      {
+        name: 'alice.txt',
+        mimeType: 'text/plain',
+        buffer: Buffer.from('CV 1'),
+      },
       { name: 'bob.txt', mimeType: 'text/plain', buffer: Buffer.from('CV 2') },
     ]);
 
     await page.getByRole('button', { name: 'Process' }).click();
 
-    await expect(page.getByText('Candidates ranked')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Candidates ranked')).toBeVisible({
+      timeout: 10000,
+    });
 
     await expect(page.getByText('alice.txt').first()).toBeVisible();
     await expect(page.getByText('bob.txt').first()).toBeVisible();
@@ -35,12 +42,16 @@ test.describe('HR Journey', () => {
 
     // Open comparison matrix
     await page.getByRole('button', { name: /Compare/i }).click();
-    await expect(page.getByText('Candidate Side-by-Side Comparison')).toBeVisible();
+    await expect(
+      page.getByText('Candidate Side-by-Side Comparison'),
+    ).toBeVisible();
     await captureJourneyScreenshot(page, 'hr', '04-comparison-matrix');
 
     // Close comparison matrix
     await page.locator('button:has(svg.lucide-x)').click();
-    await expect(page.getByText('Candidate Side-by-Side Comparison')).not.toBeVisible();
+    await expect(
+      page.getByText('Candidate Side-by-Side Comparison'),
+    ).not.toBeVisible();
   });
 
   test('evaluates each candidate in separated ranking requests', async ({
@@ -105,7 +116,9 @@ test.describe('HR Journey', () => {
 
     await page.getByRole('button', { name: 'Process' }).click();
 
-    await expect(page.getByText('Candidates ranked')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Candidates ranked')).toBeVisible({
+      timeout: 10000,
+    });
 
     await expect(page.getByText('valid.txt').first()).toBeVisible();
 

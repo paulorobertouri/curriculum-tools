@@ -1,8 +1,6 @@
 import { expect, test } from '@playwright/test';
-import {
-  captureJourneyScreenshot,
-  routeOpenAiForSetupOnly,
-} from './utils';
+
+import { captureJourneyScreenshot, routeOpenAiForSetupOnly } from './utils';
 
 test.describe('Setup Journey', () => {
   test('first run shows provider setup', async ({ page }) => {

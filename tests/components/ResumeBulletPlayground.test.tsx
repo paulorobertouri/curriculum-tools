@@ -1,8 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { ResumeBulletPlayground } from '@/components/candidate/ResumeBulletPlayground';
-import { I18nProvider } from '@/i18n/i18n';
+import { ResumeBulletPlayground } from '@/candidate/components/ResumeBulletPlayground';
+import { I18nProvider } from '@/common/i18n/i18n';
 
 const MOCK_ORIGINAL = [
   'Helped to write code for the frontend.',

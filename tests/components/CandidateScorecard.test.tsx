@@ -1,11 +1,11 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { CandidateScorecard } from '@/components/candidate/CandidateScorecard';
-import { CandidateReview } from '@/domain/aiTypes';
-import { CandidateQualitySummary } from '@/domain/reviewQuality';
-import { SkillGapResult } from '@/domain/skillGapAnalysis';
-import { I18nProvider } from '@/i18n/i18n';
+import { CandidateScorecard } from '@/candidate/components/CandidateScorecard';
+import { CandidateReview } from '@/common/core/aiTypes';
+import { CandidateQualitySummary } from '@/common/core/reviewQuality';
+import { SkillGapResult } from '@/common/core/skillGapAnalysis';
+import { I18nProvider } from '@/common/i18n/i18n';
 
 const dummyReview: CandidateReview = {
   score: 8.5,

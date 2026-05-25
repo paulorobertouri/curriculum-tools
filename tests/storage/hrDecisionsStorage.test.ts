@@ -4,7 +4,7 @@ import {
   HrDecisionMap,
   readHrDecisions,
   saveHrDecisions,
-} from '@/storage/hrDecisionsStorage';
+} from '@/common/storage/hrDecisionsStorage';
 
 const decisions: HrDecisionMap = {
   'candidate-1': {

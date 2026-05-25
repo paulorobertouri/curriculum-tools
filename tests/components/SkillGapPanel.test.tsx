@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { SkillGapPanel } from '@/components/candidate/SkillGapPanel';
-import { I18nProvider } from '@/i18n/i18n';
+import { SkillGapPanel } from '@/candidate/components/SkillGapPanel';
+import { I18nProvider } from '@/common/i18n/i18n';
 
 describe('SkillGapPanel', () => {
   const jobDescription =

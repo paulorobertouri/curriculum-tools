@@ -1,4 +1,4 @@
-import { CandidateReviewInput } from '@/domain/aiTypes';
+import { CandidateReviewInput } from '@/common/core/aiTypes';
 import { getPromptLocaleGuidance } from '@/prompts/promptLocale';
 import { PROMPT_VERSIONS } from '@/prompts/promptVersions';
 

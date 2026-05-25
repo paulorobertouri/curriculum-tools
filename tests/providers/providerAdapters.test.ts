@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { AiConfig } from '@/domain/aiTypes';
-import { deepseekProvider } from '@/providers/deepseekProvider';
-import { geminiProvider } from '@/providers/geminiProvider';
-import { openaiProvider } from '@/providers/openaiProvider';
+import { AiConfig } from '@/common/core/aiTypes';
+import { deepseekProvider } from '@/provider/adapters/deepseekProvider';
+import { geminiProvider } from '@/provider/adapters/geminiProvider';
+import { openaiProvider } from '@/provider/adapters/openaiProvider';
 
 const config: AiConfig = {
   provider: 'openai',

@@ -1,8 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { InterviewSimulator } from '@/components/candidate/InterviewSimulator';
-import { I18nProvider } from '@/i18n/i18n';
+import { InterviewSimulator } from '@/candidate/components/InterviewSimulator';
+import { I18nProvider } from '@/common/i18n/i18n';
 
 const MOCK_QUESTIONS = [
   {
