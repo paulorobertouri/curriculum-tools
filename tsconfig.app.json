@@ -8,7 +8,7 @@
     "skipLibCheck": true,
     // Change the paths to point to React
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./frontend/src/*"]
     },
 
     /* Bundler mode */
@@ -26,5 +26,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src"]
+  "include": ["frontend/src", "frontend/tests"]
 }

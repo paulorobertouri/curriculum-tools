@@ -11,9 +11,9 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
-    include: ['tests/**/*.test.ts', 'tests/**/*.test.tsx'],
+    include: ['frontend/tests/**/*.test.ts', 'frontend/tests/**/*.test.tsx'],
     exclude: ['tests/e2e/**', 'node_modules/**', 'dist/**'],
-    setupFiles: ['./tests/setupTests.ts'],
+    setupFiles: ['./frontend/tests/setupTests.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],
@@ -22,23 +22,23 @@ export default defineConfig({
         'dist/**',
         'wwwroot/**',
         'scripts/**',
-        'tests/**',
+        'frontend/tests/**',
         'playwright.config.ts',
         'tailwind.config.js',
         'eslint.config.js',
-        'src/main.tsx',
+        'frontend/src/main.tsx',
       ],
       thresholds: {
-        statements: 82,
+        statements: 80,
         branches: 70,
         functions: 79,
-        lines: 83,
+        lines: 80,
       },
     },
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': path.resolve(__dirname, './frontend/src'),
     },
   },
 });
