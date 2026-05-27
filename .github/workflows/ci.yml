@@ -40,7 +40,7 @@ jobs:
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
-        if: always()
+        if: always() && github.actor != 'dependabot[bot]'
         with:
           files: ./coverage/coverage-final.json
           flags: unittests
