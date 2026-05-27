@@ -41,9 +41,9 @@ import {
   HrDecisionMap,
   HrDecisionStatus,
 } from '@/common/hrDecisionsStorage';
-import { CandidateComparisonMatrix } from '@/hr/components/CandidateComparisonMatrix';
-import { HrFunnelChart } from '@/hr/components/HrFunnelChart';
-import { HrScoreHistogram } from '@/hr/components/HrScoreHistogram';
+import { CandidateComparisonMatrix } from '@/hr/CandidateComparisonMatrix';
+import { HrFunnelChart } from '@/hr/HrFunnelChart';
+import { HrScoreHistogram } from '@/hr/HrScoreHistogram';
 import {
   loadHrDecisions,
   persistHrDecisions,

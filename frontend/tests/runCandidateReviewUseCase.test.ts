@@ -5,7 +5,7 @@ import { AiConfig } from '@/common/core/aiTypes';
 
 const reviewCandidateCvMock = vi.fn();
 
-vi.mock('@/provider/adapters', () => {
+vi.mock('@/provider', () => {
   return {
     getProviderAdapter: vi.fn(() => ({
       reviewCandidateCv: reviewCandidateCvMock,

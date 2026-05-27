@@ -12,7 +12,7 @@ import {
   readAiConfig,
   saveAiConfig,
 } from '@/common/aiConfigStorage';
-import { HrRanker } from '@/hr/components/HrRanker';
+import { HrRanker } from '@/hr/HrRanker';
 import { getProviderAdapter } from '@/provider';
 import { ProviderSetup } from '@/provider/ProviderSetup';
 import { ProviderStatus } from '@/provider/ProviderStatus';

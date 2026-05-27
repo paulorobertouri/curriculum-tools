@@ -20,7 +20,7 @@ const mockAdapter = {
   rankHrCvs: vi.fn(),
 };
 
-vi.mock('@/provider/adapters', () => ({
+vi.mock('@/provider', () => ({
   getProviderAdapter: vi.fn(() => mockAdapter),
 }));
 

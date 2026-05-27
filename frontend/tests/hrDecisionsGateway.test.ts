@@ -20,7 +20,7 @@ vi.mock('@/common/storage/hrDecisionsStorage', () => ({
 
 describe('hrDecisionsGateway', () => {
   it('loads decisions through storage boundary', async () => {
-    const storage = await import('@/common/hrDecisionsStorage');
+    const storage = await import('@/common/storage/hrDecisionsStorage');
 
     expect(loadHrDecisions()).toEqual({
       'candidate-1': {
@@ -35,7 +35,7 @@ describe('hrDecisionsGateway', () => {
   });
 
   it('persists decisions through storage boundary', async () => {
-    const storage = await import('@/common/hrDecisionsStorage');
+    const storage = await import('@/common/storage/hrDecisionsStorage');
     const decisions = {
       'candidate-2': {
         candidateId: 'candidate-2',

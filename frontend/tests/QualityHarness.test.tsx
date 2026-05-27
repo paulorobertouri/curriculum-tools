@@ -33,7 +33,7 @@ const mockRuns = [
 ];
 
 // Mock storage gateways
-vi.mock('@/quality/handlers/evaluationHarnessGateway', () => ({
+vi.mock('@/quality/evaluationHarnessGateway', () => ({
   loadEvaluationRuns: vi.fn(() => mockRuns),
   persistEvaluationRuns: vi.fn(),
 }));

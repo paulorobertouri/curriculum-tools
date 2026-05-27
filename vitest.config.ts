@@ -26,7 +26,6 @@ export default defineConfig({
         'playwright.config.ts',
         'tailwind.config.js',
         'eslint.config.js',
-        'frontend/src/main.tsx',
       ],
       thresholds: {
         statements: 80,

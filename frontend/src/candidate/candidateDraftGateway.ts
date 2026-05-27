@@ -1,7 +1,7 @@
 import {
   readCandidateCvDraft,
   saveCandidateCvDraft,
-} from '@/common/candidateDraftStorage';
+} from '@/common/storage/candidateDraftStorage';
 
 export const loadCandidateCvDraft = () => readCandidateCvDraft();
 

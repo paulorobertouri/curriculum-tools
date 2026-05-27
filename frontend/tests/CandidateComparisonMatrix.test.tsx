@@ -5,7 +5,7 @@ import { I18nProvider } from '@/common/i18n';
 import {
   CandidateComparisonMatrix,
   ComparedCandidate,
-} from '@/hr/components/CandidateComparisonMatrix';
+} from '@/hr/CandidateComparisonMatrix';
 
 const MOCK_COMPARED: ComparedCandidate[] = [
   {

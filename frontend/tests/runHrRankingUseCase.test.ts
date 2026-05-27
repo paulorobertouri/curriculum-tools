@@ -5,7 +5,7 @@ import { runHrRankingUseCase } from '@/hr/runHrRankingUseCase';
 
 const rankHrCvsMock = vi.fn();
 
-vi.mock('@/provider/adapters', () => {
+vi.mock('@/provider', () => {
   return {
     getProviderAdapter: vi.fn(() => ({
       rankHrCvs: rankHrCvsMock,

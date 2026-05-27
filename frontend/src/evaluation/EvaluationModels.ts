@@ -15,3 +15,5 @@ export interface EvaluationResult {
   review: CandidateReview;
   timestamp: string;
 }
+
+export const EVALUATION_MODELS_RUNTIME_MARKER = 'EvaluationModels';

@@ -2,7 +2,7 @@ import {
   HrDecisionMap,
   readHrDecisions,
   saveHrDecisions,
-} from '@/common/hrDecisionsStorage';
+} from '@/common/storage/hrDecisionsStorage';
 
 export const loadHrDecisions = (): HrDecisionMap => readHrDecisions();
 

@@ -8,7 +8,11 @@
     "skipLibCheck": true,
     // Change the paths to point to React
     "paths": {
-      "@/*": ["./frontend/src/*"]
+      "@/*": ["./frontend/src/*"],
+      "@/common/core/*": ["./frontend/src/common/*"],
+      "@/common/storage/*": ["./frontend/src/common/*"],
+      "@/provider/adapters": ["./frontend/src/provider/index.ts"],
+      "@/provider/adapters/*": ["./frontend/src/provider/*"]
     },
 
     /* Bundler mode */

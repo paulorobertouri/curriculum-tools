@@ -28,14 +28,14 @@ vi.mock('@/common/storage/evaluationHarnessStorage', () => ({
 
 describe('evaluationHarnessGateway', () => {
   it('loads runs through the storage boundary', async () => {
-    const storage = await import('@/common/evaluationHarnessStorage');
+    const storage = await import('@/common/storage/evaluationHarnessStorage');
 
     expect(loadEvaluationRuns()).toHaveLength(1);
     expect(storage.readEvaluationRuns).toHaveBeenCalledTimes(1);
   });
 
   it('persists runs through the storage boundary', async () => {
-    const storage = await import('@/common/evaluationHarnessStorage');
+    const storage = await import('@/common/storage/evaluationHarnessStorage');
     const runs = loadEvaluationRuns();
 
     persistEvaluationRuns(runs);

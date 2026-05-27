@@ -12,14 +12,14 @@ vi.mock('@/common/storage/candidateDraftStorage', () => ({
 
 describe('candidateDraftGateway', () => {
   it('loads candidate draft through storage boundary', async () => {
-    const storage = await import('@/common/candidateDraftStorage');
+    const storage = await import('@/common/storage/candidateDraftStorage');
 
     expect(loadCandidateCvDraft()).toBe('stored draft');
     expect(storage.readCandidateCvDraft).toHaveBeenCalledTimes(1);
   });
 
   it('persists candidate draft through storage boundary', async () => {
-    const storage = await import('@/common/candidateDraftStorage');
+    const storage = await import('@/common/storage/candidateDraftStorage');
 
     persistCandidateCvDraft('updated draft');
 
