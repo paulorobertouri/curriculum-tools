@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { App } from '@/app/App';
 import { AI_CONFIG_STORAGE_KEY } from '@/common/core/aiTypes';
-import { I18nProvider } from '@/common/i18n/i18n';
+import { I18nProvider } from '@/common/i18n';
 
 const successfulOpenAiResponse = {
   ok: true,

@@ -3,7 +3,7 @@ import {
   AiProviderId,
   ProviderErrorKind,
 } from '@/common/core/aiTypes';
-import { getProviderAdapter } from '@/provider/adapters';
+import { getProviderAdapter } from '@/provider';
 
 export type ProviderFallbackNotice = {
   primaryProvider: AiProviderId;
