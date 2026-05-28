@@ -1,7 +1,7 @@
 import { AiProviderAdapter, AiProviderId } from '@/common/core/aiTypes';
+import { openaiProvider } from '@/provider/adapters/openaiProvider';
 import { deepseekProvider } from '@/provider/deepseekProvider';
 import { geminiProvider } from '@/provider/geminiProvider';
-import { openaiProvider } from '@/provider/adapters/openaiProvider';
 
 export const getProviderAdapter = (
   provider: AiProviderId,

@@ -5,13 +5,13 @@ import { CandidateReviewer } from '@/candidate/CandidateReviewer';
 import { ErrorBoundary } from '@/common/ErrorBoundary';
 import { GlobalErrorPage } from '@/common/GlobalErrorPage';
 import { LanguageSelector } from '@/common/LanguageSelector';
-import { AiConfig, providerIsEnabled } from '@/common/core/aiTypes';
-import { useI18n } from '@/common/i18n';
 import {
   clearAiConfig,
   readAiConfig,
   saveAiConfig,
 } from '@/common/aiConfigStorage';
+import { AiConfig, providerIsEnabled } from '@/common/core/aiTypes';
+import { useI18n } from '@/common/i18n';
 import { HrRanker } from '@/hr/HrRanker';
 import { getProviderAdapter } from '@/provider';
 import { ProviderSetup } from '@/provider/ProviderSetup';
@@ -132,7 +132,7 @@ export const App = () => {
 
   const handleTabKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
     const currentIndex = toolOrder.indexOf(activeTool);
-    let nextIndex = currentIndex;
+    let nextIndex: number;
 
     if (event.key === 'ArrowRight') {
       nextIndex = (currentIndex + 1) % toolOrder.length;

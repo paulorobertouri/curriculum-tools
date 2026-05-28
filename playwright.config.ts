@@ -1,4 +1,4 @@
-import { defineConfig, /* _devices */ } from '@playwright/test';
+import { defineConfig /* _devices */ } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests/e2e',

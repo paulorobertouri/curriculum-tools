@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 
-import { AI_CONFIG_STORAGE_KEY, AiConfig } from '@/common/core/aiTypes';
 import {
   clearAiConfig,
   isAiConfig,
@@ -8,6 +7,7 @@ import {
   readAiConfig,
   saveAiConfig,
 } from '@/common/aiConfigStorage';
+import { AI_CONFIG_STORAGE_KEY, AiConfig } from '@/common/core/aiTypes';
 
 const config: AiConfig = {
   provider: 'openai',

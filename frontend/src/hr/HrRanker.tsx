@@ -35,19 +35,16 @@ import {
   SUPPORTED_FILE_TYPES,
   extractTextFromFile,
 } from '@/common/extractText';
-import { useI18n } from '@/common/i18n';
 import {
   HrDecision,
   HrDecisionMap,
   HrDecisionStatus,
 } from '@/common/hrDecisionsStorage';
+import { useI18n } from '@/common/i18n';
 import { CandidateComparisonMatrix } from '@/hr/CandidateComparisonMatrix';
 import { HrFunnelChart } from '@/hr/HrFunnelChart';
 import { HrScoreHistogram } from '@/hr/HrScoreHistogram';
-import {
-  loadHrDecisions,
-  persistHrDecisions,
-} from '@/hr/hrDecisionsGateway';
+import { loadHrDecisions, persistHrDecisions } from '@/hr/hrDecisionsGateway';
 import { runHrRankingUseCase } from '@/hr/runHrRankingUseCase';
 
 type HrRankerProps = {

@@ -19,8 +19,8 @@ import {
   candidateFixtures,
   hrFixtures,
 } from '@/common/core/evaluationFixtures';
-import { useI18n } from '@/common/i18n';
 import { EvaluationRun } from '@/common/evaluationHarnessStorage';
+import { useI18n } from '@/common/i18n';
 import {
   loadEvaluationRuns,
   persistEvaluationRuns,

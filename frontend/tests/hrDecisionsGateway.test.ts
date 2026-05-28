@@ -1,9 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import {
-  loadHrDecisions,
-  persistHrDecisions,
-} from '@/hr/hrDecisionsGateway';
+import { loadHrDecisions, persistHrDecisions } from '@/hr/hrDecisionsGateway';
 
 vi.mock('@/common/storage/hrDecisionsStorage', () => ({
   readHrDecisions: vi.fn(() => ({

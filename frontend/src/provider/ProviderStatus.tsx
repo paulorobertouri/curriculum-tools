@@ -1,12 +1,12 @@
 import { CheckCircle2, Pencil, RotateCcw, Trash2 } from 'lucide-react';
 
+import { maskApiKey } from '@/common/aiConfigStorage';
 import {
   AiConfig,
   PROVIDER_LABELS,
   PROVIDER_RISK_I18N_KEY,
 } from '@/common/core/aiTypes';
 import { useI18n } from '@/common/i18n';
-import { maskApiKey } from '@/common/aiConfigStorage';
 
 type ProviderStatusProps = {
   readonly config: AiConfig;

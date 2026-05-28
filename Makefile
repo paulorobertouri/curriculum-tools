@@ -1,4 +1,4 @@
-.PHONY: help install install-dev build build-pages publish dev preview test test-unit test-e2e lint format clean
+.PHONY: help install install-dev build build-pages publish dev preview test test-unit test-e2e e2e-evidence lint format clean
 
 help:
 	@echo "Available commands:"
@@ -45,13 +45,16 @@ preview:
 	pnpm run preview
 
 test:
-	pnpm run test
+	pnpm run test:coverage
 
 test-unit:
 	pnpm run test
 
 test-e2e:
 	pnpm run test:e2e
+
+e2e-evidence:
+	./scripts/e2e.sh evidence
 
 lint:
 	pnpm run lint

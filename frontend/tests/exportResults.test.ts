@@ -2,10 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { CandidateReview, HrRankingResult } from '@/common/core/aiTypes';
 import { buildHrMetricsSummary } from '@/common/core/hrMetricsSummary';
-import {
-  toCandidateReviewText,
-  toHrRankingCsv,
-} from '@/common/exportResults';
+import { toCandidateReviewText, toHrRankingCsv } from '@/common/exportResults';
 
 describe('exportResults', () => {
   it('builds candidate review export text with new sections', () => {
